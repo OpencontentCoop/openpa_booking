@@ -151,6 +151,15 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
      */
     static function createApproval( $contentObjectID, $handlerString, $authorID, $approverIDArray )
     {
+        if ( empty( $approverIDArray ) )
+        {
+            $admin = eZUser::fetchByName( 'admin' );
+            if ( $admin instanceof eZUser )
+            {
+                $approverIDArray[] = $admin->attribute( 'contentobject_id' );
+                eZDebug::writeNotice( "Add admin user as fallback empty partecipant list", __METHOD__ );
+            }
+        }
         $collaborationItem = eZCollaborationItem::create( self::TYPE_STRING, $authorID );
         $collaborationItem->setAttribute( 'data_int1', $contentObjectID );
         $collaborationItem->setAttribute( 'data_text1', $handlerString );
@@ -161,7 +170,7 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
         $participantList = array( array( 'id' => array( $authorID ),
             'role' => eZCollaborationItemParticipantLink::ROLE_AUTHOR ),
             array( 'id' => $approverIDArray,
-                'role' => eZCollaborationItemParticipantLink::ROLE_APPROVER ) );
+                   'role' => eZCollaborationItemParticipantLink::ROLE_APPROVER ) );
         foreach ( $participantList as $participantItem )
         {
             foreach( $participantItem['id'] as $participantID )

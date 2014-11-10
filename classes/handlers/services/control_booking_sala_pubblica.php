@@ -38,38 +38,72 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $this->fnData['concurrent_requests'] = 'getConcurrentRequests';
     }
 
+    protected static function fetchConcurrentItems( DateTime $start, DateTime $end, $sala = array(), $states = array(), $id = null, $count = false )
+    {
+        $filters = array();
+        if ( $id )
+        {
+            $filters['-meta_id_si'] = $id;
+        }
+        if ( !empty( $states ) )
+        {
+            $stateFilters = array();
+            foreach( $states as $stateCode )
+            {
+                $state = self::getStateObject( $stateCode );
+                if ( $state instanceof eZContentObjectState )
+                {
+                    $stateFilters['meta_object_states_si'] = $state->attribute( 'id' );
+                }
+            }
+            if ( !empty( $stateFilters ) )
+            {
+                $filters[] = $stateFilters;
+            }
+        }
+        $dateFilter = array(
+            'or',
+            array(
+                'and',
+                'attr_from_time_dt' => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]',
+                'attr_to_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO * ]',
+            ),
+            array(
+                'or',
+                'attr_from_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]',
+                'attr_to_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]'
+            )
+        );
+        $filters[] = $dateFilter;
+        $sortBy = array( 'attr_from_time_dt' => 'desc', 'published' => 'asc' );
+        $solrSearch = new eZSolr();
+        $search = $solrSearch->search( '', array(
+            'SearchSubTreeArray' => $sala,
+            'SearchLimit' => $count ? 1 : 1000,
+            'SortBy' => $sortBy,
+            'Filter' => $filters
+        ));
+        return $count ? $search['SearchCount'] : $search['SearchResult'];
+    }
+
+
     protected function getConcurrentRequests()
     {
         $data = array();
         if ( $this->isValid() )
         {
-            $filters = array(
-                '-meta_id_si:' . $this->container->getContentObject()->attribute( 'id' ),
-                'meta_object_states_si:' . self::getStateObject( self::STATUS_PENDING )->attribute( 'id' )
+            $sala = array();
+            if ( $this->getSala() instanceof eZContentObject )
+            {
+                $sala[] = $this->getSala()->attribute( 'main_node_id' );
+            }
+            $data = self::fetchConcurrentItems(
+                $this->getStartDateTime(),
+                $this->getEndDateTime(),
+                array( self::STATUS_PENDING ),
+                $sala,
+                $this->container->getContentObject()->attribute( 'id' )
             );
-            $dateFilter = array(
-                'or',
-                array(
-                    'and',
-                    'attr_from_time_dt' => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue( $this->getEndDateTime()->getTimestamp(), 'date' ) . ' ]',
-                    'attr_to_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $this->getStartDateTime()->getTimestamp(), 'date' ) . ' TO * ]',
-                ),
-                array(
-                    'or',
-                    'attr_from_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $this->getStartDateTime()->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $this->getEndDateTime()->getTimestamp(), 'date' ) . ' ]',
-                    'attr_to_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $this->getStartDateTime()->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $this->getEndDateTime()->getTimestamp(), 'date' ) . ' ]'
-                )
-            );
-            $filters[] = $dateFilter;
-            $sortBy = array( 'attr_from_time_dt' => 'desc', 'published' => 'asc' );
-            $solrSearch = new eZSolr();
-            $search = $solrSearch->search( '', array(
-                'SearchSubTreeArray' => array( $this->getSala()->attribute( 'main_node_id' ) ),
-                'SearchLimit' => 1000,
-                'SortBy' => $sortBy,
-                'Filter' => $filters
-            ) );
-            $data = $search['SearchResult'];
         }
         return $data;
     }
@@ -142,6 +176,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return $this->container->getContentObject() instanceof eZContentObject && $this->container->getContentObject()->attribute( 'class_identifier' ) == self::prenotazioneClassIdentifier();
     }
 
+    /**
+     * @return eZContentObject
+     */
     protected function getSala()
     {
         $sala = null;
@@ -381,7 +418,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
             $mail->setSubject( $subject );
             $mail->setBody( $body );
-            $mailResult = eZMailTransport::send( $mail );
+            eZMailTransport::send( $mail );
         }
 
         // registra messaggio
@@ -450,6 +487,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                     $dataMap['sala']->fromString( $parentObject->attribute( 'id' ) );
                     $dataMap['sala']->store();
                 }
+                else
+                {
+                    throw new Exception( "Missing contentclass attribute 'sala' in {$classIdentifier} class" );
+                }
 
                 if ( isset( $dataMap['price'] ) )
                 {
@@ -466,9 +507,40 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return $object;
     }
 
+    /**
+     * @param int $start unixtimestamp
+     * @param int $end unixtimestamp
+     * @param eZContentObject $sala
+     *
+     * @return bool
+     */
     public static function isValidDate( $start, $end, $sala )
     {
-        return true;
+        $start = new DateTime(
+            $start,
+            new DateTimeZone( 'Europe/Rome' )
+        );
+        $end = new DateTime(
+            $end,
+            new DateTimeZone( 'Europe/Rome' )
+        );
+
+        $salaSubtree = array();
+        if ( $sala instanceof eZContentObject )
+        {
+            $salaSubtree[] = $sala->attribute( 'main_node_id' );
+        }
+
+        $data = self::fetchConcurrentItems(
+            $start,
+            $end,
+            array( self::STATUS_APPROVED ),
+            $salaSubtree,
+            null,
+            true
+        );
+
+        return $data == 0;
     }
 
 
