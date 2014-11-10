@@ -105,7 +105,13 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
              && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' )
              && $this->currentObject->attribute( 'can_read' ) )
         {
-            if ( $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'current_state' ) != ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT  )
+            $waitCheckout = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'current_state_code' ) == ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT;
+
+            if ( $waitCheckout && $this->currentObject->attribute( 'owner_id' ) == eZUser::currentUserID() )
+            {
+                $this->updateBasket( $this->currentObject );
+            }
+            else
             {
                 $collaborationItem = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'collaboration_item' );
                 if ( $collaborationItem instanceof eZCollaborationItem )
@@ -117,10 +123,6 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                 {
                     throw new Exception( "eZCollaborationItem not found for object {$this->currentObject->attribute( 'id' )}" );
                 }
-            }
-            else
-            {
-                $this->updateBasket( $this->currentObject );
             }
         }
         else
@@ -143,7 +145,7 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                 {
                     $id = $openpaObject->getContentObject()->attribute( 'id' );
                     $authorId = $openpaObject->getContentObject()->attribute( 'owner_id' );
-                    $approveIdArray = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'id_referenti_sala' );
+                    $approveIdArray = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'reservation_manager_ids' );
                     OpenPABookingCollaborationHandler::createApproval( $id, __CLASS__, $authorId, $approveIdArray );
                     eZDebug::writeNotice( "Create collaboration item", __METHOD__ );
                 }
@@ -167,7 +169,9 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                         && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' )
                         && $prenotazione->attribute( 'can_read' ) )
                     {
-                        $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT );
+                        OpenPABase::sudo( function() use( $service, $order ){
+                            $service->addOrder( $order );
+                        });
                     }
                 }
             }
@@ -205,6 +209,20 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
             && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' )
             && $prenotazione->attribute( 'can_read' ) )
         {
+            $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED );
+        }
+    }
+
+    public function defer( eZCollaborationItem $item )
+    {
+        $prenotazione = OpenPABookingCollaborationHandler::contentObject( $item );
+        $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $prenotazione );
+        /** @var ObjectHandlerServiceControlBookingSalaPubblica $service */
+        $service = $openpaObject->service( 'control_booking_sala_pubblica' );
+        if ( $openpaObject->hasAttribute( 'control_booking_sala_pubblica' )
+            && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' )
+            && $prenotazione->attribute( 'can_read' ) )
+        {
             $sala = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'sala' );
             if ( $sala instanceof eZContentObject )
             {
@@ -216,6 +234,7 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                 else
                 {
                     $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED );
+                    OpenPABookingCollaborationHandler::changeApprovalStatus( $item, OpenPABookingCollaborationHandler::STATUS_ACCEPTED );
                 }
             }
         }

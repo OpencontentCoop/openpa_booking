@@ -10,6 +10,8 @@ interface OpenPABookingHandlerInterface
 
     public function workflow( $parameters, $process, $event );
 
+    public function defer( eZCollaborationItem $item );
+
     public function approve( eZCollaborationItem $item );
 
     public function deny( eZCollaborationItem $item );

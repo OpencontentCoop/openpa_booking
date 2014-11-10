@@ -59,7 +59,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                 if ( $openpaObject->hasAttribute( 'control_booking_sala_pubblica' )
                      && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' ) )
                 {
-                    $state = ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'current_state' ) );
+                    $state = ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'current_state_code' ) );
                     if ( $state instanceof eZContentObjectState )
                     {
                         $item = new stdClass();
@@ -70,7 +70,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                         if ( $current && $node->attribute( 'contentobject_id' ) == $current )
                         {
                             $item->color = "#ff0000";
-                            $item->title = $node->attribute( 'owner' )->attribute( 'name' );
+                            $item->title = $node->attribute( 'object' )->attribute( 'owner' )->attribute( 'name' );
                         }
                         $data[] = $item;
                     }

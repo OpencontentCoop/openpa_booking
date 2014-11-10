@@ -237,25 +237,22 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
                 return $module->redirectToView( $redirectView, $redirectParameters );
             }
 
-            $status = self::STATUS_DENIED;
             if ( $this->isCustomAction( 'Accept' ) )
             {
                 self::handler( $collaborationItem )->approve( $collaborationItem );
-                $status = self::STATUS_ACCEPTED;
+                self::changeApprovalStatus( $collaborationItem, self::STATUS_ACCEPTED );
             }
-            else if ( $this->isCustomAction( 'Defer' ) or
-                $this->isCustomAction( 'Deny' ) )
+            elseif ( $this->isCustomAction( 'Deny' ) )
             {
                 self::handler( $collaborationItem )->deny( $collaborationItem );
-                $status = self::STATUS_DENIED;
+                self::changeApprovalStatus( $collaborationItem, self::STATUS_DENIED );
+            }
+            elseif ( $this->isCustomAction( 'Defer' ) )
+            {
+                self::handler( $collaborationItem )->defer( $collaborationItem );
+                self::changeApprovalStatus( $collaborationItem, self::STATUS_DEFERRED );
             }
 
-            $collaborationItem->setAttribute( 'data_int3', $status );
-            $collaborationItem->setAttribute( 'status', eZCollaborationItem::STATUS_INACTIVE );
-
-            $timestamp = time();
-            $collaborationItem->setAttribute( 'modified', $timestamp );
-            $collaborationItem->setIsActive( false );
             $redirectView = 'view';
             $redirectParameters = array( 'summary' );
             $addComment = true;
@@ -272,5 +269,18 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
         }
         $collaborationItem->sync();
         return $module->redirectToView( $redirectView, $redirectParameters );
+    }
+
+    public static function changeApprovalStatus( eZCollaborationItem $collaborationItem, $status )
+    {
+        $collaborationItem->setAttribute( 'data_int3', $status );
+        if ( $status == self::STATUS_ACCEPTED || $status == self::STATUS_DENIED )
+        {
+            $collaborationItem->setAttribute( 'status', eZCollaborationItem::STATUS_INACTIVE );
+
+            $timestamp = time();
+            $collaborationItem->setAttribute( 'modified', $timestamp );
+            $collaborationItem->setIsActive( false );
+        }
     }
 }

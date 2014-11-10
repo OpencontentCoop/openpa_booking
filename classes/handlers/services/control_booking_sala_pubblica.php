@@ -23,9 +23,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     function run()
     {
         $this->data['is_valid'] = $this->isValid();
+        $this->data['current_state_code'] = $this->getCurrentStateCode();
         $this->data['current_state'] = $this->getCurrentState();
         $this->data['sala'] = $this->getSala();
-        $this->data['id_referenti_sala'] = $this->getIdReferentSala();
+        $this->data['reservation_manager_ids'] = $this->getIdReferentSala();
         $this->data['start'] = $this->getStartDateTime();
         $this->data['end'] = $this->getEndDateTime();
         $this->data['timeslot_count'] = $this->getTimeSlotCount();
@@ -49,9 +50,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         {
             /** @var eZContentObjectAttribute[] $salaDataMap */
             $salaDataMap = $sala->attribute( 'data_map' );
-            if ( isset( $salaDataMap['responsabili'] ) )
+            if ( isset( $salaDataMap['reservation_manager'] ) )
             {
-                return explode( '-', $salaDataMap['responsabili']->toString() );
+                return explode( '-', $salaDataMap['reservation_manager']->toString() );
             }
         }
         return array();
@@ -106,17 +107,20 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $sala = null;
         if ( $this->isValid() )
         {
-            /** @var eZContentObjectAttribute[] $dataMap */
-            $dataMap = $this->container->getContentObject()->attribute( 'data_map' );
-            if ( isset( $dataMap['sala'] ) )
+            if ( isset( $this->container->attributesHandlers['sala'] ) )
             {
-                $sala = $dataMap['sala']->content();
+                $sala = $this->container->attributesHandlers['sala']->attribute( 'contentobject_attribute' )->attribute( 'content' );
             }
         }
         return $sala;
     }
 
     protected function getCurrentState()
+    {
+        return self::getStateObject( $this->getCurrentStateCode() );
+    }
+
+    protected function getCurrentStateCode()
     {
         $current = self::STATUS_PENDING;
         if ( $this->isValid() )
@@ -217,7 +221,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     {
         if ( $this->isValid())
         {
-            $currentState = $this->getCurrentState();
+            $currentState = $this->getCurrentStateCode();
             if ( $currentState != $stateCode )
             {
                 $params = array( 'before' => $currentState );
@@ -235,12 +239,31 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                         eZContentOperationCollection::updateObjectState( $this->container->getContentObject()->attribute( 'id' ), array( $state->attribute( 'id' ) ) );
                     }
                 }
-                if ( $this->getCurrentState() == $stateCode )
+                if ( $this->getCurrentStateCode() == $stateCode )
                 {
                     $params['after'] = $stateCode;
                     $this->notify( 'change_state', $params );
                 }
             }
+        }
+    }
+
+    public function addOrder( eZOrder $order )
+    {
+        if ( isset( $this->container->attributesHandlers['order_id'] ) )
+        {
+            /** @var eZContentObjectAttribute $orderAttribute */
+            $orderAttribute = $this->container->attributesHandlers['order_id']->attribute( 'contentobject_attribute' );
+            $orderAttribute->fromString( $order->attribute( 'id' ) );
+            $orderAttribute->store();
+        }
+        if ( $order->attribute( 'status' ) != eZOrderStatus::DELIVERED )
+        {
+            $this->changeState( self::STATUS_WAITING_FOR_PAYMENT );
+        }
+        else
+        {
+            $this->changeState( self::STATUS_APPROVED );
         }
     }
 
@@ -329,7 +352,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         {
             $message = eZCollaborationSimpleMessage::create( 'openpabookingapprove_comment', $body );
             $message->store();
-            eZCollaborationItemMessageLink::addMessage( $collaborationItem, $message, OpenPABookingApproveHandler::MESSAGE_TYPE_APPROVE );
+            eZCollaborationItemMessageLink::addMessage( $collaborationItem, $message, OpenPABookingCollaborationHandler::MESSAGE_TYPE_APPROVE );
         }
     }
 
@@ -364,6 +387,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
             if ( $object )
             {
+
+                $object->setAttribute( 'section_id', OpenPABase::initSection( 'Prenotazioni', 'booking' )->attribute( 'id' ) );
+                $object->store();
+
                 /** @var eZContentObjectAttribute[] $dataMap */
                 $dataMap = $object->attribute( 'data_map' );
 
