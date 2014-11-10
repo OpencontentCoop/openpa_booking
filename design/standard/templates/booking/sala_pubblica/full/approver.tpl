@@ -5,23 +5,48 @@
     da {$content_object.data_map.from_time.content.timestamp|l10n(shortdatetime)} a {$content_object.data_map.to_time.content.timestamp|l10n(shortdatetime)}
   </h1>
 
-  <h2 class="text-center">
-    Lo stato attuale della richiesta &egrave; <pre style="display: inline">{$openpa_object.control_booking_sala_pubblica.current_state.current_translation.name}</pre>
-  </h2>
+  <div class="col">
+    <div class="square-box-soft-gray block col-content-design">
 
-  {if $collab_item.data_int3|eq(0)}
-  <p class="text-center">
-    <input class="defaultbutton" type="submit" name="CollaborationAction_Defer" value="Approva la richiesta" />
-    <input class="defaultbutton" type="submit" name="CollaborationAction_Deny" value="Rifiuta" />
-  </p>
-  {/if}
+      <h2 class="text-center">
+        Lo stato attuale della richiesta &egrave; <pre style="display: inline">{$openpa_object.control_booking_sala_pubblica.current_state.current_translation.name}</pre>
+      </h2>
 
-  {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(2)}
-  <p class="text-center">
-    <a class="defaultbutton" href={concat( "/shop/orderview/", $content_object.data_map.order_id.content)|ezurl}>Dettagli del pagamento</a>
-    <input class="defaultbutton" type="submit" name="CollaborationAction_Accept" value="Approva la prenotazione" />
-  </p>
-  {/if}
+      {if $collab_item.data_int3|eq(0)}
+        <p class="text-center">
+          <input class="defaultbutton" type="submit" name="CollaborationAction_Defer" value="Conferma la disponibilit&agrave; della sala" />
+          <input class="defaultbutton" type="submit" name="CollaborationAction_Deny" value="Rifiuta la richiesta" />
+        </p>
+
+        {def $concurrent_requests = $openpa_object.control_booking_sala_pubblica.concurrent_requests}
+        {if $concurrent_requests|count()|gt(0)}
+          <p>
+            <strong>Attenzione:</strong> confermando la disponibilità della sala per questa prenotazione, automaticamente verranno rifiutate le seguenti richieste:
+          </p>
+          <table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tr>
+              <th>Richiedente</th>
+              <th>Stato richiesta</th>
+              <th>Periodo di prenotazione</th>
+              <th>Data richiesta</th>
+              <th>Dettaglio pagamento</th>
+            </tr>
+            {foreach $concurrent_requests as $prenotazione sequence array( bglight,bgdark ) as $style}
+              {include name="row_prenotazione" prenotazione=$prenotazione uri="design:booking/sala_pubblica/prenotazione_row.tpl" style=$style}
+            {/foreach}
+          </table>
+        {/if}
+      {/if}
+
+      {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(2)}
+      <p class="text-center">
+        <a class="button" href={concat( "/shop/orderview/", $content_object.data_map.order_id.content)|ezurl}>Vedi i dettagli del pagamento</a>
+        <input class="defaultbutton" type="submit" name="CollaborationAction_Accept" value="Approva la prenotazione" />
+      </p>
+      {/if}
+
+    </div>
+  </div>
 
   <div class="columns-two">
 
@@ -30,8 +55,24 @@
         <h1>Dettagli della richiesta</h1>
         <div class="attributi-base">
           {if is_set($style)}{set $style='col-odd'}{else}{def $style='col-odd'}{/if}
+
+          <div class="{$style} col float-break">
+            <div class="col-title"><span class="label">Data della richiesta</span></div>
+            <div class="col-content"><div class="col-content-design">
+              {$content_object.published|l10n(datetime)}
+            </div></div>
+          </div>
+
+          {if $style|eq( 'col-even' )}{set $style = 'col-odd'}{else}{set $style = 'col-even'}{/if}
+          <div class="{$style} col float-break">
+            <div class="col-title"><span class="label">Richiedente</span></div>
+            <div class="col-content"><div class="col-content-design">
+                {$content_object.owner.name|wash()}
+              </div></div>
+          </div>
+
           {foreach $content_object.data_map as $attribute}
-            {if $attribute.has_content}
+            {if and( $attribute.has_content, $attribute.content|gt(0) )}
               {if $style|eq( 'col-even' )}{set $style = 'col-odd'}{else}{set $style = 'col-even'}{/if}
               <div class="{$style} col float-break attribute-{$attribute.contentclass_attribute_identifier}">
                 <div class="col-title"><span class="label">{$attribute.contentclass_attribute_name}</span></div>
@@ -70,7 +111,6 @@
         <input type="hidden" name="CollaborationTypeIdentifier" value="openpabooking" />
         <input type="hidden" name="CollaborationItemID" value="{$collab_item.id}" />
 
-
         {if $message_list}
           <table width="100%" cellspacing="0" cellpadding="4" border="0">
             {foreach $message_list as $item sequence array(bglight,bgdark) as $_style}
@@ -83,6 +123,8 @@
     </div>
 
   </div>
+
+  <div class="separator"></div>
 
   <div class="block">
 
@@ -98,9 +140,11 @@
     <script>
       $(document).ready(function() {
         $('#calendar').fullCalendar({
+          defaultDate: "{/literal}{$openpa_object.control_booking_sala_pubblica.start_moment}{literal}",
           timezone: "local",
           defaultView: "agendaWeek",
           allDaySlot: false,
+          height: 450,
           minTime: "{/literal}{$min_time}{literal}",
           maxTime: "{/literal}{$max_time}{literal}",
           header: {
@@ -108,7 +152,8 @@
             center: 'title',
             right: 'month,agendaWeek,agendaDay'
           },
-          events: { url: "{/literal}{concat( 'openpa/data/booking_sala_pubblica'|ezurl(no), '?sala=', $sala.id, '&current=', $content_object.id )}{literal}" }
+          eventClick: function(calEvent, jsEvent, view) { window.location.href = "{/literal}{"openpa_booking/view/sala_pubblica"|ezurl(no)}{literal}/"+calEvent.id; },
+          events: { url: "{/literal}{concat( 'openpa/data/booking_sala_pubblica'|ezurl(no), '?states=all&sala=', $sala.id, '&current=', $content_object.id )}{literal}" }
         });
       });
     </script>

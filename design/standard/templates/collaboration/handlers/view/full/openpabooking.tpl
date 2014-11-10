@@ -8,19 +8,15 @@
        $message_list=fetch("collaboration","message_list",hash("item_id",$collab_item.id,"limit",$message_limit,"offset",$message_offset))
        $sala = $content_object.data_map.sala.content}
 
-  {if $content_object|not()}
+  {if or( $content_object|not(), $content_object.can_read|not() )}
 
     <div class="warning message-warning">
-      <h2>La prenotazione non esiste o &egrave; stata rimossa.</h2>
+      <h2>La prenotazione {$collab_item.content.content_object_id} non &egrave; accessibile o &egrave; stata rimossa.</h2>
     </div>
 
   {else}
 
-  {if $collab_item.is_creator}
-     {include uri='design:collaboration/handlers/view/full/author.tpl'}
-  {else}
-     {include uri='design:collaboration/handlers/view/full/approver.tpl'}
-  {/if}
+    {include uri=concat( 'design:booking/', $collab_item.content.openpabooking_handler, '/full.tpl' )}
 
   {/if}
 

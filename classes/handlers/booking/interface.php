@@ -4,6 +4,10 @@ interface OpenPABookingHandlerInterface
 {
     public function __construct( array $Params = null );
 
+    public static function name();
+
+    public static function identifier();
+
     public function add();
 
     public function view();

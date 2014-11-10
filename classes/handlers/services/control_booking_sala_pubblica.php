@@ -16,36 +16,76 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         'in_attesa_di_pagamento',
         'in_attesa_di_verifica_pagamento',
         'confermato',
-        'rifutato',
+        'rifiutato',
         'scaduto'
     );
 
     function run()
     {
-        $this->data['is_valid'] = $this->isValid();
-        $this->data['current_state_code'] = $this->getCurrentStateCode();
-        $this->data['current_state'] = $this->getCurrentState();
-        $this->data['sala'] = $this->getSala();
-        $this->data['reservation_manager_ids'] = $this->getIdReferentSala();
-        $this->data['start'] = $this->getStartDateTime();
-        $this->data['end'] = $this->getEndDateTime();
-        $this->data['timeslot_count'] = $this->getTimeSlotCount();
+        $this->fnData['is_valid'] = 'isValid';
+        $this->fnData['current_state_code'] = 'getCurrentStateCode';
+        $this->fnData['current_state'] = 'getCurrentState';
+        $this->fnData['sala'] = 'getSala';
+        $this->fnData['reservation_manager_ids'] = 'getIdReferentiSala';
+        $this->fnData['start'] = 'getStartDateTime';
+        $this->data['start_moment'] = $this->getStartDateTime()->format( 'c' );
+        $this->data['start_timestamp'] = $this->getStartDateTime()->getTimestamp();
+        $this->fnData['end'] = 'getEndDateTime';
+        $this->data['end_timestamp'] = $this->getEndDateTime()->getTimestamp();
+        $this->fnData['timeslot_count'] = 'getTimeSlotCount';
         $this->data['all_day'] = false; //@todo
-        $this->data['collaboration_item'] = $this->getCollaborationItem();
+        $this->fnData['collaboration_item'] = 'getCollaborationItem';
+        $this->fnData['concurrent_requests'] = 'getConcurrentRequests';
+    }
+
+    protected function getConcurrentRequests()
+    {
+        $data = array();
+        if ( $this->isValid() )
+        {
+            $filters = array(
+                '-meta_id_si:' . $this->container->getContentObject()->attribute( 'id' ),
+                'meta_object_states_si:' . self::getStateObject( self::STATUS_PENDING )->attribute( 'id' )
+            );
+            $dateFilter = array(
+                'or',
+                array(
+                    'and',
+                    'attr_from_time_dt' => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue( $this->getEndDateTime()->getTimestamp(), 'date' ) . ' ]',
+                    'attr_to_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $this->getStartDateTime()->getTimestamp(), 'date' ) . ' TO * ]',
+                ),
+                array(
+                    'or',
+                    'attr_from_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $this->getStartDateTime()->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $this->getEndDateTime()->getTimestamp(), 'date' ) . ' ]',
+                    'attr_to_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $this->getStartDateTime()->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $this->getEndDateTime()->getTimestamp(), 'date' ) . ' ]'
+                )
+            );
+            $filters[] = $dateFilter;
+            $sortBy = array( 'attr_from_time_dt' => 'desc', 'published' => 'asc' );
+            $solrSearch = new eZSolr();
+            $search = $solrSearch->search( '', array(
+                'SearchSubTreeArray' => array( $this->getSala()->attribute( 'main_node_id' ) ),
+                'SearchLimit' => 1000,
+                'SortBy' => $sortBy,
+                'Filter' => $filters
+            ) );
+            $data = $search['SearchResult'];
+        }
+        return $data;
     }
 
     protected function getTimeSlotCount()
     {
         $e = new DateTime('00:00');
         $f = clone $e;
-        $e->add( $this->data['end']->diff( $this->data['start'] ) );
+        $e->add( $this->getEndDateTime()->diff( $this->getStartDateTime() ) );
         $hourMinutes = $f->diff( $e )->format( "%h,%i" ); //@todo
         return round( $hourMinutes );
     }
 
-    protected function getIdReferentSala()
+    protected function getIdReferentiSala()
     {
-        $sala = $this->data['sala'];
+        $sala = $this->getSala();
         if ( $sala instanceof eZContentObject )
         {
             /** @var eZContentObjectAttribute[] $salaDataMap */
@@ -145,7 +185,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                         case 'confermato':
                             $current =  self::STATUS_APPROVED; break;
 
-                        case 'rifutato':
+                        case 'rifiutato':
                             $current = self::STATUS_DENIED; break;
 
                         case 'scaduto':
@@ -199,7 +239,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
                 case self::STATUS_DENIED:
                 {
-                    if ( $state->attribute( 'identifier' ) == 'rifutato' )
+                    if ( $state->attribute( 'identifier' ) == 'rifiutato' )
                     {
                         $stateObject = $state;
                     }
@@ -224,7 +264,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $currentState = $this->getCurrentStateCode();
             if ( $currentState != $stateCode )
             {
-                $params = array( 'before' => $currentState );
+                $params = array( 'state_before' => self::getStateObject( $currentState ) );
                 $state = self::getStateObject( $stateCode );
                 if ( $state instanceof eZContentObjectState )
                 {
@@ -239,11 +279,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                         eZContentOperationCollection::updateObjectState( $this->container->getContentObject()->attribute( 'id' ), array( $state->attribute( 'id' ) ) );
                     }
                 }
-                if ( $this->getCurrentStateCode() == $stateCode )
-                {
-                    $params['after'] = $stateCode;
-                    $this->notify( 'change_state', $params );
-                }
+                $params['state_after'] = self::getStateObject( $stateCode );
+                $this->notify( 'change_state', $params );
             }
         }
     }
@@ -270,7 +307,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     public function notify( $action, $params = array() )
     {
         $tpl = eZTemplate::factory();
-        $tpl->setVariable( 'scope', $action );
+        $tpl->setVariable( 'object', $this->container->getContentObject() );
+        $tpl->setVariable( 'action', $action );
         foreach( $params as $key => $value )
         {
             $tpl->setVariable( $key, $value );
@@ -350,7 +388,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $collaborationItem = $this->getCollaborationItem();
         if ( $collaborationItem instanceof eZCollaborationItem && trim( $messageText ) != '' )
         {
-            $message = eZCollaborationSimpleMessage::create( 'openpabookingapprove_comment', $body );
+            $referenti = $this->getIdReferentiSala();
+            $message = eZCollaborationSimpleMessage::create( 'openpabooking_comment', $messageText, $referenti[0] );
             $message->store();
             eZCollaborationItemMessageLink::addMessage( $collaborationItem, $message, OpenPABookingCollaborationHandler::MESSAGE_TYPE_APPROVE );
         }

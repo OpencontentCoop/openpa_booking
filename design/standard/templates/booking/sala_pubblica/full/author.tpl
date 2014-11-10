@@ -5,38 +5,61 @@
     da {$content_object.data_map.from_time.content.timestamp|l10n(shortdatetime)} a {$content_object.data_map.to_time.content.timestamp|l10n(shortdatetime)}
   </h1>
 
-  <h2 class="text-center">
-    Lo stato attuale della richiesta &egrave; <pre style="display: inline">{$openpa_object.control_booking_sala_pubblica.current_state.current_translation.name}</pre>
-  </h2>
+  <div class="col">
+    <div class="square-box-soft-gray block col-content-design">
 
-  {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(1)}
-  <p class="text-center">
-    <a class="defaultbutton" href={concat( "/openpa_booking/view/sala_pubblica/", $content_object.id)|ezurl}>Procedi con il pagamento</a>
-  </p>
-  {/if}
+      <h2 class="text-center">
+        Lo stato attuale della richiesta &egrave; <pre style="display: inline">{$openpa_object.control_booking_sala_pubblica.current_state.current_translation.name|wash()}</pre>
+      </h2>
+
+      {if and( $openpa_object.control_booking_sala_pubblica.current_state.current_translation.description|ne(''), $openpa_object.control_booking_sala_pubblica.current_state.current_translation.description|ne($openpa_object.control_booking_sala_pubblica.current_state.current_translation.name) )}
+        <p>{$openpa_object.control_booking_sala_pubblica.current_state.current_translation.description}</p>
+      {/if}
+
+      {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(1)}
+      <p class="text-center">
+        <a class="defaultbutton" href={concat( "/openpa_booking/view/sala_pubblica/", $content_object.id)|ezurl}>Procedi con il pagamento</a>
+      </p>
+      {/if}
+
+    </div>
+  </div>
 
   <div class="columns-two">
 
     <div class="col-1">
       <div class="col-content">
-
         <h1>Dettagli della richiesta</h1>
         <div class="attributi-base">
           {if is_set($style)}{set $style='col-odd'}{else}{def $style='col-odd'}{/if}
+
+          <div class="{$style} col float-break">
+            <div class="col-title"><span class="label">Data della richiesta</span></div>
+            <div class="col-content"><div class="col-content-design">
+                {$content_object.published|l10n(datetime)}
+              </div></div>
+          </div>
+
+          {if $style|eq( 'col-even' )}{set $style = 'col-odd'}{else}{set $style = 'col-even'}{/if}
+          <div class="{$style} col float-break">
+            <div class="col-title"><span class="label">Richiedente</span></div>
+            <div class="col-content"><div class="col-content-design">
+                {$content_object.owner.name|wash()}
+              </div></div>
+          </div>
+
           {foreach $content_object.data_map as $attribute}
-            {if $attribute.has_content}
-                {if $style|eq( 'col-even' )}{set $style = 'col-odd'}{else}{set $style = 'col-even'}{/if}
-                <div class="{$style} col float-break attribute-{$attribute.contentclass_attribute_identifier}">
-                  <div class="col-title"><span class="label">{$attribute.contentclass_attribute_name}</span></div>
-                  <div class="col-content"><div class="col-content-design">
-                      {attribute_view_gui attribute=$attribute}
-                    </div></div>
-                </div>
+            {if and( $attribute.has_content, $attribute.content|gt(0) )}
+              {if $style|eq( 'col-even' )}{set $style = 'col-odd'}{else}{set $style = 'col-even'}{/if}
+              <div class="{$style} col float-break attribute-{$attribute.contentclass_attribute_identifier}">
+                <div class="col-title"><span class="label">{$attribute.contentclass_attribute_name}</span></div>
+                <div class="col-content"><div class="col-content-design">
+                    {attribute_view_gui attribute=$attribute}
+                  </div></div>
+              </div>
             {/if}
           {/foreach}
         </div>
-
-
       </div>
     </div>
 

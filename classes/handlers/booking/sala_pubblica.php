@@ -27,6 +27,16 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
      */
     protected $hasRedirect;
 
+    public static function name()
+    {
+        return 'Prenotazioni sale pubbliche';
+    }
+
+    public static function identifier()
+    {
+        return 'sala_pubblica';
+    }
+
     /**
      *
      * In base al primo parametero che deve essere un ObjectId esegue una funzione
@@ -89,45 +99,44 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                 throw new Exception( "Non è possibile creare l'oggetto prenotazione" );
             }
         }
+    }
+
+    public function view()
+    {
+        if (  $this->currentObject instanceof eZContentObject )
+        {
+            $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $this->currentObject );
+            if ( $openpaObject->hasAttribute( 'control_booking_sala_pubblica' )
+                 && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' )
+                 && $this->currentObject->attribute( 'can_read' ) )
+            {
+                $waitCheckout = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'current_state_code' ) == ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT;
+
+                if ( $waitCheckout && $this->currentObject->attribute( 'owner_id' ) == eZUser::currentUserID() )
+                {
+                    $this->updateBasket( $this->currentObject );
+                }
+                else
+                {
+                    $collaborationItem = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'collaboration_item' );
+                    if ( $collaborationItem instanceof eZCollaborationItem )
+                    {
+                        $this->module->redirectTo( 'collaboration/item/full/' . $collaborationItem->attribute( 'id' )  );
+                        return null;
+                    }
+                    else
+                    {
+                        throw new Exception( "eZCollaborationItem not found for object {$this->currentObject->attribute( 'id' )}" );
+                    }
+                }
+            }
+        }
         else
         {
             $Result = array();
             $Result['content'] = $this->tpl->fetch( 'design:booking/sala_pubblica/list.tpl' );
             $Result['path'] = array( array( 'text' => 'Prenotazione' , 'url' => false ) );
             return $Result;
-        }
-    }
-
-    public function view()
-    {
-        $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $this->currentObject );
-        if ( $openpaObject->hasAttribute( 'control_booking_sala_pubblica' )
-             && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' )
-             && $this->currentObject->attribute( 'can_read' ) )
-        {
-            $waitCheckout = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'current_state_code' ) == ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT;
-
-            if ( $waitCheckout && $this->currentObject->attribute( 'owner_id' ) == eZUser::currentUserID() )
-            {
-                $this->updateBasket( $this->currentObject );
-            }
-            else
-            {
-                $collaborationItem = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'collaboration_item' );
-                if ( $collaborationItem instanceof eZCollaborationItem )
-                {
-                    $this->module->redirectTo( 'collaboration/item/full/' . $collaborationItem->attribute( 'id' )  );
-                    return null;
-                }
-                else
-                {
-                    throw new Exception( "eZCollaborationItem not found for object {$this->currentObject->attribute( 'id' )}" );
-                }
-            }
-        }
-        else
-        {
-            throw new Exception( "Prenotazione non accessibile" );
         }
     }
 
@@ -146,7 +155,7 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                     $id = $openpaObject->getContentObject()->attribute( 'id' );
                     $authorId = $openpaObject->getContentObject()->attribute( 'owner_id' );
                     $approveIdArray = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'reservation_manager_ids' );
-                    OpenPABookingCollaborationHandler::createApproval( $id, __CLASS__, $authorId, $approveIdArray );
+                    OpenPABookingCollaborationHandler::createApproval( $id, self::identifier(), $authorId, $approveIdArray );
                     eZDebug::writeNotice( "Create collaboration item", __METHOD__ );
                 }
             }
@@ -235,6 +244,23 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                 {
                     $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED );
                     OpenPABookingCollaborationHandler::changeApprovalStatus( $item, OpenPABookingCollaborationHandler::STATUS_ACCEPTED );
+                }
+            }
+            $concurrentRequests = (array) $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'concurrent_requests' );
+
+            foreach( $concurrentRequests as $concurrentRequest )
+            {
+                $concurrentRequestOpenpa = OpenPAObjectHandler::instanceFromContentObject( $concurrentRequest->attribute( 'object' ) );
+                if ( $concurrentRequestOpenpa->hasAttribute( 'control_booking_sala_pubblica' ) )
+                {
+                    $concurrentRequestCollaborationItem = $concurrentRequestOpenpa->attribute( 'control_booking_sala_pubblica' )->attribute( 'collaboration_item' );
+                    if ( $concurrentRequestCollaborationItem instanceof eZCollaborationItem )
+                    {
+                        /** @var ObjectHandlerServiceControlBookingSalaPubblica $concurrentRequestOpenpaService */
+                        $concurrentRequestOpenpaService = $concurrentRequestOpenpa->service( 'control_booking_sala_pubblica' );
+                        $concurrentRequestOpenpaService->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED );
+                        OpenPABookingCollaborationHandler::changeApprovalStatus( $concurrentRequestCollaborationItem, OpenPABookingCollaborationHandler::STATUS_DENIED );
+                    }
                 }
             }
         }

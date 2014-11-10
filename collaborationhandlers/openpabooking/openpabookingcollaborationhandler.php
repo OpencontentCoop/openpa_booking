@@ -75,16 +75,13 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
      */
     static function handler( $collaborationItem )
     {
-        $handlerString = $collaborationItem->contentAttribute( 'openpabooking_handler' );
-        if ( class_exists( $handlerString ) )
+        $identifier = $collaborationItem->contentAttribute( 'openpabooking_handler' );
+        $handler = OpenPABookingHandler::handler( $identifier, array() );
+        if ( $handler instanceof OpenPABookingHandlerInterface )
         {
-            $handler = new $handlerString();
-            if ( $handler instanceof OpenPABookingHandlerInterface )
-            {
-                return $handler;
-            }
+            return $handler;
         }
-        throw new Exception( "Handler $handlerString not found or not implement OpenPABookingHandlerInterface" );
+        throw new Exception( "Handler $identifier not found or not implement OpenPABookingHandlerInterface" );
     }
 
     /**

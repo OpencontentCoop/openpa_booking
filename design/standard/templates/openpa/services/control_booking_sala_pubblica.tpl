@@ -41,11 +41,11 @@
                             center: 'title',
                             right: 'month,agendaWeek,agendaDay'
                           },
-                          events: { url: 'openpa/data/booking_sala_pubblica?sala={/literal}{$node.contentobject_id}{literal}' },
+                          events: { url: {/literal}{concat('openpa/data/booking_sala_pubblica?sala=', $node.contentobject_id)|ezurl()}{literal} },
                           selectable: true,
                           selectHelper: true,
                           select: function(start, end) {
-                            window.location.href = "{/literal}{concat( $booking_url )|ezurl(no)}{literal}?start="+start.format( 'X' )+"&end="+end.format( 'X' );
+                            window.location.href = "{/literal}{$booking_url|ezurl(no)}{literal}?start="+start.format( 'X' )+"&end="+end.format( 'X' );
                           },
                         });
                       });
