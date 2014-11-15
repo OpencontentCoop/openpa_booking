@@ -27,9 +27,12 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
         $this->eZCollaborationItemHandler(
             OpenPABookingCollaborationHandler::TYPE_STRING,
             'Prenotazioni',
-            array( 'use-messages' => true,
+            array(
+                'use-messages' => true,
                 'notification-types' => true,
-                'notification-collection-handling' => eZCollaborationItemHandler::NOTIFICATION_COLLECTION_PER_PARTICIPATION_ROLE ) );
+                'notification-collection-handling' => eZCollaborationItemHandler::NOTIFICATION_COLLECTION_PER_PARTICIPATION_ROLE
+            )
+        );
     }
 
     /**
@@ -123,8 +126,9 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
         $status = $collaborationItem->attribute( 'user_status' );
         if ( $status )
             $lastRead = $status->attribute( 'last_read' );
-        return eZCollaborationItemMessageLink::fetchItemCount( array( 'item_id' => $collaborationItem->attribute( 'id' ),
-            'conditions' => array( 'modified' => array( '>', $lastRead ) ) ) );
+        return eZCollaborationItemMessageLink::fetchItemCount(  array(
+                'item_id' => $collaborationItem->attribute( 'id' ),
+                'conditions' => array( 'modified' => array( '>', $lastRead ) ) ) );
     }
 
     /**
@@ -167,17 +171,27 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
         $collaborationItem->store();
         $collaborationID = $collaborationItem->attribute( 'id' );
 
-        $participantList = array( array( 'id' => array( $authorID ),
-            'role' => eZCollaborationItemParticipantLink::ROLE_AUTHOR ),
-            array( 'id' => $approverIDArray,
-                   'role' => eZCollaborationItemParticipantLink::ROLE_APPROVER ) );
+        $participantList = array(
+            array(
+                'id' => array( $authorID ),
+                'role' => eZCollaborationItemParticipantLink::ROLE_AUTHOR
+            ),
+            array(
+                'id' => $approverIDArray,
+                'role' => eZCollaborationItemParticipantLink::ROLE_APPROVER
+            )
+        );
         foreach ( $participantList as $participantItem )
         {
             foreach( $participantItem['id'] as $participantID )
             {
                 $participantRole = $participantItem['role'];
-                $link = eZCollaborationItemParticipantLink::create( $collaborationID, $participantID,
-                    $participantRole, eZCollaborationItemParticipantLink::TYPE_USER );
+                $link = eZCollaborationItemParticipantLink::create(
+                    $collaborationID,
+                    $participantID,
+                    $participantRole,
+                    eZCollaborationItemParticipantLink::TYPE_USER
+                );
                 $link->store();
 
                 $profile = eZCollaborationProfile::instance( $participantID );
