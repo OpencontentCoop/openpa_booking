@@ -543,7 +543,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
     public static function init( $options = array() )
     {
-        OpenPABase::initStateGroup( self::$stateGroupIdentifier, self::$stateIdentifiers );
+        $states = OpenPABase::initStateGroup( self::$stateGroupIdentifier, self::$stateIdentifiers );
+
+        $section = OpenPABase::initSection( 'Prenotazioni', 'booking' );
 
         $classes = array(
             self::prenotazioneClassIdentifier(),
@@ -559,7 +561,63 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 OpenPALog::warning( "La classe $identifier è stata aggiornata" );
             }
         }
+
+        $prenotazioneClass = eZContentClass::fetchByIdentifier( self::prenotazioneClassIdentifier() );
+        $salaClass = eZContentClass::fetchByIdentifier( self::salaPubblicaClassIdentifier() );
+
+        $roleName = 'Prenotazione sala pubblica';
+        $role = eZRole::fetchByName( $roleName );
+        if ( !$role instanceof eZRole )
+        {
+            $role = eZRole::create( $roleName );
+            $role->store();
+
+            $policies = array();
+            $policies[] =  array(
+                'ModuleName' => 'collaboration',
+                'FunctionName' => '*'
+            );
+            $policies[] =  array(
+                'ModuleName' => 'openpa_booking',
+                'FunctionName' => '*'
+            );
+            $policies[] =  array(
+                'ModuleName' => 'openpa',
+                'FunctionName' => 'data'
+            );
+            $policies[] =  array(
+                'ModuleName' => 'shop',
+                'FunctionName' => 'buy'
+            );
+            $policies[] =  array(
+                'ModuleName' => 'content',
+                'FunctionName' => 'create',
+                'Limitation' => array(
+                    'Class' => $prenotazioneClass->attribute( 'id' ),
+                    'ParentClass' => $salaClass->attribute( 'id' )
+                )
+            );
+            $policies[] =  array(
+                'ModuleName' => 'content',
+                'FunctionName' => 'read',
+                'Limitation' => array(
+                    'Owner' => 1,
+                    'Class' => $prenotazioneClass->attribute( 'id' ),
+                    'Section' => $section->attribute( 'id' )
+                )
+            );
+
+            foreach( $policies as $policy )
+            {
+                $role->appendPolicy( $policy['ModuleName'], $policy['FunctionName'], $policy['Limitation'] );
+            }
+
+            $defaultUserPlacement = (int)eZINI::instance()->variable( "UserSettings", "DefaultUserPlacement" );
+            $membersGroup = eZContentObject::fetchByNodeID( $defaultUserPlacement );
+            if ( $membersGroup instanceof eZContentObject )
+            {
+                $role->assignToUser( $membersGroup->attribute( 'id' )  );
+            }
+        }
     }
-
-
 }
