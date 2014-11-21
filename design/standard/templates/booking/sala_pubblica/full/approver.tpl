@@ -71,16 +71,14 @@
               </div></div>
           </div>
 
-          {foreach $content_object.data_map as $attribute}
-            {if and( $attribute.has_content, $attribute.content|gt(0) )}
-              {if $style|eq( 'col-even' )}{set $style = 'col-odd'}{else}{set $style = 'col-even'}{/if}
-              <div class="{$style} col float-break attribute-{$attribute.contentclass_attribute_identifier}">
-                <div class="col-title"><span class="label">{$attribute.contentclass_attribute_name}</span></div>
-                <div class="col-content"><div class="col-content-design">
-                  {attribute_view_gui attribute=$attribute}
-                </div></div>
-              </div>
-            {/if}
+          {foreach $content_object.data_map as $attribute}            
+            {if $style|eq( 'col-even' )}{set $style = 'col-odd'}{else}{set $style = 'col-even'}{/if}
+            <div class="{$style} col float-break attribute-{$attribute.contentclass_attribute_identifier}">
+              <div class="col-title"><span class="label">{$attribute.contentclass_attribute_name}</span></div>
+              <div class="col-content"><div class="col-content-design">
+                {attribute_view_gui attribute=$attribute}
+              </div></div>
+            </div>            
           {/foreach}
         </div>
       </div>

@@ -23,8 +23,8 @@
                   {ezscript_require( array( 'fullcalendar/moment.min.js', 'jquery-1.7.1.js', 'fullcalendar/fullcalendar.js', 'fullcalendar/lang/it.js' ) )}
                   {ezcss_require( array( 'fullcalendar/fullcalendar.css' ) )}
 
-                  {def $min_time = "08:00:00"
-                       $max_time = "22:00:00"
+                  {def $min_time = "00:00:00"
+                       $max_time = "24:00:00"
                        $booking_url = concat( "openpa_booking/add/sala_pubblica/", $node.contentobject_id )}
 
                   {literal}
@@ -34,6 +34,7 @@
                           timezone: "local",
                           defaultView: "agendaWeek",
                           allDaySlot: false,
+                          slotDuration: '00:60:00',
                           minTime: "{/literal}{$min_time}{literal}",
                           maxTime: "{/literal}{$max_time}{literal}",
                           header: {

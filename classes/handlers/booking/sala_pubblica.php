@@ -113,8 +113,16 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                 $waitCheckout = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'current_state_code' ) == ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT;
 
                 if ( $waitCheckout && $this->currentObject->attribute( 'owner_id' ) == eZUser::currentUserID() )
-                {
-                    $this->updateBasket( $this->currentObject );
+                {                                                            
+                    if ( $openpaObject->hasAttribute( 'order_id' ) && $openpaObject->attribute( 'order_id' )->attribute( 'has_content' ) )
+                    {                        
+                        $this->module->redirectTo( "/shop/cutomerorderview/" . eZUser::currentUserID() );
+                        return null;
+                    }
+                    else
+                    {                                                
+                        $this->updateBasket( $this->currentObject );   
+                    }                    
                 }
                 else
                 {
@@ -155,8 +163,19 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                     $id = $openpaObject->getContentObject()->attribute( 'id' );
                     $authorId = $openpaObject->getContentObject()->attribute( 'owner_id' );
                     $approveIdArray = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'reservation_manager_ids' );
+                    
+                    foreach( array_merge( array( $authorId ), $approveIdArray ) as $userId )
+                    {
+                        if ( !eZPersistentObject::fetchObject( eZCollaborationNotificationRule::definition(), null, array( 'user_id' => $userId, 'collab_identifier' => OpenPABookingCollaborationHandler::TYPE_STRING ), null, null, true ) )
+                        {
+                            $rule = eZCollaborationNotificationRule::create( OpenPABookingCollaborationHandler::TYPE_STRING, $userId );
+                            $rule->store();
+                            eZDebug::writeNotice( "Create notification rule for user $userId", __METHOD__ );
+                        }
+                    }
+                    
                     OpenPABookingCollaborationHandler::createApproval( $id, self::identifier(), $authorId, $approveIdArray );
-                    eZDebug::writeNotice( "Create collaboration item", __METHOD__ );
+                    eZDebug::writeNotice( "Create collaboration item", __METHOD__ );                    
                 }
             }
         }
@@ -278,6 +297,11 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
         {
             $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED );
         }
+    }
+    
+    public function redirect( eZModule $module )
+    {
+        
     }
 
 }

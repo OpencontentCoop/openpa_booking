@@ -19,5 +19,7 @@ interface OpenPABookingHandlerInterface
     public function approve( eZCollaborationItem $item );
 
     public function deny( eZCollaborationItem $item );
+    
+    public function redirect( eZModule $module );
 
 }

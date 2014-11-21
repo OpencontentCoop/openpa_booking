@@ -38,7 +38,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $this->fnData['concurrent_requests'] = 'getConcurrentRequests';
     }
 
-    protected static function fetchConcurrentItems( DateTime $start, DateTime $end, $sala = array(), $states = array(), $id = null, $count = false )
+    protected static function fetchConcurrentItems( DateTime $start, DateTime $end, $states = array(), $sala = array(), $id = null, $count = false )
     {
         $filters = array();
         if ( $id )
@@ -65,24 +65,34 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             'or',
             array(
                 'and',
-                'attr_from_time_dt' => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]',
-                'attr_to_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO * ]',
+                'attr_from_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) .' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]',
+                'attr_to_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) .' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]'
             ),
             array(
-                'or',
-                'attr_from_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]',
-                'attr_to_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]'
+                'and',
+                'attr_from_time_dt' => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' ]',
+                'attr_to_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' TO * ]'
+            ),
+            array(
+                'and',
+                'attr_from_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) .' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]',
+                'attr_to_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' TO * ]'
+            ),            
+            array(
+                'and',
+                'attr_from_time_dt' => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' ]',
+                'attr_to_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) .' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]'
             )
         );
         $filters[] = $dateFilter;
         $sortBy = array( 'attr_from_time_dt' => 'desc', 'published' => 'asc' );
         $solrSearch = new eZSolr();
         $search = $solrSearch->search( '', array(
-            'SearchSubTreeArray' => $sala,
+            'SearchSubTreeArray' => $sala,            
             'SearchLimit' => $count ? 1 : 1000,
             'SortBy' => $sortBy,
             'Filter' => $filters
-        ));
+        ));    
         return $count ? $search['SearchCount'] : $search['SearchResult'];
     }
 
@@ -464,6 +474,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             if ( $object )
             {
 
+                /** @var eZContentObjectAttribute[] $parentObjectDataMap */
+                $parentObjectDataMap = $parentObject->attribute( 'data_map' );
+                
                 $object->setAttribute( 'section_id', OpenPABase::initSection( 'Prenotazioni', 'booking' )->attribute( 'id' ) );
                 $object->store();
 
@@ -481,6 +494,25 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                     $dataMap['to_time']->fromString( $end );
                     $dataMap['to_time']->store();
                 }
+                
+                if ( isset( $dataMap['stuff'] ) )
+                {
+                    if ( isset( $parentObjectDataMap['servizi'] ) )
+                    {
+                        $servizi = explode( ',', $parentObjectDataMap['servizi']->toString() );
+                        $content = array();
+                        foreach( $servizi as $servizio )
+                        {
+                            $content[] = trim( $servizio );
+                        }
+                        if ( !empty( $content ) )
+                        {
+                            $string = implode( "\n", $content );
+                            $dataMap['stuff']->fromString( $string );   
+                            $dataMap['stuff']->store();   
+                        }                        
+                    }
+                }
 
                 if ( isset( $dataMap['sala'] ) )
                 {
@@ -493,9 +525,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 }
 
                 if ( isset( $dataMap['price'] ) )
-                {
-                    /** @var eZContentObjectAttribute[] $parentObjectDataMap */
-                    $parentObjectDataMap = $parentObject->attribute( 'data_map' );
+                {                    
                     if ( isset( $parentObjectDataMap['price'] ) )
                     {
                         $dataMap['price']->fromString( $parentObjectDataMap['price']->toString() );
@@ -512,7 +542,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
      * @param int $end unixtimestamp
      * @param eZContentObject $sala
      *
-     * @return bool
+     * @throws Exception
      */
     public static function isValidDate( $start, $end, $sala )
     {
@@ -536,8 +566,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             null,
             true
         );
-
-        return $data == 0;
+        if ( $data > 0 )
+        {
+            throw new Exception( "Giorno o orario non disponibile" );
+        }
     }
 
 
@@ -619,5 +651,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 $role->assignToUser( $membersGroup->attribute( 'id' )  );
             }
         }
+        
+        OpenPALog::error( "Attiva il workflow Prenotazioni in post_publish e in post_checkout" );
     }
 }
