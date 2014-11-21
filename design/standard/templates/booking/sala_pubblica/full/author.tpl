@@ -71,7 +71,7 @@
           {foreach $participant_list as $item}
             <strong>{$item.name|wash}</strong>
             {foreach $item.items as $partecipant}
-              {collaboration_participation_view view=text_linked collaboration_participant=$partecipant}
+              {$partecipant.participant.contentobject.name|wash()}
               {delimiter}, {/delimiter}
             {/foreach}
             {delimiter} - {/delimiter}

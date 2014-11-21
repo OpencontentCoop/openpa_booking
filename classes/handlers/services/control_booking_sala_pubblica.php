@@ -516,14 +516,11 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
      */
     public static function isValidDate( $start, $end, $sala )
     {
-        $start = new DateTime(
-            $start,
-            new DateTimeZone( 'Europe/Rome' )
-        );
-        $end = new DateTime(
-            $end,
-            new DateTimeZone( 'Europe/Rome' )
-        );
+        $startDateTime = new DateTime( 'now', new DateTimeZone( 'Europe/Rome' ) );
+        $startDateTime->setTimestamp( $start );
+
+        $endDateTime = new DateTime( 'now', new DateTimeZone( 'Europe/Rome' ) );
+        $endDateTime->setTimestamp( $end );
 
         $salaSubtree = array();
         if ( $sala instanceof eZContentObject )
@@ -532,8 +529,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
 
         $data = self::fetchConcurrentItems(
-            $start,
-            $end,
+            $startDateTime,
+            $endDateTime,
             array( self::STATUS_APPROVED ),
             $salaSubtree,
             null,

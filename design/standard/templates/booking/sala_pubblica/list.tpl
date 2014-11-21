@@ -23,6 +23,8 @@
         {include name="row_prenotazione" prenotazione=$prenotazione uri="design:booking/sala_pubblica/prenotazione_row.tpl" style=$style}
       {/foreach}
       </table>
+    {else}
+      <p><em>Nessuna prenotazione</em></p>
     {/if}
     {undef $prenotazioni}
 
