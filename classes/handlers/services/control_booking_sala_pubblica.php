@@ -541,4 +541,25 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     }
 
 
+    public static function init( $options = array() )
+    {
+        OpenPABase::initStateGroup( self::$stateGroupIdentifier, self::$stateIdentifiers );
+
+        $classes = array(
+            self::prenotazioneClassIdentifier(),
+            self::salaPubblicaClassIdentifier()
+        );
+
+        foreach( $classes as $identifier )
+        {
+            $tools = new OpenPAClassTools( $identifier, true );
+            if ( !$tools->isValid() )
+            {
+                $tools->sync( true );
+                OpenPALog::warning( "La classe $identifier è stata aggiornata" );
+            }
+        }
+    }
+
+
 }
