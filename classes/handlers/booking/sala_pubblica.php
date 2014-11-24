@@ -154,11 +154,11 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
         eZDebug::writeNotice( "Run workflow", __METHOD__ );
         if ( $trigger == 'post_publish' )
         {
-            $this->currentObject = eZContentObject::fetch( $parameters['object_id'] );
-            $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $this->currentObject );
+            $currentObject = eZContentObject::fetch( $parameters['object_id'] );
+            $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $currentObject );
             if ( $openpaObject->hasAttribute( 'control_booking_sala_pubblica' ) && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' ) )
             {
-                if ( $this->currentObject->attribute( 'current_version' ) == 1 )
+                if ( $currentObject->attribute( 'current_version' ) == 1 )
                 {
                     $id = $openpaObject->getContentObject()->attribute( 'id' );
                     $authorId = $openpaObject->getContentObject()->attribute( 'owner_id' );
