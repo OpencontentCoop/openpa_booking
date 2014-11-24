@@ -7,7 +7,7 @@
   </td>
 
   <td rowspan="2" valign="top">
-    {collaboration_participation_view view=text_linked collaboration_participant=$item_link.participant}
+    {$item_link.participant.participant.contentobject.name|wash()}
   </td>
 </tr>
 <tr class="{$sequence}">

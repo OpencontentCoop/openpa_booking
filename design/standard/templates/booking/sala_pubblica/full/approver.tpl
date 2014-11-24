@@ -1,5 +1,16 @@
 <div class="global-view-full">
 
+  <div class="width-layout block" id="virtual-path" style="margin-top: -10px">
+    <h2 class="hide">Ti trovi in:</h2>
+    <p>
+      <a href={'openpa_booking/view/sala_pubblica'|ezurl}>Prenotazioni sale pubbliche</a>
+      <span class="path-separator">»</span>
+      <span class="path-text"> Prenotazione n. {$content_object.id} </span>	
+    </p>
+  </div>
+  
+  
+  
   <h1 class="text-center">
     Richiesta di prenotazione "{$sala.name|wash()}" di {$content_object.owner.name|wash()}<br />
     da {$content_object.data_map.from_time.content.timestamp|l10n(shortdatetime)} a {$content_object.data_map.to_time.content.timestamp|l10n(shortdatetime)}
@@ -127,12 +138,24 @@
   <div class="block">
 
     <h1>Calendario prenotazioni {$sala.name|wash()}</h1>
+    
+    {def $colors = $openpa_object.control_booking_sala_pubblica.state_colors}
+    <div class="square-box-soft-gray float-break block">
+      <small>Legenda:</small>
+      <span style="display: inline-block; width: 10px; height: 10px;background: {$colors['current']}"></span> <small>Prenotazione corrente</small>
+      <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[3]}"></span> <small>Confermato</small>      
+      <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[0]}"></span> <small>In attesa di approvazione</small>
+      <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[1]}"></span> <small>In attesa di pagamento</small>
+      <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[2]}"></span> <small>In attesa di verifica pagamento</small>
+      <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[4]}"></span> <small>Rifiutato</small>
+      <span style="display: inline-block; width: 10px; height: 10px;background: {$colors['none']}"></span> <small>Non accessibile</small>
+    </div>
 
     {ezscript_require( array( 'fullcalendar/moment.min.js', 'jquery-1.7.1.js', 'fullcalendar/fullcalendar.js', 'fullcalendar/lang/it.js' ) )}
     {ezcss_require( array( 'fullcalendar/fullcalendar.css' ) )}
 
-    {def $min_time = "08:00:00"
-    $max_time = "22:00:00"}
+    {def $min_time = "00:00:00"
+         $max_time = "24:00:00"}
 
     {literal}
     <script>
@@ -141,8 +164,9 @@
           defaultDate: "{/literal}{$openpa_object.control_booking_sala_pubblica.start_moment}{literal}",
           timezone: "local",
           defaultView: "agendaWeek",
-          allDaySlot: false,
-          height: 450,
+          height: 550,
+          slotDuration: '00:60:00',
+          allDaySlot: false,          
           minTime: "{/literal}{$min_time}{literal}",
           maxTime: "{/literal}{$max_time}{literal}",
           header: {

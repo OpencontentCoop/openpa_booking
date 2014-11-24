@@ -52,7 +52,7 @@
 {foreach $order.product_items as $product_item sequence array( 'bglight', 'bgdark' ) as $style}
 <tr class="{$style}">
     <td>
-    <a href={concat( "/content/view/full/", $product_item.node_id )|ezurl}>{$product_item.object_name}</a>
+    {$product_item.object_name}
     </td>
     <td>
     {$product_item.item_count}

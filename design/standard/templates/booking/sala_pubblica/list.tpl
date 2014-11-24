@@ -17,6 +17,7 @@
         <th>Stato richiesta</th>
         <th>Periodo di prenotazione</th>
         <th>Data richiesta</th>
+        <th>Messaggi non letti</th>
         <th>Dettaglio pagamento</th>
       </tr>
       {foreach $prenotazioni as $prenotazione sequence array( bglight,bgdark ) as $style}

@@ -201,7 +201,8 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
         }
 
         // Create the notification
-        $collaborationItem->createNotificationEvent();
+        // al momento non vengono create notifiche ma tutto viene gestito da ObjectHandlerServiceControlBookingSalaPubblica::notify
+        //$collaborationItem->createNotificationEvent();        
 
         // activate
         $collaborationItem->setAttribute( 'data_int3', self::STATUS_WAITING );
@@ -224,9 +225,7 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
      * @return mixed
      */
     function handleCustomAction( $module, $collaborationItem )
-    {
-        $redirectView = 'item';
-        $redirectParameters = array( 'full', $collaborationItem->attribute( 'id' ) );
+    {        
         $addComment = false;
 
         if ( $this->isCustomAction( 'Comment' ) )
@@ -254,7 +253,7 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
             }
             if ( !$approveAllowed )
             {
-                return $module->redirectToView( $redirectView, $redirectParameters );
+                return self::handler( $collaborationItem )->redirectToItem( $module, $collaborationItem );
             }
 
             if ( $this->isCustomAction( 'Accept' ) )
@@ -272,9 +271,7 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
                 self::handler( $collaborationItem )->defer( $collaborationItem );
                 self::changeApprovalStatus( $collaborationItem, self::STATUS_DEFERRED );
             }
-
-            $redirectView = 'view';
-            $redirectParameters = array( 'summary' );
+            
             $addComment = true;
         }
         if ( $addComment )
@@ -288,7 +285,7 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
             }
         }
         $collaborationItem->sync();
-        return $module->redirectToView( $redirectView, $redirectParameters );
+        return self::handler( $collaborationItem )->redirectToSummary( $module, $collaborationItem );
     }
 
     public static function changeApprovalStatus( eZCollaborationItem $collaborationItem, $status )
@@ -301,6 +298,7 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
             $timestamp = time();
             $collaborationItem->setAttribute( 'modified', $timestamp );
             $collaborationItem->setIsActive( false );
+            $collaborationItem->sync();
         }
     }
 }

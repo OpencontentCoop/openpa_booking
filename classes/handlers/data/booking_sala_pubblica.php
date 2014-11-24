@@ -81,6 +81,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                 'Limitation' => array( 'accessWord' => 'yes' )
             ) );
             //echo '<pre>'; print_r($search['SearchExtras']);die();
+            $colors = ObjectHandlerServiceControlBookingSalaPubblica::getStateColors();
             foreach( $search['SearchResult'] as $node )
             {
                 $openpaObject = OpenPAObjectHandler::instanceFromObject( $node );
@@ -98,41 +99,16 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                         $item->allDay = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'all_day' );
                         if ( $current && $node->attribute( 'contentobject_id' ) == $current )
                         {
-                            $item->color = "#ff0000";
+                            $item->color = $colors['current'];
                             //$item->title = $node->attribute( 'object' )->attribute( 'owner' )->attribute( 'name' );
                         }
                         elseif ( $node->attribute( 'object' )->attribute( 'can_read' ) )
                         {
-                            switch( $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'current_state_code' ) )
-                            {
-                                case ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED:
-                                    $item->color = "#008000";
-                                    break;
-
-                                case ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED:
-                                    $item->color = "#666666";
-                                    break;
-
-                                case ObjectHandlerServiceControlBookingSalaPubblica::STATUS_PENDING:
-                                    $item->color = "#FF8000";
-                                    break;
-
-                                case ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED:
-                                    $item->color = "#000000";
-                                    break;
-
-                                case ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT:
-                                    $item->color = "#FF0080";
-                                    break;
-
-                                case ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT:
-                                    $item->color = "#CC66FF";
-                                    break;
-                            }
+                            $item->color = $colors[$openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'current_state_code' )];                            
                         }
                         else
                         {
-                            $item->color = "#cccccc";
+                            $item->color = $colors['none'];
                         }
                         $data[] = $item;
                     }

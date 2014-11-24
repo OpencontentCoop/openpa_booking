@@ -1,5 +1,14 @@
 <div class="global-view-full">
 
+  <div class="width-layout block" id="virtual-path" style="margin-top: -10px">
+    <h2 class="hide">Ti trovi in:</h2>
+    <p>
+      <a href={'openpa_booking/view/sala_pubblica'|ezurl}>Prenotazioni sale pubbliche</a>
+      <span class="path-separator">»</span>
+      <span class="path-text"> Prenotazione n. {$content_object.id} </span>	
+    </p>
+  </div>
+
   <h1 class="text-center">
     Richiesta di prenotazione "{$sala.name|wash()}" di {$content_object.owner.name|wash()}<br />
     da {$content_object.data_map.from_time.content.timestamp|l10n(shortdatetime)} a {$content_object.data_map.to_time.content.timestamp|l10n(shortdatetime)}

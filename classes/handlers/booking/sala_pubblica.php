@@ -175,6 +175,7 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                     }
                     
                     OpenPABookingCollaborationHandler::createApproval( $id, self::identifier(), $authorId, $approveIdArray );
+                    $openpaObject->attribute( 'control_booking_sala_pubblica' )->notify( 'create_approval' );
                     eZDebug::writeNotice( "Create collaboration item", __METHOD__ );                    
                 }
             }
@@ -299,9 +300,15 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
         }
     }
     
-    public function redirect( eZModule $module )
+    public function redirectToItem( eZModule $module, eZCollaborationItem $item )
     {
-        
+        $id = $item->attribute( "data_int1" );
+        return $module->redirectTo( 'openpa_booking/view/sala_pubblica/' . $id  );
+    }
+    
+    public function redirectToSummary( eZModule $module, eZCollaborationItem $item )
+    {
+        return $module->redirectTo( 'openpa_booking/view/sala_pubblica' );
     }
 
 }

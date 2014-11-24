@@ -20,6 +20,8 @@ interface OpenPABookingHandlerInterface
 
     public function deny( eZCollaborationItem $item );
     
-    public function redirect( eZModule $module );
+    public function redirectToItem( eZModule $module, eZCollaborationItem $item );
+    
+    public function redirectToSummary( eZModule $module, eZCollaborationItem $item );
 
 }

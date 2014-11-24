@@ -12,6 +12,16 @@
           <div class="border-content col">
             <div class="col-content"><div class="col-content-design">
 
+                {def $colors = object_handler($node.object).control_booking_sala_pubblica.state_colors}
+                <div class="square-box-soft-gray float-break block">
+                  <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[3]}"></span> <small>Confermato</small>      
+                  <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[0]}"></span> <small>In attesa di approvazione</small>
+                  <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[1]}"></span> <small>In attesa di pagamento</small>
+                  <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[2]}"></span> <small>In attesa di verifica pagamento</small>
+                  <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[4]}"></span> <small>Rifiutato</small>
+                  <span style="display: inline-block; width: 10px; height: 10px;background: {$colors['none']}"></span> <small>Non accessibile</small>
+                </div>
+                
                 {if is_set( $view_parameters.error )}
                 <div class="alert message-warning">
                   {$view_parameters.error|urldecode}

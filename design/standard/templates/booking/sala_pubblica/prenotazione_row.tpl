@@ -7,6 +7,7 @@
       Da {$openpa_prenotazione.control_booking_sala_pubblica.start_timestamp|l10n(shortdatetime)} a {$openpa_prenotazione.control_booking_sala_pubblica.end_timestamp|l10n(shortdatetime)}</td>
   </a>
   <td>{$prenotazione.object.published|l10n(datetime)}</td>
+  <td>{$openpa_prenotazione.control_booking_sala_pubblica.collaboration_item.unread_message_count}</td>
   <td>
     {if $prenotazione.data_map.order_id.content|gt(0)}
       <a href={concat( "/shop/orderview/", $prenotazione.data_map.order_id.content)|ezurl}>Ordine {$prenotazione.data_map.order_id.content}</a>
