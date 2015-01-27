@@ -22,39 +22,64 @@
       <h2 class="text-center">
         Lo stato attuale della richiesta &egrave; <pre style="display: inline">{$openpa_object.control_booking_sala_pubblica.current_state.current_translation.name}</pre>
       </h2>
-
+      
+      {if ezhttp( 'error', 'get', true() )}
+        <div class="alert warning message-warning">
+          {ezhttp( 'error', 'get' )|urldecode()}
+        </div>
+      {/if}
+      
       {if $collab_item.data_int3|eq(0)}
-        <p class="text-center">
+        <p class="text-center">          
+          {if $openpa_object.control_booking_sala_pubblica.has_manual_price}
+            Costo euro <input name="Collaboration_OpenpaBookingActionParameters[manual_price]" value="" />
+          {/if}
           <input class="defaultbutton" type="submit" name="CollaborationAction_Defer" value="Conferma la disponibilit&agrave; della sala" />
           <input class="defaultbutton" type="submit" name="CollaborationAction_Deny" value="Rifiuta la richiesta" />
         </p>
+      {/if}
+      
+      {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(1)}
+        <p class="text-center">
+          <input class="defaultbutton" type="submit" name="CollaborationAction_Deny" value="Rifiuta la richiesta" />
+        </p>
+      {/if}
+      
+      {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(2)}
+      <p class="text-center">
+        <a class="button" href={concat( "/shop/orderview/", $content_object.data_map.order_id.content)|ezurl}>Vedi i dettagli del pagamento</a>
+        <input class="defaultbutton" type="submit" name="CollaborationAction_Accept" value="Approva la prenotazione" />
+        <input class="defaultbutton" type="submit" name="CollaborationAction_Deny" value="Rifiuta la richiesta" />
+      </p>
+      {/if}
+      
 
+      {if $openpa_object.control_booking_sala_pubblica.current_state_code|ne(4)}
         {def $concurrent_requests = $openpa_object.control_booking_sala_pubblica.concurrent_requests}
         {if $concurrent_requests|count()|gt(0)}
           <p>
-            <strong>Attenzione:</strong> confermando la disponibilità della sala per questa prenotazione, automaticamente verranno rifiutate le seguenti richieste:
+          {if $collab_item.data_int3|eq(0)}        
+            <strong>Attenzione:</strong> confermando la disponibilità della sala per questa prenotazione, automaticamente verranno rifiutate le seguenti richieste:        
+          {else}
+            <strong>Attenzione:</strong> la richiesta &egrave; in conlitto con le seguenti richieste:
+          {/if}
           </p>
           <table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
             <tr>
+              <th>ID</th>
               <th>Richiedente</th>
               <th>Stato richiesta</th>
               <th>Periodo di prenotazione</th>
               <th>Data richiesta</th>
+              <th>Messaggi non letti</th>
               <th>Dettaglio pagamento</th>
             </tr>
             {foreach $concurrent_requests as $prenotazione sequence array( bglight,bgdark ) as $style}
               {include name="row_prenotazione" prenotazione=$prenotazione uri="design:booking/sala_pubblica/prenotazione_row.tpl" style=$style}
             {/foreach}
           </table>
-        {/if}
-      {/if}
-
-      {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(2)}
-      <p class="text-center">
-        <a class="button" href={concat( "/shop/orderview/", $content_object.data_map.order_id.content)|ezurl}>Vedi i dettagli del pagamento</a>
-        <input class="defaultbutton" type="submit" name="CollaborationAction_Accept" value="Approva la prenotazione" />
-      </p>
-      {/if}
+        {/if}             
+      {/if}             
 
     </div>
   </div>

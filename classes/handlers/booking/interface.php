@@ -14,14 +14,14 @@ interface OpenPABookingHandlerInterface
 
     public function workflow( $parameters, $process, $event );
 
-    public function defer( eZCollaborationItem $item );
+    public function defer( eZCollaborationItem $item, $parameters = array() );
 
-    public function approve( eZCollaborationItem $item );
+    public function approve( eZCollaborationItem $item, $parameters = array() );
 
-    public function deny( eZCollaborationItem $item );
+    public function deny( eZCollaborationItem $item, $parameters = array() );
     
-    public function redirectToItem( eZModule $module, eZCollaborationItem $item );
+    public function redirectToItem( eZModule $module, eZCollaborationItem $item, $parameters = array() );
     
-    public function redirectToSummary( eZModule $module, eZCollaborationItem $item );
+    public function redirectToSummary( eZModule $module, eZCollaborationItem $item, $parameters = array() );
 
 }

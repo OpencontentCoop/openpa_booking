@@ -1,5 +1,16 @@
 <div class="global-view-full">
   <h1>Prenotazioni sale pubbliche</h1>
+  
+  {def $colors = object_handler($node.object).control_booking_sala_pubblica.state_colors}
+  <div class="square-box-soft-gray float-break block">
+    <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[3]}"></span> <small>Confermato</small>      
+    <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[0]}"></span> <small>In attesa di approvazione</small>
+    <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[1]}"></span> <small>In attesa di pagamento</small>
+    <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[2]}"></span> <small>In attesa di verifica pagamento</small>
+    <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[4]}"></span> <small>Rifiutato</small>
+    <span style="display: inline-block; width: 10px; height: 10px;background: {$colors['none']}"></span> <small>Non accessibile</small>
+  </div>
+  
   {def $sale_pubbliche = fetch( content, tree, hash( 'parent_node_id', 1, 'class_filter_type', 'include', 'class_filter_array', array( 'sala_pubblica' ) ) )}
 
   {foreach $sale_pubbliche as $sala}
@@ -13,6 +24,7 @@
     {if $prenotazioni|count()|gt(0)}
     <table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
       <tr>
+        <th>ID</th>
         <th>Richiedente</th>
         <th>Stato richiesta</th>
         <th>Periodo di prenotazione</th>

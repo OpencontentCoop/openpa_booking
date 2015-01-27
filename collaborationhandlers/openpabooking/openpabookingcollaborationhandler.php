@@ -103,7 +103,7 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
      */
     function readItem( $collaborationItem, $viewMode = false )
     {
-        $collaborationItem->setLastRead();
+        $collaborationItem->setLastRead();        
     }
 
     /**
@@ -256,20 +256,30 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
                 return self::handler( $collaborationItem )->redirectToItem( $module, $collaborationItem );
             }
 
-            if ( $this->isCustomAction( 'Accept' ) )
+            try
             {
-                self::handler( $collaborationItem )->approve( $collaborationItem );
-                self::changeApprovalStatus( $collaborationItem, self::STATUS_ACCEPTED );
+                if ( $this->isCustomAction( 'Accept' ) )
+                {
+                    self::handler( $collaborationItem )->approve( $collaborationItem, $this->customInput( 'OpenpaBookingActionParameters' ) );
+                    self::changeApprovalStatus( $collaborationItem, self::STATUS_ACCEPTED );
+                }
+                elseif ( $this->isCustomAction( 'Deny' ) )
+                {
+                    self::handler( $collaborationItem )->deny( $collaborationItem, $this->customInput( 'OpenpaBookingActionParameters' ) );
+                    self::changeApprovalStatus( $collaborationItem, self::STATUS_DENIED );
+                }
+                elseif ( $this->isCustomAction( 'Defer' ) )
+                {
+                    self::handler( $collaborationItem )->defer( $collaborationItem, $this->customInput( 'OpenpaBookingActionParameters' ) );
+                    self::changeApprovalStatus( $collaborationItem, self::STATUS_DEFERRED );
+                }
+                $result = true;
+                $error = false;
             }
-            elseif ( $this->isCustomAction( 'Deny' ) )
+            catch( Exception $e )
             {
-                self::handler( $collaborationItem )->deny( $collaborationItem );
-                self::changeApprovalStatus( $collaborationItem, self::STATUS_DENIED );
-            }
-            elseif ( $this->isCustomAction( 'Defer' ) )
-            {
-                self::handler( $collaborationItem )->defer( $collaborationItem );
-                self::changeApprovalStatus( $collaborationItem, self::STATUS_DEFERRED );
+                $error = $e->getMessage();
+                $result = false;
             }
             
             $addComment = true;
@@ -281,11 +291,20 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
             {
                 $message = eZCollaborationSimpleMessage::create( self::TYPE_STRING.'_comment', $messageText );
                 $message->store();
-                eZCollaborationItemMessageLink::addMessage( $collaborationItem, $message, self::MESSAGE_TYPE_APPROVE );
+                $messageLink = eZCollaborationItemMessageLink::addMessage( $collaborationItem, $message, self::MESSAGE_TYPE_APPROVE );
+                eZCollaborationItemStatus::setLastRead( $collaborationItem->attribute( 'id' ), eZUser::currentUserID(), $messageLink->attribute( 'modified' ) + 1 );
             }
         }
-        $collaborationItem->sync();
-        return self::handler( $collaborationItem )->redirectToSummary( $module, $collaborationItem );
+        
+        if ( $result )
+        {
+            $collaborationItem->sync();
+            return self::handler( $collaborationItem )->redirectToSummary( $module, $collaborationItem );
+        }
+        else
+        {
+            return self::handler( $collaborationItem )->redirectToItem( $module, $collaborationItem, array( 'error' => $error ) );
+        }
     }
 
     public static function changeApprovalStatus( eZCollaborationItem $collaborationItem, $status )

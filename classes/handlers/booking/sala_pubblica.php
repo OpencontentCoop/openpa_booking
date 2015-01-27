@@ -125,12 +125,13 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
                     }                    
                 }
                 else
-                {
+                {                    
                     $collaborationItem = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'collaboration_item' );
                     if ( $collaborationItem instanceof eZCollaborationItem )
                     {
-                        $this->module->redirectTo( 'collaboration/item/full/' . $collaborationItem->attribute( 'id' )  );
-                        return null;
+                        $module = eZModule::exists( "collaboration" );
+                        return $module->run( 'item', array( 'full', $collaborationItem->attribute( 'id' ) ) );
+                        
                     }
                     else
                     {
@@ -214,7 +215,11 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
             && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' )
             && $prenotazione->attribute( 'can_read' ) )
         {
-            $quantity = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'timeslot_count' );
+            $quantity = 1;
+            if ( !$openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'has_manual_price' ) )
+            {
+                $quantity = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'timeslot_count' );
+            }
             if ( !$this->module instanceof eZModule )
             {
                 throw new Exception( "eZModule non trovato" );
@@ -228,7 +233,7 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
         }
     }
 
-    public function approve( eZCollaborationItem $item )
+    public function approve( eZCollaborationItem $item, $parameters = array() )
     {
         $prenotazione = OpenPABookingCollaborationHandler::contentObject( $item );
         $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $prenotazione );
@@ -239,10 +244,11 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
             && $prenotazione->attribute( 'can_read' ) )
         {
             $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED );
-        }
+            $service->setOrderStatus( eZOrderStatus::DELIVERED );
+        }        
     }
 
-    public function defer( eZCollaborationItem $item )
+    public function defer( eZCollaborationItem $item, $parameters = array() )
     {
         $prenotazione = OpenPABookingCollaborationHandler::contentObject( $item );
         $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $prenotazione );
@@ -252,41 +258,62 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
             && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' )
             && $prenotazione->attribute( 'can_read' ) )
         {
-            $sala = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'sala' );
-            if ( $sala instanceof eZContentObject )
+            $do = true;
+            if ( $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'has_manual_price' ) )
             {
-                $productType = eZShopFunctions::productTypeByObject( $sala );
-                if ( $productType )
+                $do = false;
+                if ( isset( $parameters['manual_price'] ) )
                 {
-                    $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT );
-                }
-                else
-                {
-                    $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED );
-                    OpenPABookingCollaborationHandler::changeApprovalStatus( $item, OpenPABookingCollaborationHandler::STATUS_ACCEPTED );
-                }
-            }
-            $concurrentRequests = (array) $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'concurrent_requests' );
-
-            foreach( $concurrentRequests as $concurrentRequest )
-            {
-                $concurrentRequestOpenpa = OpenPAObjectHandler::instanceFromContentObject( $concurrentRequest->attribute( 'object' ) );
-                if ( $concurrentRequestOpenpa->hasAttribute( 'control_booking_sala_pubblica' ) )
-                {
-                    $concurrentRequestCollaborationItem = $concurrentRequestOpenpa->attribute( 'control_booking_sala_pubblica' )->attribute( 'collaboration_item' );
-                    if ( $concurrentRequestCollaborationItem instanceof eZCollaborationItem )
+                    $manualPrice = $parameters['manual_price'];
+                    if ( empty( $manualPrice ) || !preg_match( "#^[0-9]+(.){0,1}[0-9]{0,2}$#", $manualPrice ) )
                     {
-                        /** @var ObjectHandlerServiceControlBookingSalaPubblica $concurrentRequestOpenpaService */
-                        $concurrentRequestOpenpaService = $concurrentRequestOpenpa->service( 'control_booking_sala_pubblica' );
-                        $concurrentRequestOpenpaService->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED );
-                        OpenPABookingCollaborationHandler::changeApprovalStatus( $concurrentRequestCollaborationItem, OpenPABookingCollaborationHandler::STATUS_DENIED );
+                        $error = "Prezzo  non valido";
+                        throw new Exception( $error );
+                    }
+                    else
+                    {
+                        $do = $service->setPrice( $manualPrice );                        
+                    }
+                }                
+            }
+            if ( $do )
+            {
+                $sala = $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'sala' );
+                if ( $sala instanceof eZContentObject )
+                {
+                    $productType = eZShopFunctions::productTypeByObject( $sala );
+                    if ( $productType )
+                    {
+                        $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT );
+                    }
+                    else
+                    {
+                        $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED );
+                        OpenPABookingCollaborationHandler::changeApprovalStatus( $item, OpenPABookingCollaborationHandler::STATUS_ACCEPTED );
                     }
                 }
+                $concurrentRequests = (array) $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'concurrent_requests' );
+    
+                foreach( $concurrentRequests as $concurrentRequest )
+                {
+                    $concurrentRequestOpenpa = OpenPAObjectHandler::instanceFromContentObject( $concurrentRequest->attribute( 'object' ) );
+                    if ( $concurrentRequestOpenpa->hasAttribute( 'control_booking_sala_pubblica' ) )
+                    {
+                        $concurrentRequestCollaborationItem = $concurrentRequestOpenpa->attribute( 'control_booking_sala_pubblica' )->attribute( 'collaboration_item' );
+                        if ( $concurrentRequestCollaborationItem instanceof eZCollaborationItem )
+                        {
+                            /** @var ObjectHandlerServiceControlBookingSalaPubblica $concurrentRequestOpenpaService */
+                            $concurrentRequestOpenpaService = $concurrentRequestOpenpa->service( 'control_booking_sala_pubblica' );
+                            $concurrentRequestOpenpaService->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED );
+                            OpenPABookingCollaborationHandler::changeApprovalStatus( $concurrentRequestCollaborationItem, OpenPABookingCollaborationHandler::STATUS_DENIED );
+                        }
+                    }
+                }            
             }
-        }
+        }        
     }
 
-    public function deny( eZCollaborationItem $item )
+    public function deny( eZCollaborationItem $item, $parameters = array() )
     {
         $prenotazione = OpenPABookingCollaborationHandler::contentObject( $item );
         $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $prenotazione );
@@ -297,16 +324,32 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
             && $prenotazione->attribute( 'can_read' ) )
         {
             $service->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED );
-        }
+            if ( !eZOrderStatus::fetchByStatus( 9999 ) )
+            {
+                $row = array(
+                    'id' => null,
+                    'is_active' => true,
+                    'status_id' => 9999,
+                    'name' => ezpI18n::tr( 'kernel/shop', 'Annullato' ) );
+                $newCustom = new eZOrderStatus( $row );
+                $newCustom->storeCustom();
+            }
+            $service->setOrderStatus( 9999 );
+        }        
     }
     
-    public function redirectToItem( eZModule $module, eZCollaborationItem $item )
+    public function redirectToItem( eZModule $module, eZCollaborationItem $item, $parameters = array() )
     {
         $id = $item->attribute( "data_int1" );
-        return $module->redirectTo( 'openpa_booking/view/sala_pubblica/' . $id  );
+        $suffix = '';
+        if ( isset( $parameters['error'] ) )
+        {
+            $suffix = '/?error=' . urlencode( $parameters['error'] );
+        }
+        return $module->redirectTo( 'openpa_booking/view/sala_pubblica/' . $id . $suffix );
     }
     
-    public function redirectToSummary( eZModule $module, eZCollaborationItem $item )
+    public function redirectToSummary( eZModule $module, eZCollaborationItem $item, $parameters = array() )
     {
         return $module->redirectTo( 'openpa_booking/view/sala_pubblica' );
     }

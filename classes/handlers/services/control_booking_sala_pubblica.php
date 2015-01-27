@@ -26,6 +26,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $this->fnData['current_state_code'] = 'getCurrentStateCode';
         $this->fnData['current_state'] = 'getCurrentState';
         $this->fnData['sala'] = 'getSala';
+        $this->fnData['has_manual_price'] = 'hasManualPrice';
         $this->fnData['reservation_manager_ids'] = 'getIdReferentiSala';
         $this->fnData['start'] = 'getStartDateTime';
         $this->data['start_moment'] = $this->getStartDateTime()->format( 'c' );
@@ -46,7 +47,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $data[ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED] = "#666666";
         $data[ObjectHandlerServiceControlBookingSalaPubblica::STATUS_PENDING] = "#FF8000";
         $data[ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED] = "#000000";
-        $data[ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT] = "#FF0080";
+        $data[ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT] = "#0000FF";
         $data[ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT] = "#CC66FF";
         $data['current'] = '#ff0000';
         $data['none'] = '#cccccc';
@@ -63,12 +64,16 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         if ( !empty( $states ) )
         {
             $stateFilters = array();
+            if ( count( $states ) > 1 )
+            {
+                $stateFilters = array( 'or' );
+            }
             foreach( $states as $stateCode )
             {
                 $state = self::getStateObject( $stateCode );
                 if ( $state instanceof eZContentObjectState )
                 {
-                    $stateFilters['meta_object_states_si'] = $state->attribute( 'id' );
+                    $stateFilters[] = 'meta_object_states_si:' . $state->attribute( 'id' );
                 }
             }
             if ( !empty( $stateFilters ) )
@@ -98,6 +103,12 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 'attr_from_time_dt' => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' ]',
                 'attr_to_time_dt' => '[ ' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) .' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]'
             )
+            ,            
+            array(
+                'and',
+                'attr_from_time_dt' => '[' . ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO * ]',
+                'attr_to_time_dt' => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]'
+            )
         );
         $filters[] = $dateFilter;
         $sortBy = array( 'attr_from_time_dt' => 'desc', 'published' => 'asc' );
@@ -125,7 +136,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $data = self::fetchConcurrentItems(
                 $this->getStartDateTime(),
                 $this->getEndDateTime(),
-                array( self::STATUS_PENDING ),
+                array( self::STATUS_PENDING, self::STATUS_WAITING_FOR_CHECKOUT, self::STATUS_WAITING_FOR_PAYMENT ),
                 $sala,
                 $this->container->getContentObject()->attribute( 'id' )
             );
@@ -215,6 +226,24 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             }
         }
         return $sala;
+    }
+    
+    protected function hasManualPrice()
+    {        
+        $sala = $this->getSala();
+        if ( $sala instanceof eZContentObject )
+        {
+            $salaDataMap = $sala->attribute( 'data_map' );
+            if ( $salaDataMap['manual_price']->attribute( 'data_int' ) == 1 )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        throw new Exception( "Sala non trovata" );
     }
 
     protected function getCurrentState()
@@ -407,13 +436,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                     $referenti = $this->getIdReferentiSala();
                     $message = eZCollaborationSimpleMessage::create( 'openpabooking_comment', $messageText, $referenti[0] );
                     $message->store();
-                    eZCollaborationItemMessageLink::addMessage( $collaborationItem, $message, OpenPABookingCollaborationHandler::MESSAGE_TYPE_APPROVE );
-                    
-                    //foreach( $approveIdArray as $approverId )
-                    //{
-                    //    $timestamp = $message->attribute( 'modified' ) + 1;
-                    //    $collaborationItem->setLastRead( $approverId, $timestamp );
-                    //}
+                    $messageLink = eZCollaborationItemMessageLink::addMessage( $collaborationItem, $message, OpenPABookingCollaborationHandler::MESSAGE_TYPE_APPROVE );                                        
+                    eZCollaborationItemStatus::setLastRead( $collaborationItem->attribute( 'id' ), eZUser::currentUserID(), $messageLink->attribute( 'modified' ) + 1 );                    
                 }
             }
                 
@@ -483,7 +507,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 }                
     
                 $sender = $ini->variable( "MailSettings", "EmailSender" );
-                $mail->setSender( $sender );
+                $mail->setSender( $sender, $ini->variable( "SiteSettings", "SiteName" ) );
     
                 if ( $mail->validate( $replyTo ) )
                 {
@@ -621,6 +645,36 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return $object;
     }
 
+    public function setPrice( $price )
+    {
+        if ( $this->isValid() )
+        {
+            $dataMap = $this->container->getContentObject()->attribute( 'data_map' );
+            $parts = explode( '|', $dataMap['price']->toString() );
+            $parts[0] = $price;
+            $dataMap['price']->fromString( implode( '|', $parts ) );
+            $dataMap['price']->store();
+            return true;
+        }
+        return false;
+    }
+    
+    public function setOrderStatus( $status )
+    {
+        if ( $this->isValid() )
+        {
+            $dataMap = $this->container->getContentObject()->attribute( 'data_map' );
+            $orderId = $dataMap['order_id']->toString();
+            $order = eZOrder::fetch( $orderId );
+            if ( $order instanceof eZOrder )
+            {
+                $order->modifyStatus( $status );                
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * @param int $start unixtimestamp
      * @param int $end unixtimestamp
@@ -651,6 +705,12 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             true
         );
         if ( $data > 0 )
+        {
+            throw new Exception( "Giorno o orario non disponibile" );
+        }
+        
+        $now = time();
+        if ( $start < $now )
         {
             throw new Exception( "Giorno o orario non disponibile" );
         }
