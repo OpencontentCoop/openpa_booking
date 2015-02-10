@@ -100,7 +100,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
             $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $currentObject );
             if ( $openpaObject->hasAttribute( 'control_booking_sala_pubblica' ) && $openpaObject->attribute( 'control_booking_sala_pubblica' )->attribute( 'is_valid' ) )
             {
-                if ( $currentObject->attribute( 'current_version' ) == 1 )
+                if ( $currentObject->attribute( 'current_version' ) == 1 && $currentObject->attribute( 'class_identifier' ) == $service->prenotazioneClassIdentifier() )
                 {
                     $id = $openpaObject->getContentObject()->attribute( 'id' );
                     $authorId = $openpaObject->getContentObject()->attribute( 'owner_id' );

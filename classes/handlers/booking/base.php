@@ -137,7 +137,7 @@ abstract class BookingHandlerBase implements OpenPABookingHandlerInterface
             $service = $openpaObject->serviceByClassName( get_class( $this->serviceClass() ) );
             if ( $service )
             {
-                if ( $currentObject->attribute( 'current_version' ) == 1 )
+                if ( $currentObject->attribute( 'current_version' ) == 1 && $currentObject->attribute( 'class_identifier' ) == $service->prenotazioneClassIdentifier() )
                 {
                     $id = $openpaObject->getContentObject()->attribute( 'id' );
                     $authorId = $openpaObject->getContentObject()->attribute( 'owner_id' );
