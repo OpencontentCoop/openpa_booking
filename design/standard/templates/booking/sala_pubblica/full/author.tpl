@@ -1,3 +1,4 @@
+{def $sala = $content_object.data_map.sala.content}
 <div class="global-view-full">
 
   <div class="width-layout block" id="virtual-path" style="margin-top: -10px">

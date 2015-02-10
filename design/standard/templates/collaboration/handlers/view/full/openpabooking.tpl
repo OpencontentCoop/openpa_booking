@@ -5,8 +5,7 @@
        $openpa_object = object_handler( $content_object )
        $current_participant=fetch("collaboration","participant",hash("item_id",$collab_item.id))
        $participant_list=fetch("collaboration","participant_map",hash("item_id",$collab_item.id))
-       $message_list=fetch("collaboration","message_list",hash("item_id",$collab_item.id,"limit",$message_limit,"offset",$message_offset))
-       $sala = $content_object.data_map.sala.content}
+       $message_list=fetch("collaboration","message_list",hash("item_id",$collab_item.id,"limit",$message_limit,"offset",$message_offset))}
 
   {if or( $content_object|not(), $content_object.can_read|not() )}
 

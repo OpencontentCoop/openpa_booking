@@ -1,7 +1,7 @@
 <?php
 require 'autoload.php';
 
-$script = eZScript::instance( array( 'description' => ( "OpenPA Booking Sala Pubblica Installer \n\n" ),
+$script = eZScript::instance( array( 'description' => ( "OpenPA Booking Appuntamento Sindaco Installer \n\n" ),
                                      'use-session' => false,
                                      'use-modules' => true,
                                      'use-extensions' => true ) );
@@ -21,7 +21,7 @@ try
     $user = eZUser::fetchByName( 'admin' );
     eZUser::setCurrentlyLoggedInUser( $user , $user->attribute( 'contentobject_id' ) );
 
-    ObjectHandlerServiceControlBookingSalaPubblica::init( $options );
+    ObjectHandlerServiceControlBookingAppuntamentoSindaco::init( $options );
 
 
     $script->shutdown();

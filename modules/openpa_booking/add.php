@@ -11,5 +11,5 @@ try
 catch ( Exception $e )
 {
     eZDebug::writeError( $e->getMessage(), __FILE__ );
-    return $module->handleError( eZError::KERNEL_ACCESS_DENIED );
+    return $module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
 }

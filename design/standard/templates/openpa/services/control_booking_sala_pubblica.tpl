@@ -69,18 +69,7 @@
 
                   <p>Per prenotare l'utilizzo della sala pubblica {$node.name|wash()} devi essere autenticato nel sistema.</p>
 
-                  <form method="post" action={"/user/login/"|ezurl} name="loginform">
-                      <label for="id-{$block.id}-login">{"Username"|i18n("design/ezwebin/user/login",'User name')}</label><div class="labelbreak"></div>
-                      <input class="halfbox" type="text" size="10" name="Login" id="id-{$block.id}-login" value="" tabindex="1" />
-
-                      <label for="id-{$block.id}-password">{"Password"|i18n("design/ezwebin/user/login")}</label><div class="labelbreak"></div>
-                      <input class="halfbox" type="password" size="10" name="Password" id="id-{$block.id}-password" value="" tabindex="2" />
-
-                      <input class="defaultbutton" type="submit" name="LoginButton" value="{'Login'|i18n('design/ezwebin/user/login','Button')}" tabindex="3" />
-                      <input class="button" type="submit" name="RegisterButton" id="RegisterButton" value="{'Sign up'|i18n('design/ezwebin/user/login','Button')}" tabindex="1" />
-
-                      <input type="hidden" name="RedirectURI" value="{$node.url_alias}" />
-                  </form>
+                  {include name=smart_login redirect_uri=$node.url_alias uri='design:smartlogin/login.tpl'}
 
                 {/if}
 

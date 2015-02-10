@@ -227,6 +227,8 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
     function handleCustomAction( $module, $collaborationItem )
     {        
         $addComment = false;
+        $result = false;
+        $error = false;
 
         if ( $this->isCustomAction( 'Comment' ) )
         {
@@ -294,6 +296,7 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
                 $messageLink = eZCollaborationItemMessageLink::addMessage( $collaborationItem, $message, self::MESSAGE_TYPE_APPROVE );
                 eZCollaborationItemStatus::setLastRead( $collaborationItem->attribute( 'id' ), eZUser::currentUserID(), $messageLink->attribute( 'modified' ) + 1 );
             }
+            $result = true;
         }
         
         if ( $result )

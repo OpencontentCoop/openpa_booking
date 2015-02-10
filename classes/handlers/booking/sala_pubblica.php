@@ -1,6 +1,6 @@
 <?php
 
-class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
+class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABookingHandlerInterface
 {
     /**
      * @var eZTemplate
@@ -37,68 +37,9 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
         return 'sala_pubblica';
     }
 
-    /**
-     *
-     * In base al primo parametero che deve essere un ObjectId esegue una funzione
-     *
-     * @param array $Params
-     * @throws Exception
-     */
-    public function __construct( array $Params = null )
+    public function serviceClass()
     {
-        $this->tpl = $tpl = eZTemplate::factory();
-        if ( is_array( $Params ) )
-        {
-            $this->parameters = isset( $Params['Parameters'] ) ? $Params['Parameters'] : array();
-            $this->currentObject = isset( $this->parameters[1] ) ? eZContentObject::fetch( $this->parameters[1] ) : false;
-
-            $this->module = isset( $Params['Module'] ) ? $Params['Module'] : false;
-
-            if ( $this->currentObject instanceof eZContentObject )
-            {
-                if ( !$this->currentObject->attribute( 'can_read' ) )
-                {
-                    throw new Exception( "User can not read object {$this->currentObject->attribute( 'id' )}" );
-                }
-            }
-        }
-    }
-
-    public function add()
-    {
-        if ( $this->currentObject instanceof eZContentObject )
-        {
-            $http = eZHTTPTool::instance();
-
-            $start = $http->getVariable( 'start', false );
-            $end = $http->getVariable( 'end', false );
-
-            try
-            {
-                ObjectHandlerServiceControlBookingSalaPubblica::isValidDate( $start, $end, $this->currentObject );
-            }
-            catch ( Exception $e )
-            {
-                $this->module->redirectTo( 'content/view/full/' . $this->currentObject->attribute( 'main_node_id' ) . '/(error)/' . urlencode( $e->getMessage() ) . '#error' );
-                return null;
-            }
-
-            $object = ObjectHandlerServiceControlBookingSalaPubblica::createObject( $this->currentObject, $start, $end );
-
-            if ( $object instanceof eZContentObject )
-            {
-                if ( !$this->module instanceof eZModule )
-                {
-                    throw new Exception( "eZModule non trovato" );
-                }
-                $this->module->redirectTo( 'content/edit/' . $object->attribute( 'id' ) . '/' . $object->attribute( 'current_version' )  );
-                return null;
-            }
-            else
-            {
-                throw new Exception( "Non è possibile creare l'oggetto prenotazione" );
-            }
-        }
+        return new ObjectHandlerServiceControlBookingSalaPubblica();
     }
 
     public function view()
@@ -296,16 +237,30 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
     
                 foreach( $concurrentRequests as $concurrentRequest )
                 {
-                    $concurrentRequestOpenpa = OpenPAObjectHandler::instanceFromContentObject( $concurrentRequest->attribute( 'object' ) );
-                    if ( $concurrentRequestOpenpa->hasAttribute( 'control_booking_sala_pubblica' ) )
+                    if ( $concurrentRequest instanceof eZContentObjectTreeNode )
                     {
-                        $concurrentRequestCollaborationItem = $concurrentRequestOpenpa->attribute( 'control_booking_sala_pubblica' )->attribute( 'collaboration_item' );
-                        if ( $concurrentRequestCollaborationItem instanceof eZCollaborationItem )
+                        $concurrentRequestOpenpa = OpenPAObjectHandler::instanceFromContentObject(
+                            $concurrentRequest->attribute( 'object' )
+                        );
+                        if ( $concurrentRequestOpenpa->hasAttribute(  'control_booking_sala_pubblica' ) )
                         {
-                            /** @var ObjectHandlerServiceControlBookingSalaPubblica $concurrentRequestOpenpaService */
-                            $concurrentRequestOpenpaService = $concurrentRequestOpenpa->service( 'control_booking_sala_pubblica' );
-                            $concurrentRequestOpenpaService->changeState( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED );
-                            OpenPABookingCollaborationHandler::changeApprovalStatus( $concurrentRequestCollaborationItem, OpenPABookingCollaborationHandler::STATUS_DENIED );
+                            $concurrentRequestCollaborationItem = $concurrentRequestOpenpa->attribute(
+                                'control_booking_sala_pubblica'
+                            )->attribute( 'collaboration_item' );
+                            if ( $concurrentRequestCollaborationItem instanceof eZCollaborationItem )
+                            {
+                                /** @var ObjectHandlerServiceControlBookingSalaPubblica $concurrentRequestOpenpaService */
+                                $concurrentRequestOpenpaService = $concurrentRequestOpenpa->service(
+                                    'control_booking_sala_pubblica'
+                                );
+                                $concurrentRequestOpenpaService->changeState(
+                                    ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED
+                                );
+                                OpenPABookingCollaborationHandler::changeApprovalStatus(
+                                    $concurrentRequestCollaborationItem,
+                                    OpenPABookingCollaborationHandler::STATUS_DENIED
+                                );
+                            }
                         }
                     }
                 }            
@@ -336,22 +291,6 @@ class BookingHandlerSalaPubblica implements OpenPABookingHandlerInterface
             }
             $service->setOrderStatus( 9999 );
         }        
-    }
-    
-    public function redirectToItem( eZModule $module, eZCollaborationItem $item, $parameters = array() )
-    {
-        $id = $item->attribute( "data_int1" );
-        $suffix = '';
-        if ( isset( $parameters['error'] ) )
-        {
-            $suffix = '/?error=' . urlencode( $parameters['error'] );
-        }
-        return $module->redirectTo( 'openpa_booking/view/sala_pubblica/' . $id . $suffix );
-    }
-    
-    public function redirectToSummary( eZModule $module, eZCollaborationItem $item, $parameters = array() )
-    {
-        return $module->redirectTo( 'openpa_booking/view/sala_pubblica' );
     }
 
 }
