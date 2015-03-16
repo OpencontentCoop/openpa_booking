@@ -20,6 +20,7 @@ class ObjectHandlerServiceControlBookingAppuntamentoSindaco extends ObjectHandle
                 && isset( $this->container->attributesHandlers['booking_end'] )
                 && isset( $this->container->attributesHandlers['booking_timetable'] )
                 && isset( $this->container->attributesHandlers['booking_slot'] )
+                && isset( $this->container->attributesHandlers['approvers'] )
             )
             {
                 if (
@@ -27,6 +28,7 @@ class ObjectHandlerServiceControlBookingAppuntamentoSindaco extends ObjectHandle
                     && $this->container->attributesHandlers['booking_end']->attribute( 'has_content' )
                     && $this->container->attributesHandlers['booking_timetable']->attribute( 'has_content' )
                     && $this->container->attributesHandlers['booking_slot']->attribute( 'has_content' )
+                    && $this->container->attributesHandlers['approvers']->attribute( 'has_content' )
                 )
                 {
                     $isValid = true;
@@ -142,7 +144,12 @@ class ObjectHandlerServiceControlBookingAppuntamentoSindaco extends ObjectHandle
 
     public function getApproverIds()
     {
-        //@todo
+        if ( $this->isValidSindaco() )
+        {
+            return explode( '-', $this->container->attributesHandlers['approvers']->attribute(
+                'contentobject_attribute'
+            )->toString() );
+        }
         return array( 14 );
     }
 
