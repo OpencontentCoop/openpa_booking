@@ -144,11 +144,18 @@ class ObjectHandlerServiceControlBookingAppuntamentoSindaco extends ObjectHandle
 
     public function getApproverIds()
     {
-        if ( $this->isValidSindaco() )
+        if ( $this->container->getContentObject()->attribute( 'main_parent_node_id' ) )
         {
-            return explode( '-', $this->container->attributesHandlers['approvers']->attribute(
-                'contentobject_attribute'
-            )->toString() );
+            $currentObject = eZContentObject::fetchByNodeID( $this->container->getContentObject()->attribute( 'main_parent_node_id' ) );
+            $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $currentObject );
+            $service = $openpaObject->service( 'control_booking_appuntamento_sindaco' );
+            if ( $service instanceof ObjectHandlerServiceControlBookingAppuntamentoSindaco && $service->isValidSindaco() )
+            {
+                return explode( '-', $service->container->attributesHandlers['approvers']->attribute(
+                    'contentobject_attribute'
+                )->toString() );
+            }
+
         }
         return array( 14 );
     }
