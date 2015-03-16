@@ -1,5 +1,5 @@
 <div class="global-view-full">
-    <h1>Prenotazioni appuntamenti indaco</h1>
+    <h1>Prenotazioni appuntamenti Sindaco</h1>
 
     {def $colors = object_handler($node.object).control_booking_appuntamento_sindaco.state_colors}
     <div class="square-box-soft-gray float-break block">
