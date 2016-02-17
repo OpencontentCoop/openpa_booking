@@ -43,8 +43,8 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
             $filters = array();
             $dateFilter = array(
                 'or',
-                'attr_from_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]',
-                'attr_to_time_dt' => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]'
+                OpenPASolr::generateSolrField('from_time','date') => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]',
+                OpenPASolr::generateSolrField('to_time','date') => '[ ' .ezfSolrDocumentFieldBase::preProcessValue( $start->getTimestamp(), 'date' ) . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue( $end->getTimestamp(), 'date' ) . ' ]'
             );
             if ( !$allStates )
             {
@@ -71,7 +71,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                 );
             }
             $filters[] = $dateFilter;
-            $sortBy = array( 'attr_from_time_dt' => 'desc', 'published' => 'desc' );
+            $sortBy = array( OpenPASolr::generateSolrField('from_time','date') => 'desc', 'published' => 'desc' );
             $solrSearch = new eZSolr();
             $search = $solrSearch->search( '', array(
                 'SearchSubTreeArray' => array( $this->currentSalaObject->attribute( 'main_node_id' ) ),
