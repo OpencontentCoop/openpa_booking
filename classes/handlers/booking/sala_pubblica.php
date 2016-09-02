@@ -43,7 +43,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
     }
 
     public function view()
-    {
+    {        
         if (  $this->currentObject instanceof eZContentObject )
         {
             $openpaObject = OpenPAObjectHandler::instanceFromContentObject( $this->currentObject );

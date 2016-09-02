@@ -17,8 +17,8 @@ class OpenPABookingHandler
             $className = $handlers[$identifier];
         }
         if ( class_exists( $className ) )
-        {
-            $handler = new $className( $Params );
+        {            
+            $handler = new $className( $Params );            
             if ( $handler instanceof OpenPABookingHandlerInterface )
             {
                 return $handler;
