@@ -1,4 +1,4 @@
-<form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">
+
   {def $message_limit=2
        $message_offset=0
        $content_object=fetch("content","object",hash("object_id",$collab_item.content.content_object_id))
@@ -19,4 +19,3 @@
 
   {/if}
 
-</form>

@@ -81,8 +81,7 @@ class ObjectHandlerServiceControlBookingAppuntamentoSindaco extends ObjectHandle
                             $endSlot = $slot->add( $interval );
 
                             $singleSlot = array(
-                                'referrer_contentobject_id' => $this->container->getContentObject(
-                                )->attribute( 'id' ),
+                                'referrer_contentobject_id' => $this->container->getContentObject()->attribute( 'id' ),
                                 'fromDateTime' => $startSlot,
                                 'from' => $startSlot->getTimestamp(),
                                 'toDateTime' => $endSlot,

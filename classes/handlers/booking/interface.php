@@ -2,7 +2,7 @@
 
 interface OpenPABookingHandlerInterface
 {
-    function __construct( array $Params = null );
+    function __construct(array $Params = null);
 
     static function name();
 
@@ -12,16 +12,20 @@ interface OpenPABookingHandlerInterface
 
     function view();
 
-    function workflow( $parameters, $process, $event );
+    function workflow($parameters, $process, $event);
 
-    function defer( eZCollaborationItem $item, $parameters = array() );
+    function defer(eZCollaborationItem $item, $parameters = array());
 
-    function approve( eZCollaborationItem $item, $parameters = array() );
+    function approve(eZCollaborationItem $item, $parameters = array());
 
-    function deny( eZCollaborationItem $item, $parameters = array() );
-    
-    function redirectToItem( eZModule $module, eZCollaborationItem $item, $parameters = array() );
-    
-    function redirectToSummary( eZModule $module, eZCollaborationItem $item, $parameters = array() );
+    function deny(eZCollaborationItem $item, $parameters = array());
+
+    function addComment(eZCollaborationItem $item, $messageText);
+
+    function redirectToItem(eZModule $module, eZCollaborationItem $item, $parameters = array());
+
+    function redirectToSummary(eZModule $module, eZCollaborationItem $item, $parameters = array());
+
+    function handleCustomAction(eZModule $module, eZCollaborationItem $item);
 
 }

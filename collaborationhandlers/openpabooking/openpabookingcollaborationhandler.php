@@ -5,7 +5,7 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
     const TYPE_STRING = 'openpabooking';
 
     /// Approval message type
-    const MESSAGE_TYPE_APPROVE = 1;
+    const MESSAGE_TYPE_DEFAULT = 1;
 
     /// Default status, no approval decision has been made
     const STATUS_WAITING = 0;
@@ -153,22 +153,24 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
      * @param $approverIDArray
      * @return eZCollaborationItem
      */
-    static function createApproval( $contentObjectID, $handlerString, $authorID, $approverIDArray )
+    /**
+     * @param int $contentObjectID
+     * @param string $handlerString
+     * @param int $authorID
+     * @param array $approverIDArray
+     * @param eZCollaborationItem|null $collaborationItem
+     *
+     * @return eZCollaborationItem
+     */
+    static function createApproval( $contentObjectID, $handlerString, $authorID, array $approverIDArray, eZCollaborationItem $collaborationItem = null )
     {
-        if ( empty( $approverIDArray ) )
-        {
-            $admin = eZUser::fetchByName( 'admin' );
-            if ( $admin instanceof eZUser )
-            {
-                $approverIDArray[] = $admin->attribute( 'contentobject_id' );
-                eZDebug::writeNotice( "Add admin user as fallback empty partecipant list", __METHOD__ );
-            }
+        if (!$collaborationItem instanceof eZCollaborationItem) {
+            $collaborationItem = eZCollaborationItem::create(self::TYPE_STRING, $authorID);
+            $collaborationItem->setAttribute('data_int1', $contentObjectID);
+            $collaborationItem->setAttribute('data_text1', $handlerString);
+            $collaborationItem->setAttribute('data_int3', false);
+            $collaborationItem->store();
         }
-        $collaborationItem = eZCollaborationItem::create( self::TYPE_STRING, $authorID );
-        $collaborationItem->setAttribute( 'data_int1', $contentObjectID );
-        $collaborationItem->setAttribute( 'data_text1', $handlerString );
-        $collaborationItem->setAttribute( 'data_int3', false );
-        $collaborationItem->store();
         $collaborationID = $collaborationItem->attribute( 'id' );
 
         $participantList = array(
@@ -185,18 +187,20 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
         {
             foreach( $participantItem['id'] as $participantID )
             {
-                $participantRole = $participantItem['role'];
-                $link = eZCollaborationItemParticipantLink::create(
-                    $collaborationID,
-                    $participantID,
-                    $participantRole,
-                    eZCollaborationItemParticipantLink::TYPE_USER
-                );
-                $link->store();
+                if ((int)$participantID > 0) {
+                    $participantRole = $participantItem['role'];
+                    $link = eZCollaborationItemParticipantLink::create(
+                        $collaborationID,
+                        (int)$participantID,
+                        $participantRole,
+                        eZCollaborationItemParticipantLink::TYPE_USER
+                    );
+                    $link->store();
 
-                $profile = eZCollaborationProfile::instance( $participantID );
-                $groupID = $profile->attribute( 'main_group' );
-                eZCollaborationItemGroupLink::addItem( $groupID, $collaborationID, $participantID );
+                    $profile = eZCollaborationProfile::instance((int)$participantID);
+                    $groupID = $profile->attribute('main_group');
+                    eZCollaborationItemGroupLink::addItem($groupID, $collaborationID, (int)$participantID);
+                }
             }
         }
 
@@ -225,14 +229,11 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
      * @return mixed
      */
     function handleCustomAction( $module, $collaborationItem )
-    {        
-        $addComment = false;
-        $result = false;
-        $error = false;
-
+    {
         if ( $this->isCustomAction( 'Comment' ) )
         {
-            $addComment = true;
+            $messageText = $this->customInput( 'OpenpaBookingComment' );
+            self::handler( $collaborationItem )->addComment($collaborationItem, $messageText);
         }
         else if ( $this->isCustomAction( 'Accept' ) or
             $this->isCustomAction( 'Deny' ) or
@@ -253,13 +254,13 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
                     break;
                 }
             }
-            if ( !$approveAllowed )
-            {
-                return self::handler( $collaborationItem )->redirectToItem( $module, $collaborationItem );
-            }
-
             try
             {
+                if ( !$approveAllowed )
+                {
+                    throw new Exception('Not allowed');
+                }
+
                 if ( $this->isCustomAction( 'Accept' ) )
                 {
                     self::handler( $collaborationItem )->approve( $collaborationItem, $this->customInput( 'OpenpaBookingActionParameters' ) );
@@ -275,39 +276,25 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
                     self::handler( $collaborationItem )->defer( $collaborationItem, $this->customInput( 'OpenpaBookingActionParameters' ) );
                     self::changeApprovalStatus( $collaborationItem, self::STATUS_DEFERRED );
                 }
-                $result = true;
-                $error = false;
             }
             catch( Exception $e )
             {
                 $error = $e->getMessage();
-                $result = false;
+                self::handler( $collaborationItem )->redirectToSummary( $module, $collaborationItem, array('error' => $error ) );
+                return;
             }
-            
-            $addComment = true;
-        }
-        if ( $addComment )
-        {
+
             $messageText = $this->customInput( 'OpenpaBookingComment' );
-            if ( trim( $messageText ) != '' )
-            {
-                $message = eZCollaborationSimpleMessage::create( self::TYPE_STRING.'_comment', $messageText );
-                $message->store();
-                $messageLink = eZCollaborationItemMessageLink::addMessage( $collaborationItem, $message, self::MESSAGE_TYPE_APPROVE );
-                eZCollaborationItemStatus::setLastRead( $collaborationItem->attribute( 'id' ), eZUser::currentUserID(), $messageLink->attribute( 'modified' ) + 1 );
-            }
-            $result = true;
-        }
-        
-        if ( $result )
-        {
+            self::handler( $collaborationItem )->addComment($collaborationItem, $messageText);
             $collaborationItem->sync();
-            return self::handler( $collaborationItem )->redirectToSummary( $module, $collaborationItem );
         }
         else
         {
-            return self::handler( $collaborationItem )->redirectToItem( $module, $collaborationItem, array( 'error' => $error ) );
+            if ( self::handler( $collaborationItem )->handleCustomAction($module, $collaborationItem) ){
+                $collaborationItem->sync();
+            }
         }
+        self::handler( $collaborationItem )->redirectToItem( $module, $collaborationItem );
     }
 
     public static function changeApprovalStatus( eZCollaborationItem $collaborationItem, $status )
