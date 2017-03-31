@@ -81,8 +81,7 @@ class ObjectHandlerServiceControlBookingAppuntamentoSindaco extends ObjectHandle
                             $endSlot = $slot->add( $interval );
 
                             $singleSlot = array(
-                                'referrer_contentobject_id' => $this->container->getContentObject(
-                                )->attribute( 'id' ),
+                                'referrer_contentobject_id' => $this->container->getContentObject()->attribute( 'id' ),
                                 'fromDateTime' => $startSlot,
                                 'from' => $startSlot->getTimestamp(),
                                 'toDateTime' => $endSlot,
@@ -158,6 +157,11 @@ class ObjectHandlerServiceControlBookingAppuntamentoSindaco extends ObjectHandle
 
         }
         return array( 14 );
+    }
+
+    public function getObserversIds()
+    {
+        return array();
     }
 
     public function isValidDate( $start, $end, eZContentObject $parentObject )

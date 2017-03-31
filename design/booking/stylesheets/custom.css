@@ -1,0 +1,635 @@
+.timeline li {
+    position: relative;
+    border-left: 4px solid #dddddd;
+    padding-bottom: 20px;
+}
+
+.timeline li .date {
+    width: 40px;
+    height: 40px;
+    background-color: red;
+    text-align: center;
+    color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.timeline li:first-child:before, .timeline li:last-child:before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: -7px;
+    background-color: #dddddd;
+}
+
+.timeline li:last-child:before {
+    top: auto;
+    bottom: 0;
+}
+
+.timeline li:last-child {
+    padding-bottom: 0;
+}
+
+.timeline li .content {
+    padding: 5px 10px;
+    background-color: white;
+    border: 1px solid #dddddd;
+    position: relative;
+    margin-top: 10px;
+    margin-left: 20px;
+}
+
+.timeline li .icon {
+    width: 20px;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 10px;
+    position: absolute;
+    top: 2px;
+    left: 20px;
+}
+
+.timeline li .icon:before {
+    content: "";
+    width: 20px;
+    height: 4px;
+    background-color: #dddddd;
+    position: absolute;
+    vertical-align: middle;
+    top: 50%;
+    margin-top: -2px;
+    left: -20px;
+}
+
+.timeline li .title {
+    margin-left: 40px;
+    padding: 0;
+    font-size: 12px;
+}
+
+.timeline li .title small {
+    display: block;
+    font-size: 10px;
+}
+
+.block .element, .block .halfelement {
+    float: left;
+    padding-right: 10px;
+}
+
+.block .element input {
+    display: inline-block;
+}
+
+form.edit .tab-pane {
+    padding: 20px;
+}
+
+input.main-title {
+    font-size: 20px;
+    height: 60px;
+}
+
+.context-attributes label {
+    font-size: 80%;
+    color: #eee;
+    font-weight: normal;
+}
+
+/* ezobjectrelarionlist */
+
+.ezobject-relation-search-browse {
+    margin: 10px 0;
+}
+
+.ezobject-relation-search-browse p a {
+    cursor: pointer;
+}
+
+/* ezdate ezdatetime */
+
+.form-inline.date,
+.form-inline.time {
+    display: inline;
+}
+
+.date .form-control {
+    width: 30px;
+    padding: 0 2px;
+    text-align: center;
+}
+
+.date .form-control.year {
+    width: 40px;
+    padding: 0 2px;
+    text-align: center;
+}
+
+.time .form-control {
+    width: 30px;
+    padding: 0 2px;
+    text-align: center;
+}
+
+.time input {
+    background: #eee;
+}
+
+.edit-row {
+    margin-bottom: 30px;
+}
+
+.edit-row:nth-of-type(odd) {
+    background: #eee;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.post-edit {
+    font-size: .9em;
+}
+
+.post-edit .edit-row {
+    margin-bottom: 1px;
+    padding: 0;
+    background: none;
+}
+
+.yui-calcontainer {
+    z-index: 10
+}
+
+.menufieldlabel {
+    font-weight: bold
+}
+
+span.classattribute-description {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-style: italic;
+    color: #ccc;
+}
+
+.navbar-nav > li > a {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.hgroup .breadcrumb {
+    bottom: -20px;
+    font-size: 20px;
+    padding: 6px 15px 11px;
+}
+
+.navbar-toggle {
+    background: #fff;
+}
+
+#sidebar .chosen-container-single .chosen-single {
+    height: 34px;
+    line-height: 35px;
+}
+
+#sidebar .chosen-container-single .chosen-single div b {
+    background-position: 0 6px;
+}
+
+#posts_search {
+    bottom: 0px;
+    width: 100%;
+    position: fixed;
+    left: 0px;
+    background: #eee;
+    border-top: 1px solid #ccc;
+    padding: 10px 0;
+    z-index: 100
+}
+
+article.post .post_content figure img{width: 100%}
+
+.ui-datepicker {
+    background-color: #fff;
+    border: 1px solid #66AFE9;
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(102,175,233,.6);
+    display: none;
+    margin-top: 4px;
+    padding: 10px;
+    width: 240px;
+    z-index: 100 !important;
+}
+.ui-datepicker a,
+.ui-datepicker a:hover {
+    text-decoration: none;
+}
+.ui-datepicker a:hover,
+.ui-datepicker td:hover a {
+    color: #2A6496;
+    -webkit-transition: color 0.1s ease-in-out;
+    -moz-transition: color 0.1s ease-in-out;
+    -o-transition: color 0.1s ease-in-out;
+    transition: color 0.1s ease-in-out;
+}
+.ui-datepicker .ui-datepicker-header {
+    margin-bottom: 4px;
+    text-align: center;
+}
+.ui-datepicker .ui-datepicker-title {
+    font-weight: 700;
+}
+.ui-datepicker .ui-datepicker-prev,
+.ui-datepicker .ui-datepicker-next {
+    cursor: default;
+    font-family: 'Glyphicons Halflings';
+    -webkit-font-smoothing: antialiased;
+    font-style: normal;
+    font-weight: normal;
+    height: 20px;
+    line-height: 1;
+    margin-top: 2px;
+    width: 30px;
+}
+.ui-datepicker .ui-datepicker-prev {
+    float: left;
+    text-align: left;
+}
+.ui-datepicker .ui-datepicker-next {
+    float: right;
+    text-align: right;
+}
+.ui-datepicker .ui-datepicker-prev:before {
+    content: "\e079";
+}
+.ui-datepicker .ui-datepicker-next:before {
+    content: "\e080";
+}
+.ui-datepicker .ui-icon {
+    display: none;
+}
+.ui-datepicker .ui-datepicker-calendar {
+    table-layout: fixed;
+    width: 100%;
+}
+.ui-datepicker .ui-datepicker-calendar th,
+.ui-datepicker .ui-datepicker-calendar td {
+    text-align: center;
+    padding: 4px 0;
+}
+.ui-datepicker .ui-datepicker-calendar td {
+    border-radius: 4px;
+    -webkit-transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+    -moz-transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+    -o-transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+.ui-datepicker .ui-datepicker-calendar td:hover {
+    background-color: #eee;
+    cursor: pointer;
+}
+.ui-datepicker .ui-datepicker-calendar td a {
+    text-decoration: none;
+}
+.ui-datepicker .ui-datepicker-current-day {
+    background-color: #4289cc;
+}
+.ui-datepicker .ui-datepicker-current-day a {
+    color: #fff
+}
+.ui-datepicker .ui-datepicker-calendar .ui-datepicker-unselectable:hover {
+    background-color: #fff;
+    cursor: default;
+}
+
+.dashboard-search .form-inline .form-control{max-width: 160px}
+
+.like_rating{ padding: 9px 0;}
+.abstract{font-size: 1.2em}
+.noborder{border: none !important}
+.dark{color:#333}
+
+/* da rivedere */
+div.alert h1, div.alert h2, div.alert h3, div.alert h4, div.alert h5, div.alert h6{margin-top: 0}
+div.alert p{margin-bottom: 10px !important}
+.full_page_photo section.call_to_action h4.skincolored {
+    background: none repeat scroll 0 0 rgba(0, 141, 0, 0.6);
+}
+.collapsing ul.nav {
+    width: 100%;
+}
+.collapsing ul.nav li {
+    text-align: center;
+    width: 100%;
+}
+
+
+.main {
+    background-color: #eee;
+}
+
+.service_teaser.vertical{
+    margin-bottom: 30px;
+}
+
+.service_teaser.vertical .service_photo figure,
+.service_teaser.booking .service_photo figure {
+    min-height: 150px;
+}
+
+.service_teaser.vertical h2,
+.service_teaser.booking h2 {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.service_teaser.inverted,
+.service_teaser.booking{
+    margin-bottom: 0 !important;
+    border-radius: 6px 6px 0 0;
+    border:none;
+}
+.service_teaser.booking.add{
+    margin-bottom: 30px !important;
+    border-radius: 0 0 6px 6px;
+    position: relative;
+}
+
+.service_teaser .service_details{
+    position: relative;
+}
+
+.service_teaser .service_details.book-calendar,
+.service_teaser .service_details.book-none,
+.service_teaser .service_details.book-try,
+.service_teaser .service_details.book-now,
+.service_teaser .service_details.book-already{
+    min-height: auto;
+    padding: 0;
+}
+
+.service_teaser .service_details.book-now {
+    border-top: 2px dashed #4cae4c;
+}
+
+.service_teaser .service_details.book-now a{
+    padding: 30px 16px;
+    display: block;
+    color: #fff;
+    font-size: 20px;
+    text-align: center;
+    background: #5cb85c;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+
+.service_teaser .service_details.book-already {
+    border-top: 2px dashed #5bc0de;
+}
+
+.service_teaser .service_details.book-already a{
+    padding: 30px 16px;
+    display: block;
+    color: #fff;
+    font-size: 20px;
+    text-align: center;
+    background: #5bc0de;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+
+.service_teaser .service_details.book-calendar {
+    border: none;
+    position: absolute;
+    height: 100%;
+    padding: 0;
+    color: #fff;
+    text-align: center;
+    right: 0;
+}
+a.book-calendar-button{
+    background:#5bc0de !important;
+    color: #fff !important;;
+    line-height: 1.1;
+    text-align: center;
+    display: block;
+    padding: 10px;
+    height: 90px;
+    width: 90px;
+    margin: auto;
+    border-radius: 90px;
+    font-size: 14px;
+    font-weight: bold;
+}
+.service_teaser .service_details.book-calendar a.book-calendar-button{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+a.book-calendar-button:hover{
+    background: #f90f00  !important;;
+}
+a.book-calendar-button i{
+    font-weight: normal;
+    font-size: 30px;
+    display: block;
+    margin-top: -5px;
+    margin-bottom: 2px;
+}
+
+.service_teaser .service_details.book-none {
+    border-top: 2px dashed #ccc;
+    padding: 30px;
+    background:#ddd;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.service_teaser .service_details.book-try{
+    border-top: 2px dashed #eea236;
+    padding: 30px 16px;
+    background: #fcf8e3 !important;
+}
+
+.service_teaser .service_details.book-try .btn{
+    white-space: normal;
+    font-weight: bold;
+    font-size: 20px;
+}
+.booking_date, .booking_hours{
+    white-space: nowrap;
+}
+.service_teaser .service_details.book-none p,
+.service_teaser .service_details.book-try p{
+    margin: 0 0 5px 0;
+}
+
+.service_teaser .service_details.book-now span{
+    white-space: nowrap;
+}
+
+.service_teaser .service_details.book-now a:hover{
+    border-color:#f90f00;
+    background: #f90f00 !important;
+    color: #fff;
+}
+
+.service_teaser .service_details.book-already span{
+    white-space: nowrap;
+}
+
+.service_teaser .service_details.book-already a:hover{
+    border-color:#f90f00;
+    background: #f90f00 !important;
+    color: #fff;
+}
+
+.service_teaser.booking.inverted {
+    background: rgba(250,250,250,0.8);
+    color: #333;
+}
+.service_teaser.inverted .service_photo figure {
+    -webkit-filter: grayscale(100%); /* Chrome, Safari, Opera */
+    filter: grayscale(100%);
+}
+
+.service_teaser.booking.inverted .service_details {
+    background-color: transparent;
+}
+
+.service_teaser.booking.inverted .service_details h2 {
+    color: #333;
+}
+
+.service_teaser.booking.inverted .service_details h2 a {
+    background: none;
+    color: #aaa;
+}
+
+.service_teaser .edit-row{
+    padding: 10px;
+    margin: 10px;
+    background: #fff;
+}
+
+.service_teaser .edit-row:nth-of-type(odd) {
+    background: #fff;
+}
+
+span.classattribute-description{
+    color: #333;
+}
+
+.main_image img{
+    margin: 0 auto;
+}
+
+.booking-location .panel-body .row{
+    margin-bottom: 10px;
+}
+
+.edit-group-label{
+    margin: 20px;
+    text-align: center;
+}
+
+.edit-group-label .group-number{
+    display: block;
+    font-size: 3em;
+    font-weight: bold;
+}
+
+.edit-group-label .group-label{
+    display: block;
+    font-size: 2em;
+}
+
+.edit-booking b{
+    font-size: 1.5em;
+    font-weight: normal;
+}
+
+.edit-booking .attribute-description{
+    display: block;
+}
+
+.edit-group-row{
+    margin-bottom: 40px;
+}
+
+.chosen-search input, .chosen-container-multi input {
+    height: auto !important
+}
+.center-pills {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+li.state_filter{
+    opacity: .3;
+}
+li.active{
+    opacity: 1 !important;
+}
+
+.leaflet-popup-content{
+    margin: 0 !important;
+}
+.leaflet-container a.leaflet-popup-close-button{
+    z-index: 2147483647;
+}
+
+.booking-pills > li {
+    float:none;
+    display:inline-block;
+    *display:inline; /* ie7 fix */
+    zoom:1; /* hasLayout ie7 trigger */
+    font-size: 1.5em;
+}
+
+.booking-pills {
+    text-align:center;
+    margin-bottom: 30px;
+}
+
+.booking-pills > li.active:after{
+    border-top: 10px solid #f90f00;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    content: "";
+    height: 0;
+    left: 0;
+    margin: auto;
+    position: absolute;
+    right: 0;
+    width: 0;
+    bottom: -10px;
+}
+
+.booking-pills>li>a,
+.booking-pills>li>a:hover{
+    background: #fff;
+}
+.booking-filters{
+    padding: 10px 8px 0;
+    text-align: center;
+    border: 1px solid #ccc;
+    /*border-radius: 6px;*/
+    background: #ddd;
+    margin: 0 0 30px;
+}
+.booking-filters select{
+    min-width: 150px;
+}
+
+.booking-filters .form-group{
+    margin-bottom: 8px;
+}

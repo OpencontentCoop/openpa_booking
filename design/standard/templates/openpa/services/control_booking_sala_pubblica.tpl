@@ -26,7 +26,7 @@
                   
                   {if is_set( $view_parameters.error )}
                   <div class="alert message-warning">
-                    {$view_parameters.error|urldecode}
+                    {$view_parameters.error|urldecode|wash()}
                   </div>
                   {/if}
 
