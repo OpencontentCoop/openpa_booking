@@ -168,9 +168,8 @@ class OpenPABooking
     }
 
     public static function classIdentifiers()
-    {
-        $service = new ObjectHandlerServiceControlBookingSalaPubblica();
-        return array('booking_root', 'booking_stuff');
+    {        
+        return array('booking_root');
     }
 
     /**

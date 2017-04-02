@@ -12,6 +12,5 @@
 
     {include uri=$openpa.content_contacts.template}
 
-    {include uri=$openpa.content_detail.template}
 
 </section>
