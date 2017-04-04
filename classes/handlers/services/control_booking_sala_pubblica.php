@@ -421,7 +421,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
         $closingDays = self::getClosingDays($sala);
         foreach ($closingDays as $closingDay) {
-            if (self::isInClosingDay($closingDay, $startDateTime, $endDateTime)){
+            if (self::isInClosingDay($closingDay, $startDateTime, $endDateTime)) {
                 return false;
             }
         }
@@ -432,30 +432,31 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     private static function isInClosingDay($closingDay, $startDateTime, $endDateTime)
     {
         $isInRange = false;
-        if (strpos($closingDay, 'festivi') !== false){
+        if (strpos($closingDay, 'festivi') !== false) {
 
             // @todo
             eZDebug::writeError("@todo implementare soluzione per closing_day 'festivi'");
 
-        }else{
+        } else {
             $closingDay = str_replace('/', '-', $closingDay);
             $testStart = new DateTime($closingDay);
-            if ($testStart instanceof DateTime){
+            if ($testStart instanceof DateTime) {
                 $testEnd = clone $testStart;
                 $testEnd->setTime(23, 59);
                 $isInRange = $startDateTime >= $testStart && $endDateTime <= $testEnd;
             }
         }
+
         return $isInRange;
     }
 
     public static function init($options = array())
     {
-
         $parentNodeId = OpenPAAppSectionHelper::instance()->rootNode()->attribute('node_id');
         $rootObject = eZContentObject::fetchByRemoteID(OpenPABooking::rootRemoteId());
         if (!$rootObject instanceof eZContentObject) {
 
+            OpenPALog::warning('Install root');
             // root
             $params = array(
                 'parent_node_id' => $parentNodeId,
@@ -481,64 +482,67 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             if (!$rootObject instanceof eZContentObject) {
                 throw new Exception('Failed creating Booking root node');
             }
+        }
 
-
-            $object = eZContentObject::fetchByRemoteID(OpenPABooking::locationsRemoteId());
+        $object = eZContentObject::fetchByRemoteID(OpenPABooking::locationsRemoteId());
+        if (!$object instanceof eZContentObject) {
+            OpenPALog::warning(OpenPABooking::locationsRemoteId());
+            $params = array(
+                'parent_node_id' => $rootObject->attribute('main_node_id'),
+                'remote_id' => OpenPABooking::locationsRemoteId(),
+                'class_identifier' => 'folder',
+                'attributes' => array(
+                    'name' => 'Sale pubbliche',
+                    'tags' => 'sala_pubblica'
+                )
+            );
+            /** @var eZContentObject $object */
+            $object = eZContentFunctions::createAndPublishObject($params);
             if (!$object instanceof eZContentObject) {
-                $params = array(
-                    'parent_node_id' => $rootObject->attribute('main_node_id'),
-                    'remote_id' => OpenPABooking::locationsRemoteId(),
-                    'class_identifier' => 'folder',
-                    'attributes' => array(
-                        'name' => 'Sale pubbliche',
-                        'tags' => 'sala_pubblica'
-                    )
-                );
-                /** @var eZContentObject $object */
-                $object = eZContentFunctions::createAndPublishObject($params);
-                if (!$object instanceof eZContentObject) {
-                    throw new Exception('Failed creating ' . $params['remote_id'] . ' root node');
-                }
-
-                /** @var eZContentObjectTreeNode[] $sale */
-                $sale = eZContentObjectTreeNode::subTreeByNodeID(array(
-                    'ClassFilterType' => 'include',
-                    'ClassFilterArray' => array('sala_pubblica')
-                ), 1);
-
-                foreach ($sale as $sala) {
-                    $cli->warning("Add assignment to " . $sala->attribute('name'));
-                    $mainNodeID = $sala->attribute('main_node_id');
-                    $objectId = $sala->attribute('contentobject_id');
-                    $targetNodeId = OpenPABooking::locationsNodeId();
-                    eZContentOperationCollection::addAssignment($mainNodeID, $objectId, array($targetNodeId));
-                }
+                throw new Exception('Failed creating ' . $params['remote_id'] . ' root node');
             }
 
-            $object = eZContentObject::fetchByRemoteID(OpenPABooking::stuffRemoteId());
+            /** @var eZContentObjectTreeNode[] $sale */
+            $sale = eZContentObjectTreeNode::subTreeByNodeID(array(
+                'ClassFilterType' => 'include',
+                'ClassFilterArray' => array('sala_pubblica')
+            ), 1);
+
+            foreach ($sale as $sala) {
+                OpenPALog::warning("Add assignment to " . $sala->attribute('name'));
+                $mainNodeID = $sala->attribute('main_node_id');
+                $objectId = $sala->attribute('contentobject_id');
+                $targetNodeId = OpenPABooking::locationsNodeId();
+                eZContentOperationCollection::addAssignment($mainNodeID, $objectId, array($targetNodeId));
+            }
+        }
+
+        $object = eZContentObject::fetchByRemoteID(OpenPABooking::stuffRemoteId());
+        if (!$object instanceof eZContentObject) {
+            OpenPALog::warning(OpenPABooking::stuffRemoteId());
+            $params = array(
+                'parent_node_id' => $rootObject->attribute('main_node_id'),
+                'remote_id' => OpenPABooking::stuffRemoteId(),
+                'class_identifier' => 'folder',
+                'attributes' => array(
+                    'name' => 'Attrezzatura',
+                    'tags' => 'attrezzatura_sala'
+                )
+            );
+            /** @var eZContentObject $object */
+            $object = eZContentFunctions::createAndPublishObject($params);
             if (!$object instanceof eZContentObject) {
-                $params = array(
-                    'parent_node_id' => $rootObject->attribute('main_node_id'),
-                    'remote_id' => OpenPABooking::stuffRemoteId(),
-                    'class_identifier' => 'folder',
-                    'attributes' => array(
-                        'name' => 'Attrezzatura',
-                        'tags' => 'attrezzatura_sala'
-                    )
-                );
-                /** @var eZContentObject $object */
-                $object = eZContentFunctions::createAndPublishObject($params);
-                if (!$object instanceof eZContentObject) {
-                    throw new Exception('Failed creating ' . $params['remote_id'] . ' root node');
-                }
+                throw new Exception('Failed creating ' . $params['remote_id'] . ' root node');
             }
         }
 
 
         $self = new self();
 
+        OpenPALog::warning("Init states");
         OpenPABase::initStateGroup(self::$stateGroupIdentifier, self::$stateIdentifiers);
 
+        OpenPALog::warning("Init section");
         $section = OpenPABase::initSection('Prenotazioni', 'booking');
 
         $classes = array_merge(
@@ -547,6 +551,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             ), $self->salaPubblicaClassIdentifiers(), $self->stuffClassIdentifiers()
         );
 
+        OpenPALog::warning("Update classes");
         foreach ($classes as $identifier) {
             $tools = new OpenPAClassTools($identifier, true);
             if (!$tools->isValid()) {
@@ -560,7 +565,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $stuffClassIdList[] = eZContentClass::classIDByIdentifier($stuffIdentifier);
         }
 
-
+        OpenPALog::warning("Init roles");
         $prenotazioneClass = eZContentClass::fetchByIdentifier($self->prenotazioneClassIdentifier());
 
         $classes = $parentClasses = array();
@@ -706,8 +711,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 $role->appendPolicy($policy['ModuleName'], $policy['FunctionName'], $policy['Limitation']);
             }
 
-            $anonymousUserId = eZINI::instance()->variable( 'UserSettings', 'AnonymousUserID' );
-            $role->assignToUser( $anonymousUserId );
+            $anonymousUserId = eZINI::instance()->variable('UserSettings', 'AnonymousUserID');
+            $role->assignToUser($anonymousUserId);
         }
 
         OpenPALog::error("Attiva il workflow Prenotazioni in post_publish, in pre_delete e in post_checkout");

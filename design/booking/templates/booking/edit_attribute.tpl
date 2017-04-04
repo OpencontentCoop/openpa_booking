@@ -32,71 +32,72 @@
          $attribute_default_category = ezini( 'ClassAttributeSettings', 'DefaultCategory', 'content.ini' )}
 
 
+{def $count = 2}
 {foreach $content_attributes_grouped_data_map as $attribute_group => $content_attributes_grouped}
-<div class="row" id="attribute-group-{$attribute_group}" {if $attribute_group|eq('hidden')}style="display: none" {/if}>
+<div class="row edit-group-row" id="attribute-group-{$attribute_group}" {if $attribute_group|eq('hidden')}style="display: none" {/if}>
     <div class="col-md-4">
-        
-    </div>
-    <div class="col-md-8 service_teaser vertical">
-        <div class="service_details clearfix">
-            {foreach $content_attributes_grouped as $attribute_identifier => $attribute}
-                {def $contentclass_attribute = $attribute.contentclass_attribute}
-                <div class="edit-row ezcca-edit-datatype-{$attribute.data_type_string} ezcca-edit-{$attribute_identifier}">
-                    {if $is_translating_content|not()}
-                        {if $attribute.display_info.edit.grouped_input}
-                            <p{if $attribute.has_validation_error} class="message-error"{/if}>
-                                <b>{first_set( $contentclass_attribute.nameList[$content_language], $contentclass_attribute.name )|wash}</b>
-                                {if $attribute.is_required}
-                                <span class="required" title="{'required'|i18n( 'design/admin/content/edit_attribute' )}">*</span>
-                                {/if}
-                                {if $attribute.is_information_collector}
-                                    <span class="collector">({'information collector'|i18n( 'design/admin/content/edit_attribute' )})</span>
-                                {/if}
-                            </p>
-                            {if $contentclass_attribute.description}
-                                <span class="classattribute-description">{first_set( $contentclass_attribute.descriptionList[$content_language], $contentclass_attribute.description)|wash}</span>
-                            {/if}
-                            {attribute_edit_gui attribute_base=$attribute_base attribute=$attribute view_parameters=$view_parameters html_class='form-control'}
-                            <input type="hidden" name="ContentObjectAttribute_id[]" value="{$attribute.id}"/>
-                        {else}
-                            <p{if $attribute.has_validation_error} class="message-error"{/if}>
-                                <b>{first_set( $contentclass_attribute.nameList[$content_language], $contentclass_attribute.name )|wash}</b>
-                                {if $attribute.is_required}
-                                    <span class="required" title="{'required'|i18n( 'design/admin/content/edit_attribute' )}">*</span>
-                                {/if}
-                                {if $attribute.is_information_collector}
-                                    <span class="collector">({'information collector'|i18n( 'design/admin/content/edit_attribute' )})</span>
-                                {/if}
-                            </p>
-                            {if $contentclass_attribute.description}
-                                <span class="classattribute-description">{first_set( $contentclass_attribute.descriptionList[$content_language], $contentclass_attribute.description)|wash}</span>
-                            {/if}
-                            {attribute_edit_gui attribute_base=$attribute_base attribute=$attribute view_parameters=$view_parameters html_class='form-control'}
-                            <input type="hidden" name="ContentObjectAttribute_id[]" value="{$attribute.id}"/>
-                        {/if}
-                    {/if}
-                </div>
-                {undef $contentclass_attribute}
-            {/foreach}
+        <div class="edit-group-label">
+            <span class="group-number">&#931{$count};</span>
+            <span class="group-label">
+                {$attribute_categorys[$attribute_group]}
+            </span>
         </div>
     </div>
-</div>
-{/if}
-{/foreach}
-<div class="service_teaser vertical">
-    <div class="service_details clearfix">
-        <div class="clearfix attribute-edit" id="repeat">
-            <div class="row edit-row">
-                {include uri='design:booking/parts/scheduler.tpl'}
+    <div class="col-md-8 service_teaser vertical">
+        {foreach $content_attributes_grouped as $attribute_identifier => $attribute}
+            {def $contentclass_attribute = $attribute.contentclass_attribute}
+            <div class="edit-row ezcca-edit-datatype-{$attribute.data_type_string} ezcca-edit-{$attribute_identifier}">
+                {if $is_translating_content|not()}
+                    <p{if $attribute.has_validation_error} class="message-error"{/if}>
+                        <b>
+                            {first_set( $contentclass_attribute.nameList[$content_language], $contentclass_attribute.name )|wash}
+                            {if $attribute.is_required}
+                                <span class="required" title="{'required'|i18n( 'design/admin/content/edit_attribute' )}">*</span>
+                            {/if}
+                            {if $contentclass_attribute.description}
+                                <small class="attribute-description">{first_set( $contentclass_attribute.descriptionList[$content_language], $contentclass_attribute.description)|wash}</small>
+                            {/if}
+                        </b>
+                    </p>
+                    {attribute_edit_gui attribute_base=$attribute_base attribute=$attribute view_parameters=$view_parameters html_class='form-control'}
+                {/if}
             </div>
+            {undef $contentclass_attribute}
+        {/foreach}
+    </div>
+</div>
+{if $attribute_group|ne('hidden')}{set $count = $count|inc()}{/if}
+{/foreach}
+
+<div class="row edit-group-row" id="repeat">
+    <div class="col-md-4">
+        <div class="edit-group-label">
+            <span class="group-number">&#931{$count};</span>
+            <span class="group-label">
+                {'Aggiungi date'|i18n('booking')}
+            </span>
+        </div>
+    </div>
+    <div class="col-md-8 service_teaser vertical">
+        <div class="edit-row">
+            <p>
+                <b>
+                    {"Vuoi aggiungere alla prenotazione altre date, allo stesso orario?"|i18n('booking')}
+                </b>
+            </p>
+            {include uri='design:booking/parts/scheduler.tpl'}
         </div>
     </div>
 </div>
 
-<div class="buttonblock">
-  <input class="btn btn-success btn-lg pull-right" type="submit" name="PublishButton" value="Invia richiesta di prenotazione" />
-  <input class="btn btn-default btn-lg pull-left" type="submit" name="DiscardButton" value="Annulla richiesta" />
-  <input type="hidden" name="RedirectIfDiscarded" value="/" />
-  <input type="hidden" name="RedirectURIAfterPublish" value="{concat( 'openpa_booking/view/sala_pubblica/', $object.id )}" />
-  <input type="hidden" name="DiscardConfirm" value="0" />
+<div class="row">
+    <div class="col-md-8 col-md-offset-4">
+        <div class="buttonblock">
+            <input class="btn btn-success btn-lg pull-right" type="submit" name="PublishButton" value="{"Invia richiesta di prenotazione"|i18n('booking')}" />
+            <input class="btn btn-default btn-lg pull-left" type="submit" name="DiscardButton" value="{"Annulla richiesta"|i18n('booking')}" />
+            <input type="hidden" name="RedirectIfDiscarded" value="/" />
+            <input type="hidden" name="RedirectURIAfterPublish" value="{concat( 'openpa_booking/view/sala_pubblica/', $object.id )}" />
+            <input type="hidden" name="DiscardConfirm" value="0" />
+        </div>
+    </div>
 </div>

@@ -422,8 +422,8 @@ div.alert p{margin-bottom: 10px !important}
 }
 
 .service_teaser .edit-row{
-    padding: 20px;
-    margin: 20px;
+    padding: 10px;
+    margin: 10px;
     background: #fff;
 }
 
@@ -441,4 +441,33 @@ span.classattribute-description{
 
 .booking-location .panel-body .row{
     margin-bottom: 10px;
+}
+
+.edit-group-label{
+    margin: 20px;
+    text-align: center;
+}
+
+.edit-group-label .group-number{
+    display: block;
+    font-size: 3em;
+    font-weight: bold;
+}
+
+.edit-group-label .group-label{
+    display: block;
+    font-size: 2em;
+}
+
+.edit-booking b{
+    font-size: 1.5em;
+    font-weight: normal;
+}
+
+.edit-booking .attribute-description{
+    display: block;
+}
+
+.edit-group-row{
+    margin-bottom: 40px;
 }
