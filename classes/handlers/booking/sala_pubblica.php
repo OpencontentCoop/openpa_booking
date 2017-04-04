@@ -289,14 +289,16 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
     }
 
     private static function createSubRequest(
-        eZContentObject $object,
-        ObjectHandlerServiceControlBookingSalaPubblica $serviceObject
+        eZContentObject $object
     ) {
         /** @var eZContentObjectAttribute[] $dataMap */
         $dataMap = $object->attribute('data_map');
         if (isset( $dataMap['scheduler'] ) && $dataMap['scheduler']->hasContent()) {
             $data = json_decode($dataMap['scheduler']->content(), 1);
             foreach ($data as $item) {
+
+                eZDebug::writeNotice("Create sub request " . var_export($item, 1), __METHOD__);
+
                 $params = array(
                     'class_identifier' => $object->attribute('class_identifier'),
                     'parent_node_id' => $object->attribute('main_node_id'),
@@ -308,7 +310,10 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                         'subrequest' => 1
                     )
                 );
-                $object = eZContentFunctions::createAndPublishObject($params);
+                $subRequest = eZContentFunctions::createAndPublishObject($params);
+                if (!$subRequest instanceof eZContentObject){
+                    eZDebug::writeError("Fail on creating subrequest", __METHOD__);
+                }
 
             }
         }
@@ -361,7 +366,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         }
 
         if ($createSubRequest) {
-            self::createSubRequest($currentObject, $serviceObject);
+            self::createSubRequest($currentObject);
         }
 
         if (in_array($authorId, $approveIdArray)) {
