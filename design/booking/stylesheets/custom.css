@@ -438,3 +438,7 @@ span.classattribute-description{
 .main_image img{
     margin: 0 auto;
 }
+
+.booking-location .panel-body .row{
+    margin-bottom: 10px;
+}

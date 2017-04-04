@@ -25,31 +25,31 @@
         <aside class="widget" data-filter="q">
             <h4>Cerca disponibilità</h4>
             <div class="form-group">
-                <label for="from" class="">Data</label>
-                <input type="text" class="form-control date" name="date" placeholder="Data" value="" />
+                <label for="from" class="">{'Data'|i18n('booking')}</label>
+                <input type="text" class="form-control date" name="date" placeholder="{'Data'|i18n('booking')}" value="" />
             </div>
             <div class="form-group">
-                <label for="from_hours" class="">Dalle ore</label>
-                <input class="form-control time" type="text" name="from_hours" placeholder="Dalle ore" value="" />
+                <label for="from_hours" class="">{'Dalle ore'|i18n('booking')}</label>
+                <input class="form-control time" type="text" name="from_hours" placeholder="{'Dalle ore'|i18n('booking')}" value="" />
             </div>
             <div class="form-group">
-                <label for="to_hours" class="">Alle ore</label>
-                <input class="form-control time" type="text" name="to_hours" placeholder="Alle ore" value="" />
+                <label for="to_hours" class="">{'Alle ore'|i18n('booking')}</label>
+                <input class="form-control time" type="text" name="to_hours" placeholder="{'Alle ore'|i18n('booking')}" value="" />
             </div>
             <div class="form-group">
-                <label for="stuff">Attrezzatura</label>
+                <label for="stuff">{'Attrezzatura richiesta'|i18n('booking')}</label>
                 <select id="stuff" name="stuff" class="form-control" multiple="multiple">
-                    <option value="0">Non serve</option>
+                    <option value="0">{'Nessuna'|i18n('booking')}</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="stuff">Numero di posti</label>
+                <label for="stuff">{'Numero di posti'|i18n('booking')}</label>
                 <select id="stuff" name="numero_posti" class="form-control">
-                    <option value="0">Qualsiasi</option>
-                    <option value="1">Fino a 100</option>
-                    <option value="2">Da 100 a 200</option>
-                    <option value="3">Da 200 a 400</option>
-                    <option value="4">Oltre 400</option>
+                    <option value="0">{'Qualsiasi'|i18n('booking')}</option>
+                    <option value="1">{'Fino a 100'|i18n('booking')}</option>
+                    <option value="2">{'Da 100 a 200'|i18n('booking')}</option>
+                    <option value="3">{'Da 200 a 400'|i18n('booking')}</option>
+                    <option value="4">{'Oltre 400'|i18n('booking')}</option>
                 </select>
             </div>
         </aside>
@@ -61,13 +61,13 @@
                 <ul class="nav nav-pills">
                     <li class="active">
                         <a data-toggle="tab" href="#list">
-                            <i class="fa fa-th" aria-hidden="true"></i> <span class=""> {'Elenco'|i18n('booking')}</span>
+                            <i class="fa fa-th" aria-hidden="true"></i> <span class=""> {'Elenco delle sale disponibili'|i18n('booking')}</span>
                         </a>
                     </li>
 
                     <li>
                         <a data-toggle="tab" href="#geo">
-                            <i class="fa fa-map" aria-hidden="true"></i> <span class="">{'Sulla mappa'|i18n('booking')}</span>
+                            <i class="fa fa-map" aria-hidden="true"></i> <span class="">{'Sale disponibili sulla mappa'|i18n('booking')}</span>
                         </a>
                     </li>
                 </ul>
@@ -143,7 +143,7 @@ $(document).ready(function () {
             var toHours = $('[name="to_hours"]').timepicker('getTime').getHours();
             var fromMoment = currentMoment.clone().set('hour', fromHours);
             var from = fromMoment.format('X');
-            var toMoment = currentMoment.clone().set('hour', toHours);
+            var toMoment = currentMoment.clone().set('hour', toHours).subtract(1,'seconds');
             var to = toMoment.format('X');
             var currentRequest = {
                 date: currentMoment.format("DD-MM-YYYY"),

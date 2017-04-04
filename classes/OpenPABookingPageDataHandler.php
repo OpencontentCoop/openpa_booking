@@ -110,7 +110,7 @@ class OpenPABookingPageDataHandler implements OCPageDataHandlerInterface
         $menu = array();
 
         $menu[] = array(
-            'name' => ezpI18n::tr( 'booking/menu', 'Spazi pubblici' ),
+            'name' => ezpI18n::tr( 'booking/menu', 'Sale pubbliche' ),
             'url' => 'openpa_booking/locations',
             'highlight' => false,
             'has_children' => false

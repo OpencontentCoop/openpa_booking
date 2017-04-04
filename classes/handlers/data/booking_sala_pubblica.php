@@ -143,10 +143,8 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
         );
         $statusFilter = "and state in [".implode(',', $stateIdList)."]";
 
-        $bookings = $this->findAll(
-            "$dateFilter $statusFilter classes [prenotazione_sala] facets [sala.id|alpha|100,stuff.id|alpha|100]",
-            array()
-        );
+        $bookingQuery = "$dateFilter $statusFilter classes [prenotazione_sala] facets [sala.id|alpha|100,stuff.id|alpha|100]";
+        $bookings = $this->findAll($bookingQuery, array());
 
         $bookedLocations = array();
         $bookedStuff = array();
@@ -182,12 +180,16 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
         $service = new ObjectHandlerServiceControlBookingSalaPubblica();
         $classes = implode(',',$service->salaPubblicaClassIdentifiers());
 
-        $locations = $this->findAll(
-            "{$request['filter_query']} classes [{$classes}]",
-            array( 'accessWord' => 'yes' )
-        );
+        $locationQuery = "{$request['filter_query']} classes [{$classes}]";
+        $locations = $this->findAll($locationQuery, array());
         $availableLocations = array();
         $geoJson = new FeatureCollection();
+        if (eZINI::instance()->variable('DebugSettings','DebugOutput') == 'enabled') {
+            $geoJson->debug = array(
+                'bookings_query' => $bookingQuery,
+                'locations_query' => $locationQuery
+            );
+        }
         foreach($locations as $item){
 
             $content = new Content($item);

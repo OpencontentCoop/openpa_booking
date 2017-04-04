@@ -59,32 +59,26 @@
         });
     </script>
 {/literal}
-    <div id='calendar'></div>
+
+{def $states = booking_states()
+     $state_colors = booking_state_colors()}
+
+<style>
+    {foreach $state_colors as $identifier => $color}
+    .label-{$identifier}{ldelim}background-color:{$color};color:#fff{rdelim}
+    {/foreach}
+</style>
+
+
+<div class="panel">
+    <div class="panel-body">
+        <div id='calendar'></div>
+        <ul class="list list-inline" style="margin-top: 20px">
+        {foreach $states as $state}
+            <li><span class="label label-{$state.identifier}">{$state.current_translation.name|wash()}</span></li>
+        {/foreach}
+        </ul>
+    </div>
+</div>
+
 {/if}
-
-<ul class="list list-inline">
-    <li><span style="display: inline-block; width: 10px; height: 10px;background: {$colors[3]}"></span>
-        Confermato
-    </li>
-    <li>
-        <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[0]}"></span>
-        In attesa di approvazione
-    </li>
-    <li>
-        <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[1]}"></span>
-        In attesa di pagamento
-    </li>
-    <li>
-        <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[2]}"></span>
-        In attesa di verifica pagamento
-    </li>
-    <li>
-        <span style="display: inline-block; width: 10px; height: 10px;background: {$colors[4]}"></span>
-        Rifiutato
-    </li>
-    <li>
-        <span style="display: inline-block; width: 10px; height: 10px;background: {$colors['none']}"></span>
-        Non accessibile
-    </li>
-</ul>
-

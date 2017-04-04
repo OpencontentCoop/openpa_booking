@@ -53,7 +53,8 @@ $(document).ready(function () {
                     {"data": "metadata.published", "name": 'published', "title": 'Creata il'},
                     {"data": "metadata.ownerName", "name": 'raw[meta_owner_name_t]', "title": 'Autore'},
                     {"data": "data." + tools.settings('language') + ".from_time", "name": 'from_time', "title": 'Periodo'},
-                    {"data": "data." + tools.settings('language') + ".sala", "name": 'sala', "title": 'Luogo'}
+                    {"data": "data." + tools.settings('language') + ".sala", "name": 'sala', "title": 'Luogo'},
+                    {"data": "metadata.mainNodeId", "name": 'id', "title": '', "sortable": false}
                 ],
                 "columnDefs": [
                     {
@@ -107,6 +108,12 @@ $(document).ready(function () {
                             return '?';
                         },
                         "targets": [5]
+                    },
+                    {
+                        "render": function (data, type, row) {
+                            return '<a href="' + tools.settings('accessPath') + '/openpa_booking/view/sala_pubblica/' + row.metadata.id + '" class="btn btn-xs btn-default">Entra</a>';
+                        },
+                        "targets": [6]
                     }
                 ]
             },

@@ -1,13 +1,16 @@
-<div class="col-sm-4">
+<div class="col-sm-3">
+    <p><b>Seleziona data</b></p>
+    <div id="schedule-alert"></div>
+</div>
+<div class="col-sm-9">
     <aside class="widget" data-filter="q">
         <div class="form-group">
-            <label for="from" class="">Seleziona data</label>
+            <label for="from" class="hide">Seleziona data</label>
             <input type="text" class="form-control date" name="date" placeholder="Data" value="" />
         </div>
     </aside>
-    <div id="schedule-alert"></div>
+    <div id="add-schedule"></div>
 </div>
-<div class="col-sm-8" id="add-schedule"></div>
 
 {include uri='design:booking/parts/tpl-spinner.tpl'}
 {include uri='design:booking/parts/tpl-scheduler.tpl'}

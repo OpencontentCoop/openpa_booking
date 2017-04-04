@@ -1,6 +1,4 @@
 <form enctype="multipart/form-data" method="post" action={concat("/content/edit/",$object.id,"/",$edit_version,"/",$edit_language|not|choose(concat($edit_language,"/"),''))|ezurl}>
-  <div class="service_teaser vertical">
-    <div class="service_details clearfix">
       <h1 class="text-center">
           {$class.name|wash()} {$object.data_map.sala.content.name|wash()}
           <br />
@@ -10,7 +8,5 @@
       </h1>
       {include uri="design:content/edit_validation.tpl"}
       {include uri="design:booking/edit_attribute.tpl"}
-    </div>
-  </div>
 </form>
 
