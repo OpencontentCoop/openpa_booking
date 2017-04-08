@@ -31,10 +31,11 @@
          $attribute_categorys        = ezini( 'ClassAttributeSettings', 'CategoryList', 'content.ini' )
          $attribute_default_category = ezini( 'ClassAttributeSettings', 'DefaultCategory', 'content.ini' )}
 
+{def $no_stuff = cond( $object.data_map.stuff.has_content, false(), true())}
 
 {def $count = 2}
 {foreach $content_attributes_grouped_data_map as $attribute_group => $content_attributes_grouped}
-<div class="row edit-group-row" id="attribute-group-{$attribute_group}" {if $attribute_group|eq('hidden')}style="display: none" {/if}>
+<div class="row edit-group-row" id="attribute-group-{$attribute_group}" {if or( $attribute_group|eq('hidden'), and($no_stuff, $attribute_group|eq('booking_stuff')))}style="display: none" {/if}>
     <div class="col-md-4">
         <div class="edit-group-label">
             <span class="group-number">&#931{$count};</span>

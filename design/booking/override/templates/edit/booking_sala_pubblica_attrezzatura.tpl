@@ -29,24 +29,33 @@
 }
 {def $stuff_id_string = 'null'
      $stuff_ids = array()}
+
+<ul class="list list-unstyled">
 {section var=node loop=$nodesList}
     {set $stuff_ids = $stuff_ids|append($node.contentobject_id)}
-    <div class="checkbox">
-        <label>
-        <input type="checkbox" data-stuff_id="{$node.contentobject_id}" name="{$attribute_base}_data_object_relation_list_{$attribute.id}[{$node.node_id}]" value="{$node.contentobject_id}"
-                {if ne( count( $attribute.content.relation_list ), 0)}
-                    {foreach $attribute.content.relation_list as $item}
-                        {if eq( $item.contentobject_id, $node.contentobject_id )}
-                            checked="checked"
-                            {break}
-                        {/if}
-                    {/foreach}
-                {/if}
-        />
-        {$node.name|wash}
-        </label>
-    </div>
+    {*<div class="checkbox">*}
+        {*<label>*}
+        {*<input type="checkbox" data-stuff_id="{$node.contentobject_id}" name="{$attribute_base}_data_object_relation_list_{$attribute.id}[{$node.node_id}]" value="{$node.contentobject_id}"*}
+                {*{if ne( count( $attribute.content.relation_list ), 0)}*}
+                    {*{foreach $attribute.content.relation_list as $item}*}
+                        {*{if eq( $item.contentobject_id, $node.contentobject_id )}*}
+                            {*checked="checked"*}
+                            {*{break}*}
+                        {*{/if}*}
+                    {*{/foreach}*}
+                {*{/if}*}
+        {*/>*}
+        {*{$node.name|wash}*}
+        {*</label>*}
+    {*</div>*}
+
+        {foreach $attribute.content.relation_list as $item}
+            {if eq( $item.contentobject_id, $node.contentobject_id )}
+                <li>{$node.name|wash}</li>
+            {/if}
+        {/foreach}
 {/section}
+</ul>
 <div id="stuff"></div>
 {set $stuff_id_string = concat('[', $stuff_ids|implode('-'), ']')}
 

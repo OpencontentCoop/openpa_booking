@@ -264,10 +264,7 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
 
     public function notify($action, $params = array())
     {
-        $scopes = array('author', 'approver', 'messages');
-
-        $authorId = $this->container->getContentObject()->attribute('owner_id');
-        $approveIdArray = $this->getApproverIds();
+        $scopes = array('author', 'approver', 'observer', 'messages');
 
         foreach ($scopes as $scope) {
 
@@ -314,10 +311,13 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
 
                 $receiverIdList = array();
                 if ($scope == 'author') {
-                    $receiverIdList = array($authorId);
+                    $receiverIdList = array($this->container->getContentObject()->attribute('owner_id'));
                 } elseif ($scope == 'approver') {
-                    $receiverIdList = $approveIdArray;
+                    $receiverIdList = array_unique($this->getApproverIds());
+                } elseif ($scope == 'observer') {
+                    $receiverIdList = array_unique($this->getObserversIds());
                 }
+
                 $receivers = (array)eZPersistentObject::fetchObjectList(
                     eZUser::definition(),
                     null,
@@ -335,6 +335,9 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
                     }
                 }
 
+                if (count($receivers) == 0){
+                    eZDebug::writeError("Receivers users not found sending notification mail to $scope for action $action", __METHOD__);
+                }
 
                 $ini = eZINI::instance();
                 $sender = $ini->variable("MailSettings", "EmailSender");
@@ -350,8 +353,7 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
 
                 $result = eZMailTransport::send($mail);
                 if ($result) {
-                    eZDebug::writeDebug("Send notification mail to $scope (" . implode(', ',
-                            $receiverIdList) . ") for action $action", __METHOD__);
+                    eZDebug::writeDebug("Send notification mail to $scope (" . implode(', ', $receiverIdList) . ") for action $action", __METHOD__);
                 } else {
                     eZDebug::writeError("Fail sending notification mail to $scope for action $action", __METHOD__);
                 }
@@ -369,6 +371,8 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
     abstract public function templateDirectory();
 
     abstract public function getApproverIds();
+
+    abstract public function getObserversIds();
 
     abstract public function prenotazioneClassIdentifier();
 

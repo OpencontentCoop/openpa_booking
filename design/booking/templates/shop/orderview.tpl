@@ -34,9 +34,9 @@
     <th>
     {'Price inc. VAT'|i18n( 'design/ezwebin/shop/orderview' )}
     </th>
-    <th>
-    {'Discount'|i18n( 'design/ezwebin/shop/orderview' )}
-    </th>
+    {*<th>*}
+    {*{'Discount'|i18n( 'design/ezwebin/shop/orderview' )}*}
+    {*</th>*}
     <th>
     {'Total price ex. VAT'|i18n( 'design/ezwebin/shop/orderview' )}
     </th>
@@ -62,9 +62,9 @@
     <td>
     {$product_item.price_inc_vat|l10n( 'currency', $locale, $symbol )}
     </td>
-    <td>
-    {$product_item.discount_percent}%
-    </td>
+    {*<td>*}
+    {*{$product_item.discount_percent}%*}
+    {*</td>*}
     <td>
     {$product_item.total_price_ex_vat|l10n( 'currency', $locale, $symbol )}
     </td>

@@ -14,7 +14,7 @@
     {foreach $object.data_map.stuff.content.relation_list as $item}
         {set $stuff_ids = $stuff_ids|append($item.contentobject_id)}
     {/foreach}
-    {set $stuff_id_string = concat('[', $stuff_ids|implode('-'), ']')}
+    {set $stuff_id_string = $stuff_ids|implode('-')}
 {/if}
 {def $dateParts = $object.data_map.from_time.content.timestamp|l10n(shortdate)|explode('/')
      $mindate = concat('new Date(', $dateParts[2], ',', $dateParts[1]|sub(1), ',', $dateParts[0]|inc(), ')')}
@@ -52,7 +52,7 @@
                 to: parseInt(to),
                 has_stuff: {/literal}{cond(count(stuff_ids)|gt(0), 'true', 'false')}{literal},
                 stuff: [],
-                stuff_id_list: {/literal}{$stuff_id_string}{literal},
+                stuff_id_list: "{/literal}{$stuff_id_string}{literal}",
                 numero_posti:  null,
                 location: "{/literal}{$object.data_map.sala.content.id}{literal}"
             };
@@ -69,6 +69,9 @@
                     var content = $('<div class="checkbox" id="'+this.from+'"></div>');
                     content.append(this.content);
                     scheduler.append(content);
+                    scheduler.find('input').on('change', function (e) {
+                        updateEncodedScheduler();
+                    });
                 });
             }
         };
@@ -81,6 +84,7 @@
                 item.content = $(this).parents('div.checkbox').html();
                 data.push(item);
             });
+            console.log(data);
             encodedScheduler.val(JSON.stringify(data));
         };
 

@@ -11,6 +11,13 @@
 
     {include uri=$openpa.content_contacts.template}
 
+    {if fetch(user, has_access_to, hash('module', 'openpa_booking', 'function', 'book') )}
+        <section class="hgroup">
+            {include uri=$openpa.control_booking_sala_pubblica.template stuff=$node.contentobject_id}
+        </section>
+    {/if}
+
+
     {include uri=$openpa.content_detail.template}
 
 

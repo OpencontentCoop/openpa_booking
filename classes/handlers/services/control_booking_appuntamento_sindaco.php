@@ -159,6 +159,11 @@ class ObjectHandlerServiceControlBookingAppuntamentoSindaco extends ObjectHandle
         return array( 14 );
     }
 
+    public function getObserversIds()
+    {
+        return array();
+    }
+
     public function isValidDate( $start, $end, eZContentObject $parentObject )
     {
         // check remoteID

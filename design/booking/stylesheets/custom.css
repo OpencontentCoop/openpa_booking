@@ -471,3 +471,18 @@ span.classattribute-description{
 .edit-group-row{
     margin-bottom: 40px;
 }
+
+.chosen-search input, .chosen-container-multi input {
+    height: auto !important
+}
+.center-pills {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.center-pills>li.state_filter{
+    opacity: .3;
+}
+.center-pills>li.active{
+    opacity: 1 !important;
+}

@@ -100,6 +100,11 @@ $.opendataTools.settings('accessPath', "{''|ezurl(no,full)}");
 $.opendataTools.settings('language', "{$current_language}");
 $.opendataTools.settings('locale', "{$moment_language}");
 
+$.opendataTools.settings('onError', function(errorCode,errorMessage,jqXHR){ldelim}
+    //console.log(errorMessage + ' (error: '+errorCode+')');
+    $("#booking_items").html('<div class="alert alert-danger">'+errorMessage+'</div>');
+{rdelim});
+
 {literal}
 $(document).ready(function () {
     $( ".date" ).datepicker({
@@ -143,7 +148,7 @@ $(document).ready(function () {
             var toHours = $('[name="to_hours"]').timepicker('getTime').getHours();
             var fromMoment = currentMoment.clone().set('hour', fromHours);
             var from = fromMoment.format('X');
-            var toMoment = currentMoment.clone().set('hour', toHours).subtract(1,'seconds');
+            var toMoment = currentMoment.clone().set('hour', toHours);
             var to = toMoment.format('X');
             var currentRequest = {
                 date: currentMoment.format("DD-MM-YYYY"),
@@ -234,7 +239,7 @@ $(document).ready(function () {
             onBuildQuery: function(queryParts){
                 var request = getCurrentRequest();
                 var from = request.from_moment.format('DD-MM-YYYY*HH:mm');
-                var to = request.to_moment.format('DD-MM-YYYY*HH:mm');
+                var to = request.to_moment.subtract(1,'seconds').format('DD-MM-YYYY*HH:mm');
                 return "from="+from+"&to="+to+"&stuff="+request.stuff_id_list+"&numero_posti="+request.numero_posti+"&";
             },
             onBeforeSearch: function (query, view) {

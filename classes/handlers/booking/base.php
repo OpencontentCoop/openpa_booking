@@ -127,21 +127,10 @@ abstract class BookingHandlerBase implements OpenPABookingHandlerInterface
                     $authorId = $currentObject->attribute('owner_id');
                     $approveIdArray = $serviceObject->getApproverIds();
 
-                    foreach (array_merge(array($authorId), $approveIdArray) as $userId) {
-                        if (!eZPersistentObject::fetchObject(eZCollaborationNotificationRule::definition(), null, array(
-                            'user_id' => $userId,
-                            'collab_identifier' => OpenPABookingCollaborationHandler::TYPE_STRING
-                        ), null, null, true)
-                        ) {
-                            $rule = eZCollaborationNotificationRule::create(OpenPABookingCollaborationHandler::TYPE_STRING,
-                                $userId);
-                            $rule->store();
-                            eZDebug::writeNotice("Create notification rule for user $userId", __METHOD__);
-                        }
-                    }
+                    $participants = new OpenPABookingCollaborationParticipants();
+                    $participants->addAuthor($authorId)->addApprovers($approveIdArray);
 
-                    OpenPABookingCollaborationHandler::createApproval($id, static::identifier(), $authorId,
-                        $approveIdArray);
+                    OpenPABookingCollaborationHandler::createApproval($id, static::identifier(), $participants);
                     $serviceObject->notify('create_approval');
                     eZDebug::writeNotice("Create collaboration item", __METHOD__);
                 }

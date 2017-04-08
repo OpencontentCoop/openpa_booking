@@ -2,13 +2,24 @@
 
 class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServiceControlBooking
 {
+    const STUFF_PENDING = 'pending';
+    const STUFF_APPROVED = 'approved';
+    const STUFF_DENIED = 'denied';
+    const STUFF_EXPIRED = 'expired';
+
     function run()
     {
         $this->fnData['sala'] = 'getSala';
+        $this->fnData['has_stuff'] = 'hasStuff';
+        $this->fnData['stuff'] = 'getStuffList';
+        $this->fnData['stuff_statuses'] = 'getStuffStatuses';
         $this->fnData['has_manual_price'] = 'hasManualPrice';
         $this->fnData['timeslot_count'] = 'getTimeSlotCount';
         $this->data['all_day'] = false; //@todo
         $this->fnData['concurrent_requests'] = 'getConcurrentRequests';
+        $this->fnData['is_stuff_approved'] = 'isStuffApproved';
+        $this->fnData['is_stuff_not_pending'] = 'isStuffNotPending';
+
         parent::run();
     }
 
@@ -163,6 +174,39 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return $list;
     }
 
+    public function getObserversIds()
+    {
+        $list = array();
+        $stuffList = $this->getStuffList();
+        foreach($stuffList as $stuff){
+            $list = array_merge(
+                $list,
+                $this->getStuffManagerIds($stuff['object'])
+            );
+        }
+
+        return $list;
+    }
+
+    public function getStuffManagerIds(eZContentObject $stuff)
+    {
+        $list = array();
+        /** @var eZContentObjectAttribute[] $dataMap */
+        $dataMap = $stuff->attribute('data_map');
+        if (isset( $dataMap['reservation_manager'] )) {
+            $items = explode('-', $dataMap['reservation_manager']->toString());
+            foreach ($items as $item) {
+                $id = (int)trim($item);
+                if ($id > 0) {
+                    $list[] = (int)$id;
+                }
+
+            }
+        }
+
+        return $list;
+    }
+
     protected function getStartDateTime()
     {
         $date = new DateTime();
@@ -183,19 +227,95 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return $date;
     }
 
+    private $sala;
+
     /**
      * @return eZContentObject
      */
     protected function getSala()
     {
-        $sala = null;
-        if ($this->isValid()) {
-            if (isset( $this->container->attributesHandlers['sala'] )) {
-                $sala = $this->container->attributesHandlers['sala']->attribute('contentobject_attribute')->attribute('content');
+        if ($this->sala === null) {
+            if ($this->isValid()) {
+                if (isset( $this->container->attributesHandlers['sala'] )) {
+                    $this->sala = $this->container->attributesHandlers['sala']->attribute('contentobject_attribute')->attribute('content');
+                }
             }
         }
+        return $this->sala;
+    }
 
-        return $sala;
+    private $stuff;
+
+    /**
+     * @return eZContentObject[]
+     */
+    protected function getStuffList()
+    {
+        if ($this->stuff === null) {
+            $stuffList = array();
+            if ($this->isValid()) {
+                if (isset( $this->container->attributesHandlers['stuff'] )) {
+                    $stuffRelationList = $this->container->attributesHandlers['stuff']->attribute('contentobject_attribute')->attribute('content');
+                    foreach ($stuffRelationList['relation_list'] as $item) {
+                        if (isset($item['contentobject_id'])) {
+                            $object = eZContentObject::fetch((int)$item['contentobject_id']);
+                            if ($object instanceof eZContentObject) {
+                                $stuffList[$item['contentobject_id']]['object'] = $object;
+                                if (isset($item['extra_fields']['booking_status']['identifier'])) {
+                                    $stuffList[$item['contentobject_id']]['status'] = $item['extra_fields']['booking_status']['identifier'];
+                                }else{
+                                    $stuffList[$item['contentobject_id']]['status'] = null;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            $this->stuff = $stuffList;
+        }
+
+        return $this->stuff;
+    }
+
+    public function hasStuff()
+    {
+        return (isset( $this->container->attributesHandlers['stuff'] )
+            && $this->container->attributesHandlers['stuff']->attribute('has_content'));
+    }
+
+
+    protected function getStuffStatuses()
+    {
+        $data = array();
+        $stuffList = $this->getStuffList();
+        foreach($stuffList as $id => $stuff){
+            $data[$id] = $stuff['status'];
+        }
+        return $data;
+    }
+
+    protected function isStuffApproved()
+    {
+        $this->stuff = null; //reset memory
+        $stuffList = $this->getStuffList();
+        foreach($stuffList as $stuff){
+            if ($stuff['status'] != self::STUFF_APPROVED){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected function isStuffNotPending()
+    {
+        $this->stuff = null; //reset memory
+        $stuffList = $this->getStuffList();
+        foreach($stuffList as $stuff){
+            if ($stuff['status'] == self::STUFF_PENDING){
+                return false;
+            }
+        }
+        return true;
     }
 
     protected function hasManualPrice()
@@ -287,7 +407,15 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 }
 
                 if (isset( $dataMap['stuff'] ) && eZHTTPTool::instance()->hasGetVariable('stuff')) {
-                    $dataMap['stuff']->fromString(eZHTTPTool::instance()->getVariable('stuff'));
+
+                    $stuffIdList = explode('-', eZHTTPTool::instance()->getVariable('stuff'));
+                    $stuffStringParts = array();
+                    foreach($stuffIdList as $stuffId){
+                        $stuffStringParts[] = "{$stuffId}|booking_status:pending|modified:" . time();
+                    }
+                    $stuffString = implode('&', $stuffStringParts);
+
+                    $dataMap['stuff']->fromString($stuffString);
                     $dataMap['stuff']->store();
                 }
 
@@ -310,9 +438,30 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return $object;
     }
 
+    public function subRequestCount()
+    {
+        if ($this->isValid()) {
+            return $this->container->getContentMainNode()->childrenCount();
+        }
+        return false;
+    }
+
+    public function getPrice()
+    {
+        if ($this->isValid()) {
+            /** @var eZContentObjectAttribute[] $dataMap */
+            $dataMap = $this->container->getContentObject()->attribute('data_map');
+            $parts = explode('|', $dataMap['price']->toString());
+            return $parts[0];
+        }
+
+        return 0;
+    }
+
     public function setPrice($price)
     {
         if ($this->isValid()) {
+            /** @var eZContentObjectAttribute[] $dataMap */
             $dataMap = $this->container->getContentObject()->attribute('data_map');
             $parts = explode('|', $dataMap['price']->toString());
             $parts[0] = $price;
@@ -325,9 +474,150 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return false;
     }
 
+    protected  static function setExtraFieldRelationAttribute(eZContentObjectAttribute $stuffAttribute, eZContentObject $stuff, $key, $value)
+    {
+        if ($stuffAttribute->attribute('data_type_string') == MugoObjectRelationListType::DATA_TYPE_STRING) {
+            $string = $stuffAttribute->toString();
+
+            // Explode out extra fields (attribute-level)
+            $splitExtraFields = eZStringUtils::explodeStr($string, MugoObjectRelationListType::EXTRAFIELDSSEPARATOR);
+
+            // Explode by relations
+            $relationList = eZStringUtils::explodeStr($splitExtraFields[0],
+                MugoObjectRelationListType::RELATIONSEPARATOR);
+
+            $data = array();
+            $store = false;
+            $beforeStateName = '';
+
+            //Explode by fields
+            foreach ($relationList as $relationKey => $relation) {
+
+                $data[$relationKey] = array();
+
+                $extraFields = eZStringUtils::explodeStr($relation, MugoObjectRelationListType::FIELDSEPARATOR);
+                $objectID = array_shift($extraFields);
+
+                if ($objectID == $stuff->attribute('id')) {
+
+                    $store = true;
+
+                    $newExtraFields = array();
+                    foreach ($extraFields as $extraField) {
+
+                        // Note that it does not enforce whether a field is required
+                        $extraFieldElements = eZStringUtils::explodeStr($extraField,
+                            MugoObjectRelationListType::OPTIONSEPARATOR);
+
+                        if ($extraFieldElements[0] == $key) {
+                            $beforeStateName = $extraFieldElements[1];
+                            $newExtraFields[] = eZStringUtils::implodeStr(array($extraFieldElements[0], $value),
+                                MugoObjectRelationListType::OPTIONSEPARATOR);
+                        } else {
+                            $newExtraFields[] = $extraField;
+                        }
+                    }
+                    array_unshift($newExtraFields, $objectID);
+                    $data[$relationKey] = eZStringUtils::implodeStr($newExtraFields,
+                        MugoObjectRelationListType::FIELDSEPARATOR);
+                } else {
+                    array_unshift($extraFields, $objectID);
+                    $data[$relationKey] = eZStringUtils::implodeStr($extraFields,
+                        MugoObjectRelationListType::FIELDSEPARATOR);
+                }
+            }
+
+            $relationString = eZStringUtils::implodeStr($data, MugoObjectRelationListType::RELATIONSEPARATOR);
+            $attributeLevelString = eZStringUtils::implodeStr(array('modified', time()),
+                MugoObjectRelationListType::OPTIONSEPARATOR);
+
+            $newString = eZStringUtils::implodeStr(array($relationString, $attributeLevelString),
+                MugoObjectRelationListType::EXTRAFIELDSSEPARATOR);
+
+            if ($store) {
+                $stuffAttribute->fromString($newString);
+                $stuffAttribute->store();
+                eZSearch::addObject( $stuffAttribute->object(), true );
+                return array(
+                    $key . '_before' => $beforeStateName,
+                    $key . '_after' => $value
+                );
+            }
+        }
+
+        return false;
+    }
+
+    public function createSubRequest(
+        eZContentObject $object
+    ) {
+        /** @var eZContentObjectAttribute[] $dataMap */
+        $dataMap = $object->attribute('data_map');
+        if (isset( $dataMap['scheduler'] ) && $dataMap['scheduler']->hasContent()) {
+            $data = json_decode($dataMap['scheduler']->content(), 1);
+            foreach ($data as $item) {
+
+                eZDebug::writeNotice("Create sub request " . var_export($item, 1), __METHOD__);
+
+                $params = array(
+                    'class_identifier' => $object->attribute('class_identifier'),
+                    'parent_node_id' => $object->attribute('main_node_id'),
+                    'attributes' => array(
+                        'from_time' => $item['from'] / 1000,
+                        'to_time' => $item['to'] / 1000,
+                        'stuff' => $dataMap['stuff']->toString(),
+                        'sala' => $dataMap['sala']->toString(),
+                        'subrequest' => 1
+                    )
+                );
+                $subRequest = eZContentFunctions::createAndPublishObject($params);
+                if (!$subRequest instanceof eZContentObject){
+                    eZDebug::writeError("Fail on creating subrequest", __METHOD__);
+                }
+
+            }
+        }
+    }
+
+    public function changeStuffApprovalState(eZContentObject $stuff, $status)
+    {
+        if ($this->isValid()) {
+            if (isset( $this->container->attributesHandlers['stuff'] )) {
+                /** @var eZContentObjectAttribute $stuffAttribute */
+
+                $stuffAttribute = $this->container->attributesHandlers['stuff']->attribute('contentobject_attribute');
+
+                if ($result = self::setExtraFieldRelationAttribute($stuffAttribute, $stuff, 'booking_status', $status)){
+
+                    if ($this->container->getContentMainNode()->childrenCount()) {
+                        /** @var eZContentObjectTreeNode[] $children */
+                        $children = $this->container->getContentMainNode()->children();
+                        foreach($children as $child){
+                            $dataMap = $child->dataMap();
+                            if( isset($dataMap['stuff'])){
+                                self::setExtraFieldRelationAttribute($dataMap['stuff'], $stuff, 'booking_status', $status);
+                            }
+                        }
+                    }
+
+                    $this->notify('change_stuff_state', array(
+                       'stuff_state_before' => $result['booking_status_before'],
+                       'stuff_state_after' => $result['booking_status_after'],
+                       'stuff' => $stuff
+                    ));
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public function setOrderStatus($status)
     {
         if ($this->isValid()) {
+            /** @var eZContentObjectAttribute[] $dataMap */
             $dataMap = $this->container->getContentObject()->attribute('data_map');
             $orderId = $dataMap['order_id']->toString();
             $order = eZOrder::fetch($orderId);
@@ -781,5 +1071,15 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
 
         return array();
+    }
+
+    public function notify($action, $params = array())
+    {
+        if ($action == 'change_state' && $params['state_after']->attribute('identifier') == self::$stateIdentifiers[self::STATUS_DENIED]){
+            foreach($this->getStuffList() as $stuff){
+                $this->changeStuffApprovalState($stuff['object'], self::STUFF_DENIED);
+            }
+        }
+        parent::notify($action, $params);
     }
 }

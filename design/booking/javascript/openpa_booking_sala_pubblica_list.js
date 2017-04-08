@@ -1,7 +1,7 @@
 $(document).ready(function () {
     var tools = $.opendataTools;
 
-    var mainQuery = 'classes [prenotazione_sala] and subrequest = 0 and facets [sala.name,stuff.name]';
+    var mainQuery = 'classes [prenotazione_sala] and subrequest = 0 and facets [sala.name]';
     //var facets = [
     //    {field: 'categoria', 'limit': 300, 'sort': 'alpha', name: 'Categoria'},
     //    {field: 'argomento.name', 'limit': 300, 'sort': 'alpha', name: 'Argomento'}
@@ -11,6 +11,31 @@ $(document).ready(function () {
     var facets = [];
 
     var datatable;
+
+    var renderStatus = function(data, row){
+        var state = $.map(data, function (val, i) {
+            if (val.indexOf("booking.") > -1) {
+                return val;
+            }
+        });
+        var stateClass = state[0].replace("booking.", "");
+        var stateName = $('.nav-pills li.' + stateClass + ' a').text();
+        var mainStatus = '<li><span class="label label-' + stateClass + '">' + stateName + '</span></li>';
+
+        var subStatuses = [];
+        if (row.data[tools.settings('language')].stuff.length){
+            $.each(row.data[tools.settings('language')].stuff, function(){
+                var bookingStatus = this.extra.in_context && this.extra.in_context.booking_status ? this.extra.in_context.booking_status : 'default';
+                //if (bookingStatus != 'approved') {
+                    subStatuses.push(
+                        '<li class="stuff-list"><small><span class="label label-' + bookingStatus + '"></span>' + this.name[tools.settings('language')] + '</small></li>'
+                    );
+                //}
+            });
+        }
+
+        return '<ul class="list list-unstyled">'+mainStatus+subStatuses.join('')+'</ul>';
+    };
 
     /**
      * Inizialiazzaione di OpendataDataTable (wrapper di jquery datatable)
@@ -65,14 +90,7 @@ $(document).ready(function () {
                     },
                     {
                         "render": function (data, type, row) {
-                            var state = $.map(data, function (val, i) {
-                                if (val.indexOf("booking.") > -1) {
-                                    return val;
-                                }
-                            });
-                            var stateClass = state[0].replace("booking.", "");
-                            var stateName = $('.nav-pills li.' + stateClass + ' a').text();
-                            return '<span class="label label-' + stateClass + '">' + stateName + '</span>';
+                            return renderStatus(data, row);
                         },
                         "targets": [1]
                     },

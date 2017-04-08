@@ -7,7 +7,7 @@ Subdir=templates
 Match[class_identifier]=prenotazione_sala
 
 [edit_booking_sala_pubblica_attrezzatura]
-Source=content/datatype/edit/ezobjectrelationlist.tpl
+Source=content/datatype/edit/mugoobjectrelationlist.tpl
 MatchFile=edit/booking_sala_pubblica_attrezzatura.tpl
 Subdir=templates
 Match[class_identifier]=prenotazione_sala

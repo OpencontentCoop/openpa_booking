@@ -10,14 +10,17 @@
 <table class="table" width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr>
         <th>
+            Descrizione
+        </th>
+        <th>
             {"VAT"|i18n("design/ocbootstrap/shop/basket")}
         </th>
         <th>
             {"Price inc. VAT"|i18n("design/ocbootstrap/shop/basket")}
         </th>
-        <th>
-            {"Discount"|i18n("design/ocbootstrap/shop/basket")}
-        </th>
+        {*<th>*}
+            {*{"Discount"|i18n("design/ocbootstrap/shop/basket")}*}
+        {*</th>*}
         <th>
             {"Total price ex. VAT"|i18n("design/ocbootstrap/shop/basket")}
         </th>
@@ -29,15 +32,23 @@
     </tr>
     {foreach $items as $item}
         <tr>
-            <td colspan="7"><input type="hidden" name="ProductItemIDList[]"
-                                   value="{$item.id}"/>
+            <td>
+                <input type="hidden" name="ProductItemIDList[]"  value="{$item.id}"/>
                 {*{$item.id}-*}
                 {*<a href={concat("/content/view/full/",$item.node_id,"/")|ezurl}>*}
-                    <h4>{$item.item_count} {$item.object_name}</h4>
+                    {$item.object_name}
+                    <ul class="list-unstyled">
+                        {if $item.item_object.contentobject}
+                            {foreach $item.item_object.contentobject.data_map.stuff.content.relation_list as $stuff}
+                                {if and(is_set($stuff.extra_fields.booking_status), $stuff.extra_fields.booking_status.identifier|eq('approved'))}
+                                    <li>{fetch(content,object, hash(object_id, $stuff.contentobject_id)).name|wash()}</li>
+                                {/if}
+                            {/foreach}
+                        {/if}
+                    </ul>
+
                 {*</a>*}
             </td>
-        </tr>
-        <tr>
             <td>
                 <input type="hidden" name="ProductItemCountList[]" value="{$item.item_count}"/>
                 {if ne( $item.vat_value, -1 )}
@@ -49,9 +60,9 @@
             <td>
                 {$item.price_inc_vat|l10n( 'currency', $locale, $symbol )}
             </td>
-            <td>
-                {$item.discount_percent}%
-            </td>
+            {*<td>*}
+                {*{$item.discount_percent}%*}
+            {*</td>*}
             <td>
                 {$item.total_price_ex_vat|l10n( 'currency', $locale, $symbol )}
             </td>
@@ -69,34 +80,29 @@
         {*<td colspan="1"><input class="button" type="submit" name="RemoveProductItemButton"*}
         {*value="{'Remove'|i18n('design/ocbootstrap/shop/basket')}"/></td>*}
         {*</tr>*}
-        {if $item.item_object.option_list}
-            <tr>
-                <td colspan="7" style="padding: 0;">
-                    <table cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td colspan="3">
-                                {"Selected options"|i18n("design/ocbootstrap/shop/basket")}
-                            </td>
-                        </tr>
-                        {foreach $item.item_object.option_list as $option}
-                            <tr>
-                                <td width="33%">{$option.name}</td>
-                                <td width="33%">{$option.value}</td>
-                                <td width="33%">{$optionitem.price|l10n( 'currency', $locale, $symbol )}</td>
-                            </tr>
-                        {/foreach}
-                    </table>
-                </td>
-            </tr>
-        {/if}
+        {*{if $item.item_object.option_list}*}
+            {*<tr>*}
+                {*<td colspan="7" style="padding: 0;">*}
+                    {*<table cellpadding="0" cellspacing="0">*}
+                        {*<tr>*}
+                            {*<td colspan="3">*}
+                                {*{"Selected options"|i18n("design/ocbootstrap/shop/basket")}*}
+                            {*</td>*}
+                        {*</tr>*}
+                        {*{foreach $item.item_object.option_list as $option}*}
+                            {*<tr>*}
+                                {*<td width="33%">{$option.name}</td>*}
+                                {*<td width="33%">{$option.value}</td>*}
+                                {*<td width="33%">{$optionitem.price|l10n( 'currency', $locale, $symbol )}</td>*}
+                            {*</tr>*}
+                        {*{/foreach}*}
+                    {*</table>*}
+                {*</td>*}
+            {*</tr>*}
+        {*{/if}*}
     {/foreach}
     <tr>
-        <td colspan="7">
-            <hr size='2'/>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="5">
+        <td colspan="3">
         </td>
         <td>
             <strong>{"Subtotal ex. VAT"|i18n("design/ocbootstrap/shop/basket")}</strong>:
@@ -106,7 +112,7 @@
         </td>
     </tr>
     <tr>
-        <td colspan="5">
+        <td colspan="3">
         </td>
         <td>
             {$total_ex_vat|l10n( 'currency', $locale, $symbol )}

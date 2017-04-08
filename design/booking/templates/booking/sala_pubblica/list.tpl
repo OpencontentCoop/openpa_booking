@@ -27,30 +27,10 @@
     </h1>
 </section>
 
-{def $states = booking_states()
-     $state_colors = booking_state_colors()}
+{def $states = booking_states()}
 
-<style>
-{literal}
-    .chosen-search input, .chosen-container-multi input {
-        height: auto !important
-    }
-    .center-pills {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-    }
-    .nav-pills>li.state_filter{
-        opacity: .3;
-    }
-    .nav-pills>li.active{
-        opacity: 1 !important;
-    }
-{/literal}
-{foreach $state_colors as $identifier => $color}
-    .nav-pills>li.{$identifier}>a, .nav-pills>li.{$identifier}>a:hover, .nav-pills>li.{$identifier}>a:focus,.label-{$identifier}{ldelim}background-color:{$color};color:#fff{rdelim}
-{/foreach}
-</style>
+{include uri='design:booking/parts/status-style.tpl'}
+
 <div class="content-view-full class-folder">
 
     <div class="spinner text-center">

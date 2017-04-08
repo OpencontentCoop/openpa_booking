@@ -22,6 +22,11 @@
 ))}
 {ezcss_require( array( 'fullcalendar.min.css' ) )}
 
+{def $query = concat('openpa/data/booking_sala_pubblica?sala=', $node.contentobject_id)|ezurl()}
+{if is_set($stuff)}
+    {set $query = concat('openpa/data/booking_sala_pubblica?stuff=', $stuff)|ezurl()}
+{/if}
+
 {def $min_time = "07:00:00"
      $max_time = "24:00:00"
      $booking_url = concat( "openpa_booking/add/sala_pubblica/", $node.contentobject_id )}
@@ -36,7 +41,7 @@
         $(document).ready(function () {
             $('#calendar').fullCalendar({
                 locale: "{/literal}{$moment_language}{literal}",
-                defaultView: "agendaWeek",
+                defaultView: "month",
                 allDaySlot: false,
                 slotDuration: '00:60:00',
                 minTime: "{/literal}{$min_time}{literal}",
@@ -47,7 +52,7 @@
                     center: 'title',
                     right: 'month,agendaWeek,agendaDay'
                 },
-                events: {url: {/literal}{concat('openpa/data/booking_sala_pubblica?sala=', $node.contentobject_id)|ezurl()}{literal} },
+                events: {url: {/literal}{$query}{literal} },
                 selectable: false,
                 eventClick: function(event) {
                     if (event.url) {
@@ -60,24 +65,17 @@
     </script>
 {/literal}
 
-{def $states = booking_states()
-     $state_colors = booking_state_colors()}
 
-<style>
-    {foreach $state_colors as $identifier => $color}
-    .label-{$identifier}{ldelim}background-color:{$color};color:#fff{rdelim}
-    {/foreach}
-</style>
-
+{include uri='design:booking/parts/status-style.tpl'}
 
 <div class="panel">
     <div class="panel-body">
         <div id='calendar'></div>
-        <ul class="list list-inline" style="margin-top: 20px">
-        {foreach $states as $state}
-            <li><span class="label label-{$state.identifier}">{$state.current_translation.name|wash()}</span></li>
+        <div style="margin-top: 20px">
+        {foreach booking_states() as $state}
+            <span class="label label-{$state.identifier}">{$state.current_translation.name|wash()}</span>
         {/foreach}
-        </ul>
+        </div>
     </div>
 </div>
 

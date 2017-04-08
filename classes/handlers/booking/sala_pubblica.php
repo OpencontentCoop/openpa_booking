@@ -57,19 +57,18 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         $serviceClass = $this->serviceClass();
         if ($this->currentObject instanceof eZContentObject) {
             $serviceObject = $this->serviceObject($this->currentObject);
-            if (!$serviceObject->getCollaborationItem() instanceof eZCollaborationItem) {
+            if (!$serviceObject->getCollaborationItem() instanceof eZCollaborationItem
+                && $this->currentObject->mainNode() instanceof eZContentObjectTreeNode) {
                 $parent = $this->currentObject->mainNode()->fetchParent();
                 if ($parent->attribute('class_identifier') == $serviceClass->prenotazioneClassIdentifier()) {
                     $this->currentObject = $parent->object();
                 }
             }
             $serviceObject = $this->serviceObject($this->currentObject);
-            $openpaObject = OpenPAObjectHandler::instanceFromContentObject($this->currentObject);
             if ($serviceObject
                 && $serviceObject->isValid()
                 && $this->currentObject->attribute('can_read')
             ) {
-
                 $collaborationItem = $serviceObject->getCollaborationItem();
                 if ($collaborationItem instanceof eZCollaborationItem) {
                     $module = eZModule::exists("collaboration");
@@ -232,6 +231,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
             && $prenotazione->attribute('can_read')
         ) {
             $do = true;
+
             if ($serviceObject->attribute('has_manual_price')) {
                 $do = false;
                 if (isset( $parameters['manual_price'] )) {
@@ -243,16 +243,36 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                         $do = $serviceObject->setPrice($manualPrice);
                     }
                 }
+            }elseif ($count = $serviceObject->subRequestCount()){
+                $single = $serviceObject->getPrice();
+                $price = $single + ($single * $count);
+                $do = $serviceObject->setPrice($price);
             }
 
-            if ($do) {
+            $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+            if ($participants->userIsApprover($prenotazione->attribute('owner_id'))) {
+
+                OpenPABookingCollaborationHandler::handler($item)->approve($item, array());
+
+                OpenPABookingCollaborationHandler::changeApprovalStatus(
+                    $item,
+                    OpenPABookingCollaborationHandler::STATUS_ACCEPTED
+                );
+
+            }elseif ($do) {
                 $sala = $serviceObject->attribute('sala');
                 if ($sala instanceof eZContentObject) {
+
                     $productType = eZShopFunctions::productTypeByObject($sala);
+
                     if ($productType) {
+
                         $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT);
+
                     } else {
+
                         $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED);
+
                         OpenPABookingCollaborationHandler::changeApprovalStatus(
                             $item,
                             OpenPABookingCollaborationHandler::STATUS_ACCEPTED
@@ -288,37 +308,6 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         }
     }
 
-    private static function createSubRequest(
-        eZContentObject $object
-    ) {
-        /** @var eZContentObjectAttribute[] $dataMap */
-        $dataMap = $object->attribute('data_map');
-        if (isset( $dataMap['scheduler'] ) && $dataMap['scheduler']->hasContent()) {
-            $data = json_decode($dataMap['scheduler']->content(), 1);
-            foreach ($data as $item) {
-
-                eZDebug::writeNotice("Create sub request " . var_export($item, 1), __METHOD__);
-
-                $params = array(
-                    'class_identifier' => $object->attribute('class_identifier'),
-                    'parent_node_id' => $object->attribute('main_node_id'),
-                    'attributes' => array(
-                        'from_time' => $item['from'] / 1000,
-                        'to_time' => $item['to'] / 1000,
-                        'stuff' => empty( $item['stuff'] ) ? null : $item['stuff'],
-                        'sala' => $dataMap['sala']->toString(),
-                        'subrequest' => 1
-                    )
-                );
-                $subRequest = eZContentFunctions::createAndPublishObject($params);
-                if (!$subRequest instanceof eZContentObject){
-                    eZDebug::writeError("Fail on creating subrequest", __METHOD__);
-                }
-
-            }
-        }
-    }
-
     private static function initializeApproval(
         eZContentObject $currentObject,
         ObjectHandlerServiceControlBookingSalaPubblica $serviceObject
@@ -337,10 +326,6 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
     ) {
         $id = (int)$currentObject->attribute('id');
         $authorId = (int)$currentObject->attribute('owner_id');
-        $approveIdArray = $serviceObject->getApproverIds();
-
-        $participants = array_merge(array($authorId), $approveIdArray);
-        self::addApprovalParticipants($participants);
 
         $exists = eZPersistentObject::fetchObject(
             eZCollaborationItem::definition(), null,
@@ -350,11 +335,15 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
             )
         );
 
+        $participants = new OpenPABookingCollaborationParticipants();
+        $participants->addAuthor((int)$currentObject->attribute('owner_id'))
+            ->addObservers($serviceObject->getObserversIds())
+            ->addApprovers($serviceObject->getApproverIds());
+
         $collaborationItem = OpenPABookingCollaborationHandler::createApproval(
             $id,
             self::identifier(),
-            $authorId,
-            $approveIdArray,
+            $participants,
             $exists
         );
         if ($exists) {
@@ -366,41 +355,15 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         }
 
         if ($createSubRequest) {
-            self::createSubRequest($currentObject);
+            $serviceObject->createSubRequest($currentObject);
         }
 
-        if (in_array($authorId, $approveIdArray)) {
+        if ($participants->userIsApprover($authorId) && !$serviceObject->hasStuff()) {
             OpenPABookingCollaborationHandler::handler($collaborationItem)->approve($collaborationItem, array());
             OpenPABookingCollaborationHandler::changeApprovalStatus($collaborationItem,
                 OpenPABookingCollaborationHandler::STATUS_ACCEPTED);
         } elseif ($exists) {
             $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_PENDING);
-        }
-    }
-
-    private static function addApprovalParticipants(array $participantsIdList)
-    {
-        $notificationRules = eZPersistentObject::fetchObjectList(
-            eZCollaborationNotificationRule::definition(),
-            array('user_id'),
-            array(
-                'user_id' => array($participantsIdList),
-                'collab_identifier' => OpenPABookingCollaborationHandler::TYPE_STRING
-            ), null, null, false
-        );
-        $alreadyMembers = array();
-        foreach ($notificationRules as $notificationRule) {
-            $alreadyMembers[] = $notificationRule['user_id'];
-        }
-        $alreadyMembers = array_unique($alreadyMembers);
-        $addIdList = array_diff($participantsIdList, $alreadyMembers);
-
-        foreach ($addIdList as $addId) {
-            $rule = eZCollaborationNotificationRule::create(
-                OpenPABookingCollaborationHandler::TYPE_STRING,
-                $addId
-            );
-            $rule->store();
         }
     }
 
@@ -431,6 +394,34 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         } else {
             throw new Exception("Prenotazione non accessibile");
         }
+    }
+
+    public function handleCustomAction(eZModule $module, eZCollaborationItem $item)
+    {
+        if ($this->isCustomAction('AcceptStuff')){
+            $parameters = $this->customInput('OpenpaBookingActionParameters');
+            if (isset($parameters['stuff_id'])){
+                return $this->changeStuffApprovalState($item, $parameters['stuff_id'], ObjectHandlerServiceControlBookingSalaPubblica::STUFF_APPROVED);
+            }
+        }elseif ($this->isCustomAction('DenyStuff')){
+            $parameters = $this->customInput('OpenpaBookingActionParameters');
+            if (isset($parameters['stuff_id'])){
+                return $this->changeStuffApprovalState($item, $parameters['stuff_id'], ObjectHandlerServiceControlBookingSalaPubblica::STUFF_DENIED);
+            }
+        }
+        return false;
+    }
+
+    private function changeStuffApprovalState(eZCollaborationItem $item, $stuffId, $status)
+    {
+        $serviceObject = $this->serviceObject($item);
+        $stuff = $serviceObject->attribute('stuff');
+        if (isset($stuff[$stuffId])){
+            if (in_array(eZUser::currentUserID(), $serviceObject->getStuffManagerIds($stuff[$stuffId]['object']))){
+                return $serviceObject->changeStuffApprovalState($stuff[$stuffId]['object'], $status);
+            }
+        }
+        return false;
     }
 
 }
