@@ -9,7 +9,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
     const ROLE_MEMBER = 'Booking Member';
     const ROLE_ADMIN = 'Booking Admin';
-    const ROLE_ANONYM = 'Booking Anonimouys';
+    const ROLE_ANONYM = 'Booking Anonymous';
 
     function run()
     {
@@ -305,7 +305,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     public function hasStuff()
     {
         return (isset( $this->container->attributesHandlers['stuff'] )
-            && $this->container->attributesHandlers['stuff']->attribute('has_content'));
+                && $this->container->attributesHandlers['stuff']->attribute('has_content'));
     }
 
 
@@ -664,9 +664,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                     }
 
                     $this->notify('change_stuff_state', array(
-                       'stuff_state_before' => $result['booking_status_before'],
-                       'stuff_state_after' => $result['booking_status_after'],
-                       'stuff' => $stuff
+                        'stuff_state_before' => $result['booking_status_before'],
+                        'stuff_state_after' => $result['booking_status_after'],
+                        'stuff' => $stuff
                     ));
 
                     return true;
@@ -909,14 +909,14 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             ), $self->salaPubblicaClassIdentifiers(), self::stuffClassIdentifiers()
         );
 
-        OpenPALog::warning("Update classes");
-        foreach ($classes as $identifier) {
-            $tools = new OpenPAClassTools($identifier, true);
-            if (!$tools->isValid()) {
-                $tools->sync(true);
-                OpenPALog::warning("La classe $identifier è stata aggiornata");
-            }
-        }
+        OpenPALog::warning("ATTENZIONE ALLINEAMENTO CLASSI DISATTIVATO PER QUESTO INSTALLER");
+        //foreach ($classes as $identifier) {
+        //    $tools = new OpenPAClassTools($identifier, true);
+        //    if (!$tools->isValid()) {
+        //        $tools->sync(true);
+        //        OpenPALog::warning("La classe $identifier è stata aggiornata");
+        //    }
+        //}
 
         $stuffClassIdList = array();
         foreach (self::stuffClassIdentifiers() as $stuffIdentifier) {
@@ -926,16 +926,23 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         OpenPALog::warning("Init roles");
         $prenotazioneClass = eZContentClass::fetchByIdentifier($self->prenotazioneClassIdentifier());
 
-        $classes = $parentClasses = array();
+        $parentClasses = array();
         foreach ($self->salaPubblicaClassIdentifiers() as $identifier) {
             $class = eZContentClass::fetchByIdentifier($identifier);
             if ($class) {
-                $classes[$identifier] = $class;
+                $stuffClassIdList[] = $class->attribute('id');
                 $parentClasses[] = $class->attribute('id');
             }
         }
 
         $policies = array(
+            array(
+                'ModuleName' => 'user',
+                'FunctionName' => 'login',
+                'Limitation' => array(
+                    'SiteAccess' => eZSys::ezcrc32(OpenPABase::getCustomSiteaccessName('booking', false))
+                )
+            ),
             array(
                 'ModuleName' => 'collaboration',
                 'FunctionName' => '*'

@@ -111,6 +111,8 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                             self::restoreApproval($currentObject, $serviceObject);
                         }
                     }
+
+                    eZSearch::addObject( $currentObject, true );
                 }
 
                 if (in_array($currentObject->attribute('class_identifier'),
@@ -126,7 +128,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
 
                         }
                     }
-
+                    eZSearch::addObject( $currentObject, true );
                 }
             }
         }
