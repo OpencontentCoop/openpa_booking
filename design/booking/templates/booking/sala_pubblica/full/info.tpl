@@ -201,7 +201,7 @@
         <div class="panel panel-default">
             <table class="table">
                 {foreach $content_object.data_map as $identifier => $attribute}
-                    {if array('text', 'destinatari', 'patrocinio', 'comunicazione')|contains($attribute.contentclass_attribute_identifier)}
+                    {if array('text', 'associazione', 'cittadino_residente', 'finalita', 'destinatari', 'patrocinio', 'comunicazione')|contains($attribute.contentclass_attribute_identifier)}
                         <tr>
                         <th>{$attribute.contentclass_attribute_name|wash()}</th>
                         <td>

@@ -67,7 +67,7 @@
         {/foreach}
     </div>
 </div>
-{if $attribute_group|ne('hidden')}{set $count = $count|inc()}{/if}
+    {if or( $attribute_group|eq('hidden'), and($no_stuff, $attribute_group|eq('booking_stuff')))|not()}{set $count = $count|inc()}{/if}
 {/foreach}
 
 <div class="row edit-group-row" id="repeat">

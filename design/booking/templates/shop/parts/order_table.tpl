@@ -36,14 +36,22 @@
                 <input type="hidden" name="ProductItemIDList[]"  value="{$item.id}"/>
                 {*{$item.id}-*}
                 {*<a href={concat("/content/view/full/",$item.node_id,"/")|ezurl}>*}
-                    {$item.object_name}
-                    <ul class="list-unstyled">
+                <ul class="list-unstyled">
+                        <li>{$item.object_name}</li>
                         {if $item.item_object.contentobject}
+
                             {foreach $item.item_object.contentobject.data_map.stuff.content.relation_list as $stuff}
                                 {if and(is_set($stuff.extra_fields.booking_status), $stuff.extra_fields.booking_status.identifier|eq('approved'))}
                                     <li>{fetch(content,object, hash(object_id, $stuff.contentobject_id)).name|wash()}</li>
                                 {/if}
                             {/foreach}
+
+                            {if $item.item_object.contentobject.main_node.children_count}
+                                {foreach $item.item_object.contentobject.main_node.children as $child}
+                                    <li>{$child.name|wash()}</li>
+                                {/foreach}
+                            {/if}
+
                         {/if}
                     </ul>
 

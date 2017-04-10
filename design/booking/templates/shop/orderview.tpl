@@ -48,10 +48,26 @@
 {foreach $order.product_items as $product_item sequence array( 'bglight', 'bgdark' ) as $style}
 <tr>
     <td>
-        <a href="{concat('openpa_booking/view/sala_pubblica/',$product_item.item_object.contentobject_id)|ezurl(no)}">
-            <span class="label label-primary">{$product_item.item_object.contentobject_id}</span>
-            {$product_item.object_name}
-        </a>
+        <p>
+            <a href="{concat('openpa_booking/view/sala_pubblica/',$product_item.item_object.contentobject_id)|ezurl(no)}">
+                <span class="label label-primary">Prenotazione {$product_item.item_object.contentobject_id}</span>
+            </a>
+        </p>
+        <ul class="list list-unstyled">
+            <li>{$product_item.object_name}</li>
+            {if $product_item.item_object.contentobject.main_node.children_count}
+                {foreach $product_item.item_object.contentobject.main_node.children as $child}
+                    <li>{$child.name|wash()}</li>
+                {/foreach}
+            {/if}
+            {if $product_item.item_object.contentobject.data_map.stuff.has_content}
+            {foreach $product_item.item_object.contentobject.data_map.stuff.content.relation_list as $stuff}
+                {if and(is_set($stuff.extra_fields.booking_status), $stuff.extra_fields.booking_status.identifier|eq('approved'))}
+                    <li>{fetch(content,object, hash(object_id, $stuff.contentobject_id)).name|wash()}</li>
+                {/if}
+            {/foreach}
+            {/if}
+        </ul>
     </td>
     <td>
     {$product_item.item_count}
