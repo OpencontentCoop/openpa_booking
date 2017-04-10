@@ -923,6 +923,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $stuffClassIdList[] = eZContentClass::classIDByIdentifier($stuffIdentifier);
         }
 
+        $stuffClassIdList[] = eZContentClass::classIDByIdentifier('associazione');
+
         OpenPALog::warning("Init roles");
         $prenotazioneClass = eZContentClass::fetchByIdentifier($self->prenotazioneClassIdentifier());
 
