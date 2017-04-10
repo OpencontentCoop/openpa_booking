@@ -62,32 +62,9 @@
 
 </form>
 
-{if $openpa_object.control_booking_sala_pubblica.current_state_code|ne(4)}
-    {def $concurrent_requests = $openpa_object.control_booking_sala_pubblica.concurrent_requests}
-    {if $concurrent_requests|count()|gt(0)}
-        <p>
-            {if $collab_item.data_int3|eq(0)}
-                <strong>Attenzione:</strong> confermando la disponibilità della sala per questa prenotazione, automaticamente verranno rifiutate le seguenti richieste:
-            {else}
-                <strong>Attenzione:</strong> la richiesta &egrave; in conlitto con le seguenti richieste:
-            {/if}
-        </p>
-        <table class="list" width="100%" cellspacing="0" cellpadding="0" border="0">
-            <tr>
-                <th>ID</th>
-                <th>Richiedente</th>
-                <th>Stato richiesta</th>
-                <th>Periodo di prenotazione</th>
-                <th>Data richiesta</th>
-                <th>Messaggi non letti</th>
-                <th>Dettaglio pagamento</th>
-            </tr>
-            {foreach $concurrent_requests as $prenotazione sequence array( bglight,bgdark ) as $style}
-                {include name="row_prenotazione" prenotazione=$prenotazione uri="design:booking/sala_pubblica/prenotazione_row.tpl" style=$style}
-            {/foreach}
-        </table>
-    {/if}
-{/if}
-
 
 {include uri='design:booking/sala_pubblica/full/info.tpl'}
+
+{include uri='design:booking/sala_pubblica/full/concurrents.tpl'}
+
+{include uri='design:booking/sala_pubblica/full/detail_and_messages.tpl'}

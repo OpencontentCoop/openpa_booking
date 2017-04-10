@@ -46,8 +46,11 @@
     </div>
     <div class="col-md-8 service_teaser vertical">
         {foreach $content_attributes_grouped as $attribute_identifier => $attribute}
+
             {def $contentclass_attribute = $attribute.contentclass_attribute}
-            <div class="edit-row ezcca-edit-datatype-{$attribute.data_type_string} ezcca-edit-{$attribute_identifier}">
+            <div class="edit-row ezcca-edit-datatype-{$attribute.data_type_string} ezcca-edit-{$attribute_identifier}"
+                    {if and($attribute_identifier|eq('range_user'), $object.data_map.sala.content.data_map.price_range.has_content|not())}style="display: none"{/if}>
+
                 {if $is_translating_content|not()}
                     <p{if $attribute.has_validation_error} class="message-error"{/if}>
                         <b>
@@ -62,6 +65,7 @@
                     </p>
                     {attribute_edit_gui attribute_base=$attribute_base attribute=$attribute view_parameters=$view_parameters html_class='form-control'}
                 {/if}
+
             </div>
             {undef $contentclass_attribute}
         {/foreach}

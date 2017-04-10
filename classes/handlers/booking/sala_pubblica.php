@@ -69,6 +69,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 && $serviceObject->isValid()
                 && $this->currentObject->attribute('can_read')
             ) {
+
                 $collaborationItem = $serviceObject->getCollaborationItem();
                 if ($collaborationItem instanceof eZCollaborationItem) {
                     $module = eZModule::exists("collaboration");
@@ -243,10 +244,6 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                         $do = $serviceObject->setPrice($manualPrice);
                     }
                 }
-            }elseif ($count = $serviceObject->subRequestCount()){
-                $single = $serviceObject->getPrice();
-                $price = $single + ($single * $count);
-                $do = $serviceObject->setPrice($price);
             }
 
             $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
@@ -357,6 +354,8 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         if ($createSubRequest) {
             $serviceObject->createSubRequest($currentObject);
         }
+
+        $serviceObject->setCalculatedPrice();
 
         if ($participants->userIsApprover($authorId) && !$serviceObject->hasStuff()) {
             OpenPABookingCollaborationHandler::handler($collaborationItem)->approve($collaborationItem, array());

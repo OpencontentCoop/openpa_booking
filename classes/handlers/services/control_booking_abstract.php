@@ -318,44 +318,48 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
                     $receiverIdList = array_unique($this->getObserversIds());
                 }
 
-                $receivers = (array)eZPersistentObject::fetchObjectList(
-                    eZUser::definition(),
-                    null,
-                    array('contentobject_id' => array($receiverIdList)),
-                    true
-                );
+                if (!empty($receiverIdList)) {
+                    $receivers = (array)eZPersistentObject::fetchObjectList(
+                        eZUser::definition(),
+                        null,
+                        array('contentobject_id' => array($receiverIdList)),
+                        true
+                    );
 
-                foreach ($receivers as $index => $receiver) {
-                    if ($receiver instanceof eZUser && $mail->validate($receiver->attribute('email'))) {
-                        if ($index == 0) {
-                            $mail->setReceiver($receiver->attribute('email'));
-                        } else {
-                            $mail->addCc($receiver->attribute('email'));
+                    foreach ($receivers as $index => $receiver) {
+                        if ($receiver instanceof eZUser && $mail->validate($receiver->attribute('email'))) {
+                            if ($index == 0) {
+                                $mail->setReceiver($receiver->attribute('email'));
+                            } else {
+                                $mail->addCc($receiver->attribute('email'));
+                            }
                         }
                     }
-                }
 
-                if (count($receivers) == 0){
-                    eZDebug::writeError("Receivers users not found sending notification mail to $scope for action $action", __METHOD__);
-                }
+                    if (count($receivers) == 0) {
+                        eZDebug::writeError("Receivers users not found sending notification mail to $scope for action $action",
+                            __METHOD__);
+                    }
 
-                $ini = eZINI::instance();
-                $sender = $ini->variable("MailSettings", "EmailSender");
-                $mail->setSender($sender, $ini->variable("SiteSettings", "SiteName"));
+                    $ini = eZINI::instance();
+                    $sender = $ini->variable("MailSettings", "EmailSender");
+                    $mail->setSender($sender, $ini->variable("SiteSettings", "SiteName"));
 
-                if (!$mail->validate($replyTo)) {
-                    $replyTo = $ini->variable("MailSettings", "EmailReplyTo");
-                }
-                if (!$mail->validate($replyTo)) {
-                    $replyTo = $sender;
-                }
-                $mail->setReplyTo($replyTo);
+                    if (!$mail->validate($replyTo)) {
+                        $replyTo = $ini->variable("MailSettings", "EmailReplyTo");
+                    }
+                    if (!$mail->validate($replyTo)) {
+                        $replyTo = $sender;
+                    }
+                    $mail->setReplyTo($replyTo);
 
-                $result = eZMailTransport::send($mail);
-                if ($result) {
-                    eZDebug::writeDebug("Send notification mail to $scope (" . implode(', ', $receiverIdList) . ") for action $action", __METHOD__);
-                } else {
-                    eZDebug::writeError("Fail sending notification mail to $scope for action $action", __METHOD__);
+                    $result = eZMailTransport::send($mail);
+                    if ($result) {
+                        eZDebug::writeDebug("Send notification mail to $scope (" . implode(', ',
+                                $receiverIdList) . ") for action $action", __METHOD__);
+                    } else {
+                        eZDebug::writeError("Fail sending notification mail to $scope for action $action", __METHOD__);
+                    }
                 }
 
             }

@@ -17,6 +17,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $this->fnData['timeslot_count'] = 'getTimeSlotCount';
         $this->data['all_day'] = false; //@todo
         $this->fnData['concurrent_requests'] = 'getConcurrentRequests';
+        $this->fnData['all_concurrent_requests'] = 'getAllConcurrentRequests';
         $this->fnData['is_stuff_approved'] = 'isStuffApproved';
         $this->fnData['is_stuff_not_pending'] = 'isStuffNotPending';
 
@@ -128,6 +129,26 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 $this->getStartDateTime(),
                 $this->getEndDateTime(),
                 array(self::STATUS_PENDING, self::STATUS_WAITING_FOR_CHECKOUT, self::STATUS_WAITING_FOR_PAYMENT),
+                $sala,
+                $this->container->getContentObject()->attribute('id')
+            );
+        }
+
+        return $data;
+    }
+
+    protected function getAllConcurrentRequests()
+    {
+        $data = array();
+        if ($this->isValid()) {
+            $sala = array();
+            if ($this->getSala() instanceof eZContentObject) {
+                $sala[] = $this->getSala()->attribute('main_node_id');
+            }
+            $data = self::fetchConcurrentItems(
+                $this->getStartDateTime(),
+                $this->getEndDateTime(),
+                array(),
                 $sala,
                 $this->container->getContentObject()->attribute('id')
             );
@@ -442,6 +463,44 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     {
         if ($this->isValid()) {
             return $this->container->getContentMainNode()->childrenCount();
+        }
+        return false;
+    }
+
+    public function getCalculatedPrice()
+    {
+        $price = $this->getPrice();
+
+        if ($this->isValid()) {
+
+            /** @var eZContentObjectAttribute[] $dataMap */
+            $dataMap = $this->container->getContentObject()->attribute('data_map');
+            if ($dataMap['range_user']->hasContent()) {
+                $identifier = $dataMap['range_user']->toString();
+                $sala = $this->getSala();
+                /** @var eZContentObjectAttribute[] $salaDataMap */
+                $salaDataMap = $sala->attribute('data_map');
+                $priceRangeMatrix = isset( $salaDataMap['price_range'] ) ? $salaDataMap['price_range']->content() : new eZMatrix('null');
+
+                foreach ($priceRangeMatrix->Matrix['rows']['sequential'] as $row) {
+                    if ($row['columns'][0] == $identifier) {
+                        $price = floatval($row['columns'][2]);
+                    }
+                }
+            }
+        }
+
+        if ($count = $this->subRequestCount()){
+            $price = $price + ($price * $count);
+        }
+        return $price;
+    }
+
+    public function setCalculatedPrice()
+    {
+        if ($this->isValid() && !$this->hasManualPrice()){
+            $price = $this->getCalculatedPrice();
+            return $this->setPrice($price);
         }
         return false;
     }

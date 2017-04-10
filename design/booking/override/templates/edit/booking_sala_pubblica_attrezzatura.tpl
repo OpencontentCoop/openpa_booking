@@ -162,7 +162,7 @@
                                     name="{$attribute_base}_extra_fields_attribute_level_{$attribute.id}[{$field_identifier}]"
                                     type="text"
                                     style="width: 200px;"
-                                    value="{$attribute.content.extra_fields_attribute_level[$field_identifier]|wash()}"
+                                    value="{if is_set($attribute.content.extra_fields_attribute_level)}{$attribute.content.extra_fields_attribute_level[$field_identifier]|wash()}{/if}"
                             />
                         {/if}
                     </td>
