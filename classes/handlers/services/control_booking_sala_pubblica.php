@@ -937,6 +937,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             }
         }
 
+        $defaultMemberRole = eZRole::fetchByName('Member');
+
         $policies = array(
             array(
                 'ModuleName' => 'user',
@@ -944,6 +946,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 'Limitation' => array(
                     'SiteAccess' => eZSys::ezcrc32(OpenPABase::getCustomSiteaccessName('booking', false))
                 )
+            ),
+            array(
+                'ModuleName' => 'collaboration',
+                'FunctionName' => '*'
             ),
             array(
                 'ModuleName' => 'collaboration',
@@ -1004,6 +1010,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $membersGroup = eZContentObject::fetchByNodeID($defaultUserPlacement);
         if ($membersGroup instanceof eZContentObject) {
             $memberRole->assignToUser($membersGroup->attribute('id'));
+            if ($defaultMemberRole instanceof eZRole) {
+                $defaultMemberRole->assignToUser($membersGroup->attribute('id'));
+            }
         }
 
         $adminPolicies = $policies;
@@ -1019,6 +1028,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $adminGroup = eZContentObject::fetchByRemoteID(OpenPABooking::moderatorGroupRemoteId());
         if ($adminGroup instanceof eZContentObject) {
             $adminRole->assignToUser($adminGroup->attribute('id'));
+            if ($defaultMemberRole instanceof eZRole) {
+                $defaultMemberRole->assignToUser($adminGroup->attribute('id'));
+            }
         }
 
         $anonymousPolicies = array(
