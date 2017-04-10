@@ -198,7 +198,7 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
         }
     }
 
-    public function changeState($stateCode, $checkPermission = true)
+    public function changeState($stateCode, $checkPermission = false)
     {
         $currentState = $this->getCurrentStateCode();
         $params = array('state_before' => self::getStateObject($currentState));
