@@ -15,6 +15,7 @@
 
 <script type="text/javascript" language="javascript" class="init">
     $.opendataTools.settings('accessPath', "{'/'|ezurl(no,full)}");
+    $.opendataTools.settings('currentUserId', {fetch(user, current_user).contentobject_id});
     $.opendataTools.settings('endpoint', {ldelim}
         'search': '{'/opendata/api/content/search/'|ezurl(no,full)}',
         'class': '{'/opendata/api/classes/'|ezurl(no,full)}'

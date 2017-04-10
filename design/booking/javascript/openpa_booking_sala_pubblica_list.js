@@ -1,7 +1,7 @@
 $(document).ready(function () {
     var tools = $.opendataTools;
 
-    var mainQuery = 'classes [prenotazione_sala] and subrequest = 0 and facets [sala.name]';
+    var mainQuery = 'classes [prenotazione_sala] and subrequest = 0 and raw[extra_booking_users_lk] = '+tools.settings('currentUserId')+' and facets [sala.name]';
     //var facets = [
     //    {field: 'categoria', 'limit': 300, 'sort': 'alpha', name: 'Categoria'},
     //    {field: 'argomento.name', 'limit': 300, 'sort': 'alpha', name: 'Argomento'}

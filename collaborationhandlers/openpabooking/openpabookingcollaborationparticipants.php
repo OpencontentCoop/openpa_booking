@@ -76,6 +76,16 @@ class OpenPABookingCollaborationParticipants
         return $data;
     }
 
+    public function getUserIdList()
+    {
+        $data = array();
+        foreach ($this->usersByRole as $role => $list) {
+            $data = array_merge($data, $list);
+        }
+
+        return array_unique($data);
+    }
+
     public function subscribeTo(eZCollaborationItem $collaborationItem)
     {
         $collaborationID = $collaborationItem->attribute('id');
