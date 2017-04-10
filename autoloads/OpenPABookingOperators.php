@@ -70,8 +70,7 @@ class OpenPABookingOperators
                 break;
 
             case 'stuff_class_identifiers':
-                $service = new ObjectHandlerServiceControlBookingSalaPubblica();
-                $operatorValue = $service->stuffClassIdentifiers();
+                $operatorValue = ObjectHandlerServiceControlBookingSalaPubblica::stuffClassIdentifiers();
                 break;
 
             case 'stuff_node_id':

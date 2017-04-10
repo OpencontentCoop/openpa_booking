@@ -76,7 +76,10 @@
                                 {/if}
                             </td>
                             <td>
-                                {if and($item.extra_fields.booking_status.identifier|eq('pending'), $stuff_manager_ids|contains(fetch('user', 'current_user').contentobject_id))}
+                                {if and(
+                                    $item.extra_fields.booking_status.identifier|eq('pending'),
+                                    $stuff_manager_ids|contains(fetch('user', 'current_user').contentobject_id)
+                                )}
                                 <form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">
                                     <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[stuff_id]" value="{$stuff.id}" />
                                     <input class="btn btn-success btn-xs" type="submit" name="CollaborationAction_AcceptStuff" value="Approva" />

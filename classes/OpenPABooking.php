@@ -157,14 +157,14 @@ class OpenPABooking
         return OpenPABooking::rootRemoteId() . '_external_users';
     }
 
-    public static function moderatorGroupNodeId()
+    public static function moderatorGroupNodeId($createIfNotExists = false, $params = array())
     {
-        return self::getNodeIdFromRemoteId(self::moderatorGroupRemoteId(), array('class_identifier' => 'user_group'));
+        return self::getNodeIdFromRemoteId(self::moderatorGroupRemoteId(), $createIfNotExists, $params);
     }
 
     public static function externalUsersGroupNodeId()
     {
-        return self::getNodeIdFromRemoteId(self::externalUsersGroupRemoteId(), array('class_identifier' => 'user_group'));
+        return self::getNodeIdFromRemoteId(self::externalUsersGroupRemoteId());
     }
 
     public static function classIdentifiers()

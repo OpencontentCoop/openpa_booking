@@ -56,7 +56,7 @@
                     <th>{'Costo previsto'|i18n('booking')}</th>
                     <td>
                         {def $price = $content_object.data_map.price.content.inc_vat_price}
-                        {$price|sum($price|mul($content_object.main_node.children_count))|l10n( currency )}
+                        {$price|l10n( currency )}
                     </td>
                 </tr>
 

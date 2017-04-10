@@ -97,18 +97,36 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         eZDebug::writeNotice("Run workflow $trigger", __METHOD__);
         if ($trigger == 'post_publish') {
             $currentObject = eZContentObject::fetch($parameters['object_id']);
-            $openpaObject = OpenPAObjectHandler::instanceFromContentObject($currentObject);
+            if ($currentObject instanceof eZContentObject) {
+                $openpaObject = OpenPAObjectHandler::instanceFromContentObject($currentObject);
 
-            /** @var ObjectHandlerServiceControlBookingSalaPubblica $serviceObject */
-            $serviceObject = $openpaObject->serviceByClassName(get_class($this->serviceClass()));
+                /** @var ObjectHandlerServiceControlBookingSalaPubblica $serviceObject */
+                $serviceObject = $openpaObject->serviceByClassName(get_class($this->serviceClass()));
 
-            if ($serviceObject && $serviceObject->attribute('is_valid')) {
-                if ($currentObject->attribute('class_identifier') == $serviceObject->prenotazioneClassIdentifier()) {
-                    if ($currentObject->attribute('current_version') == 1) {
-                        self::initializeApproval($currentObject, $serviceObject);
-                    } else {
-                        self::restoreApproval($currentObject, $serviceObject);
+                if ($serviceObject && $serviceObject->attribute('is_valid')) {
+                    if ($currentObject->attribute('class_identifier') == $serviceObject->prenotazioneClassIdentifier()) {
+                        if ($currentObject->attribute('current_version') == 1) {
+                            self::initializeApproval($currentObject, $serviceObject);
+                        } else {
+                            self::restoreApproval($currentObject, $serviceObject);
+                        }
                     }
+                }
+
+                if (in_array($currentObject->attribute('class_identifier'),
+                    ObjectHandlerServiceControlBookingSalaPubblica::stuffClassIdentifiers())) {
+
+                    $idList = ObjectHandlerServiceControlBookingSalaPubblica::getStuffManagerIds($currentObject);
+                    foreach($idList as $id){
+                        if (eZUser::fetch($id)){
+                            $role = eZRole::fetchByName(ObjectHandlerServiceControlBookingSalaPubblica::ROLE_ADMIN);
+                            if ($role instanceof eZRole){
+
+                            }
+
+                        }
+                    }
+
                 }
             }
         }
@@ -416,7 +434,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         $serviceObject = $this->serviceObject($item);
         $stuff = $serviceObject->attribute('stuff');
         if (isset($stuff[$stuffId])){
-            if (in_array(eZUser::currentUserID(), $serviceObject->getStuffManagerIds($stuff[$stuffId]['object']))){
+            if (in_array(eZUser::currentUserID(), ObjectHandlerServiceControlBookingSalaPubblica::getStuffManagerIds($stuff[$stuffId]['object']))){
                 return $serviceObject->changeStuffApprovalState($stuff[$stuffId]['object'], $status);
             }
         }

@@ -7,6 +7,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     const STUFF_DENIED = 'denied';
     const STUFF_EXPIRED = 'expired';
 
+    const ROLE_MEMBER = 'Booking Member';
+    const ROLE_ADMIN = 'Booking Admin';
+    const ROLE_ANONYM = 'Booking Anonimouys';
+
     function run()
     {
         $this->fnData['sala'] = 'getSala';
@@ -202,14 +206,14 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         foreach($stuffList as $stuff){
             $list = array_merge(
                 $list,
-                $this->getStuffManagerIds($stuff['object'])
+                self::getStuffManagerIds($stuff['object'])
             );
         }
 
         return $list;
     }
 
-    public function getStuffManagerIds(eZContentObject $stuff)
+    public static function getStuffManagerIds(eZContentObject $stuff)
     {
         $list = array();
         /** @var eZContentObjectAttribute[] $dataMap */
@@ -383,7 +387,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return 'prenotazione_sala';
     }
 
-    public function stuffClassIdentifiers()
+    public static function stuffClassIdentifiers()
     {
         return array('attrezzatura_sala');
     }
@@ -885,6 +889,11 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             }
         }
 
+        OpenPABooking::moderatorGroupNodeId(true, array(
+            'class_identifier' => 'user_group',
+            'attributes' => array( 'name' => 'Utenti responsabili' )
+        ));
+
 
         $self = new self();
 
@@ -897,7 +906,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $classes = array_merge(
             array(
                 $self->prenotazioneClassIdentifier(),
-            ), $self->salaPubblicaClassIdentifiers(), $self->stuffClassIdentifiers()
+            ), $self->salaPubblicaClassIdentifiers(), self::stuffClassIdentifiers()
         );
 
         OpenPALog::warning("Update classes");
@@ -910,7 +919,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
 
         $stuffClassIdList = array();
-        foreach ($self->stuffClassIdentifiers() as $stuffIdentifier) {
+        foreach (self::stuffClassIdentifiers() as $stuffIdentifier) {
             $stuffClassIdList[] = eZContentClass::classIDByIdentifier($stuffIdentifier);
         }
 
@@ -970,99 +979,74 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             )
         );
 
-        $roleName = 'Booking Member';
-        $role = eZRole::fetchByName($roleName);
-        if (!$role instanceof eZRole) {
-            $role = eZRole::create($roleName);
-            $role->store();
+        $memberPolicies = $policies;
+        $memberPolicies[] = array(
+            'ModuleName' => 'content',
+            'FunctionName' => 'read',
+            'Limitation' => array(
+                'Owner' => 1,
+                'Class' => $prenotazioneClass->attribute('id'),
+                'Section' => $section->attribute('id')
+            )
+        );
 
-            $memberPolicies = $policies;
-            $memberPolicies[] = array(
+        $memberRole = OpenPABase::initRole(self::ROLE_MEMBER, $memberPolicies, true);
+        $defaultUserPlacement = (int)eZINI::instance()->variable("UserSettings", "DefaultUserPlacement");
+        $membersGroup = eZContentObject::fetchByNodeID($defaultUserPlacement);
+        if ($membersGroup instanceof eZContentObject) {
+            $memberRole->assignToUser($membersGroup->attribute('id'));
+        }
+
+        $adminPolicies = $policies;
+        $adminPolicies[] = array(
+            'ModuleName' => 'content',
+            'FunctionName' => 'read',
+            'Limitation' => array(
+                'Class' => $prenotazioneClass->attribute('id'),
+                'Section' => $section->attribute('id')
+            )
+        );
+        $adminRole = OpenPABase::initRole(self::ROLE_ADMIN, $adminPolicies, true);
+        $adminGroup = eZContentObject::fetchByRemoteID(OpenPABooking::moderatorGroupRemoteId());
+        if ($adminGroup instanceof eZContentObject) {
+            $adminRole->assignToUser($adminGroup->attribute('id'));
+        }
+
+        $anonymousPolicies = array(
+            array(
+                'ModuleName' => 'user',
+                'FunctionName' => 'login',
+                'Limitation' => array(
+                    'SiteAccess' => eZSys::ezcrc32(OpenPABase::getCustomSiteaccessName('booking', false))
+                )
+            ),
+            array(
+                'ModuleName' => 'openpa_booking',
+                'FunctionName' => 'read'
+            ),
+            array(
                 'ModuleName' => 'content',
                 'FunctionName' => 'read',
                 'Limitation' => array(
-                    'Owner' => 1,
-                    'Class' => $prenotazioneClass->attribute('id'),
-                    'Section' => $section->attribute('id')
+                    'Class' => $stuffClassIdList
                 )
-            );
-
-            foreach ($memberPolicies as $policy) {
-                $role->appendPolicy($policy['ModuleName'], $policy['FunctionName'], $policy['Limitation']);
-            }
-
-            $defaultUserPlacement = (int)eZINI::instance()->variable("UserSettings", "DefaultUserPlacement");
-            $membersGroup = eZContentObject::fetchByNodeID($defaultUserPlacement);
-            if ($membersGroup instanceof eZContentObject) {
-                $role->assignToUser($membersGroup->attribute('id'));
-            }
-        }
-
-        $roleName = 'Booking Admin';
-        $role = eZRole::fetchByName($roleName);
-        if (!$role instanceof eZRole) {
-            $role = eZRole::create($roleName);
-            $role->store();
-
-            $adminPolicies = $policies;
-            $adminPolicies[] = array(
+            ),
+            array(
                 'ModuleName' => 'content',
                 'FunctionName' => 'read',
                 'Limitation' => array(
-                    'Class' => $prenotazioneClass->attribute('id'),
-                    'Section' => $section->attribute('id')
-                )
-            );
-
-            foreach ($adminPolicies as $policy) {
-                $role->appendPolicy($policy['ModuleName'], $policy['FunctionName'], $policy['Limitation']);
-            }
-        }
-
-        $roleName = 'Booking Anonymous';
-        $role = eZRole::fetchByName($roleName);
-        if (!$role instanceof eZRole) {
-            $role = eZRole::create($roleName);
-            $role->store();
-
-            $policies = array(
-                array(
-                    'ModuleName' => 'user',
-                    'FunctionName' => 'login',
-                    'Limitation' => array(
-                        'SiteAccess' => eZSys::ezcrc32(OpenPABase::getCustomSiteaccessName('booking', false))
-                    )
-                ),
-                array(
-                    'ModuleName' => 'openpa_booking',
-                    'FunctionName' => 'read'
-                ),
-                array(
-                    'ModuleName' => 'content',
-                    'FunctionName' => 'read',
-                    'Limitation' => array(
-                        'Class' => $stuffClassIdList
-                    )
-                ),
-                array(
-                    'ModuleName' => 'content',
-                    'FunctionName' => 'read',
-                    'Limitation' => array(
-                        'Node' => array(
-                            OpenPABooking::locationsNodeId(),
-                            OpenPABooking::stuffNodeId(),
-                        )
+                    'Node' => array(
+                        OpenPABooking::locationsNodeId(),
+                        OpenPABooking::stuffNodeId(),
                     )
                 )
-            );;
+            )
+        );;
 
-            foreach ($policies as $policy) {
-                $role->appendPolicy($policy['ModuleName'], $policy['FunctionName'], $policy['Limitation']);
-            }
+        $anonymousRole = OpenPABase::initRole(self::ROLE_ANONYM, $anonymousPolicies, true);
 
-            $anonymousUserId = eZINI::instance()->variable('UserSettings', 'AnonymousUserID');
-            $role->assignToUser($anonymousUserId);
-        }
+        $anonymousUserId = eZINI::instance()->variable('UserSettings', 'AnonymousUserID');
+        $anonymousRole->assignToUser($anonymousUserId);
 
         OpenPALog::error("Attiva il workflow Prenotazioni in post_publish, in pre_delete e in post_checkout");
     }
