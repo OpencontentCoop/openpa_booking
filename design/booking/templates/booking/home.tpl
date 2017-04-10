@@ -52,6 +52,12 @@
                     <option value="4">{'Oltre 400'|i18n('booking')}</option>
                 </select>
             </div>
+            <div class="form-group" style="display: none">
+                <label for="destinazione_uso">{"Destinazione d'uso"|i18n('booking')}</label>
+                <select id="destinazione_uso" name="destinazione_uso" class="form-control">
+                    <option value=""></option>
+                </select>
+            </div>
         </aside>
 
     </div>
@@ -162,7 +168,8 @@ $(document).ready(function () {
                 has_stuff: false,
                 stuff: [],
                 stuff_id_list: null,
-                numero_posti:  $('[name="numero_posti"]').val()
+                numero_posti:  $('[name="numero_posti"]').val(),
+                destinazione_uso:  $('[name="destinazione_uso"]').val()
             };
             var attrezzatureRichieste = $('[name="stuff"]').val();
             var stuffIdList = [];
@@ -224,10 +231,20 @@ $(document).ready(function () {
         $('#booking_items').opendataSearchView({
             query: '',
             onInit: function (view) {
+
+                var destinazioni = $.opendataTools.find('classes sala_pubblica facets [destinazione_uso] limit 1', function(data){
+                    if (data.facets.length > 0) {
+                        $.each(data.facets[0].data, function(index, value){
+                            $('[name="destinazione_uso"]').append('<option value="'+index+'">'+index+'</option>');
+                        });
+                        $('[name="destinazione_uso"]').parents('.form-group').show();
+                    }
+                });
+
                 $.opendataTools.settings('endpoint',{
                     'search': $.opendataTools.settings('endpoint').booking
                 });
-                $('[name="stuff"], [name="date"], [name="numero_posti"]').on('change', function(e){
+                $('[name="stuff"], [name="date"], [name="destinazione_uso"], [name="numero_posti"]').on('change', function(e){
                     view.doSearch();
                     e.preventDefault();
                 });
@@ -240,7 +257,7 @@ $(document).ready(function () {
                 var request = getCurrentRequest();
                 var from = request.from_moment.format('DD-MM-YYYY*HH:mm');
                 var to = request.to_moment.subtract(1,'seconds').format('DD-MM-YYYY*HH:mm');
-                return "from="+from+"&to="+to+"&stuff="+request.stuff_id_list+"&numero_posti="+request.numero_posti+"&";
+                return "from="+from+"&to="+to+"&stuff="+request.stuff_id_list+"&numero_posti="+request.numero_posti+"&destinazione_uso="+request.destinazione_uso+"&";
             },
             onBeforeSearch: function (query, view) {
                 view.container.html(spinner);

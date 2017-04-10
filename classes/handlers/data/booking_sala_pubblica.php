@@ -128,6 +128,9 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                     break;
             }
         }
+        if (isset( $requestData['destinazione_uso'] ) && !empty($requestData['destinazione_uso'])) {
+            $filters[] = "destinazione_uso = '" . $requestData['destinazione_uso'] . "'";
+        }
         if (isset( $requestData['location'] )) {
             $location = (int)$requestData['location'];
             if ($location > 0) {
