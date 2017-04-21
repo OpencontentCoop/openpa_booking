@@ -2,6 +2,9 @@
 
 class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServiceControlBooking
 {
+    const STATUS_RETURN_OK = 10;
+    const STATUS_RETURN_KO = 20;
+
     const STUFF_PENDING = 'pending';
     const STUFF_APPROVED = 'approved';
     const STUFF_DENIED = 'denied';
@@ -10,6 +13,62 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     const ROLE_MEMBER = 'Booking Member';
     const ROLE_ADMIN = 'Booking Admin';
     const ROLE_ANONYM = 'Booking Anonymous';
+
+    protected static $stateIdentifiers = array(
+        self::STATUS_PENDING                => 'in_attesa_di_approvazione',
+        self::STATUS_WAITING_FOR_CHECKOUT   => 'in_attesa_di_pagamento',
+        self::STATUS_WAITING_FOR_PAYMENT    => 'in_attesa_di_verifica_pagamento',
+        self::STATUS_APPROVED               => 'confermato',
+        self::STATUS_DENIED                 => 'rifiutato',
+        self::STATUS_EXPIRED                => 'scaduto',
+        self::STATUS_RETURN_OK              => 'restituzione_ok',
+        self::STATUS_RETURN_KO              => 'restituzione_ko',
+    );
+
+    public static function getStateColors()
+    {
+        $data = array();
+        $data[self::STATUS_APPROVED] = "#419641";
+        $data[self::STATUS_DENIED] = "#666666";
+        $data[self::STATUS_PENDING] = "#e38d13";
+        $data[self::STATUS_EXPIRED] = "#000000";
+        $data[self::STATUS_WAITING_FOR_CHECKOUT] = "#0000FF";
+        $data[self::STATUS_WAITING_FOR_PAYMENT] = "#CC66FF";
+        $data[self::STATUS_RETURN_OK] = "#419641";
+        $data[self::STATUS_RETURN_KO] = "#666666";
+        $data['current'] = '#ff0000';
+        $data['none'] = '#333';
+
+        return $data;
+    }
+
+    public static function getStateObject($stateCode)
+    {
+        $states = OpenPABase::initStateGroup(static::$stateGroupIdentifier, static::$stateIdentifiers);
+        $stateObject = null;
+        foreach ($states as $state) {
+            switch ($stateCode) {
+                case static::STATUS_RETURN_OK: {
+                    if ($state->attribute('identifier') == 'restituzione_ok') {
+                        $stateObject = $state;
+                    }
+                }
+                    break;
+
+                case static::STATUS_RETURN_KO: {
+                    if ($state->attribute('identifier') == 'restituzione_ko') {
+                        $stateObject = $state;
+                    }
+                }
+                    break;
+
+                default:
+                    $stateObject = parent::getStateObject($stateCode);
+            }
+        }
+
+        return $stateObject;
+    }
 
     function run()
     {
@@ -790,22 +849,13 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return true;
     }
 
-    private static function isInClosingDay($closingDay, $startDateTime, $endDateTime)
+    public static function isInClosingDay($closingDay, $startDateTime, $endDateTime)
     {
         $isInRange = false;
-        if (strpos($closingDay, 'festivi') !== false) {
-
-            // @todo
-            eZDebug::writeError("@todo implementare soluzione per closing_day 'festivi'");
-
-        } else {
-            $closingDay = str_replace('/', '-', $closingDay);
-            $testStart = new DateTime($closingDay);
-            if ($testStart instanceof DateTime) {
-                $testEnd = clone $testStart;
-                $testEnd->setTime(23, 59);
-                $isInRange = $startDateTime >= $testStart && $endDateTime <= $testEnd;
-            }
+        if ($closingDay instanceof DateTime){
+            $testEnd = clone $closingDay;
+            $testEnd->setTime(23, 59);
+            $isInRange = $startDateTime >= $closingDay && $endDateTime <= $testEnd;
         }
 
         return $isInRange;
@@ -1082,7 +1132,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         OpenPALog::error("Attiva il workflow Prenotazioni in post_publish, in pre_delete e in post_checkout");
     }
 
-    private static function getOpeningHours(eZContentObject $object, $attributeIdentifier = 'opening_hours')
+    public static function getOpeningHours(eZContentObject $object, $attributeIdentifier = 'opening_hours')
     {
         $dataMap = $object->attribute('data_map');
         if (isset( $dataMap[$attributeIdentifier] )
@@ -1124,24 +1174,34 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return array();
     }
 
-    private static function getClosingDays(eZContentObject $object, $attributeIdentifier = 'closing_days')
+    public static function getClosingDays(eZContentObject $object, $attributeIdentifier = 'closing_days')
     {
         $dataMap = $object->attribute('data_map');
         if (isset( $dataMap[$attributeIdentifier] )
             && $dataMap[$attributeIdentifier] instanceof eZContentObjectAttribute
             && $dataMap[$attributeIdentifier]->attribute('has_content')
         ) {
-            $timeTableContent = $dataMap[$attributeIdentifier]->attribute('content')->attribute('matrix');
-            $timeTable = array();
-            foreach ($timeTableContent['columns']['sequential'] as $column) {
+            $closingDaysContent = $dataMap[$attributeIdentifier]->attribute('content')->attribute('matrix');
+            $closingDays = array();
+            foreach ($closingDaysContent['columns']['sequential'] as $column) {
                 foreach ($column['rows'] as $row) {
                     if (!empty( $row )) {
-                        $timeTable[] = $row;
+                        $closingDayString = str_replace('/', '-', $row);
+                        if (strpos($closingDayString, 'festivi') !== false) {
+                            // @todo
+                            eZDebug::writeError("@todo implementare soluzione per closing_day 'festivi'");
+
+                        } else {
+                            $closingDay = new DateTime($closingDayString);
+                            if ($closingDay instanceof DateTime) {
+                                $closingDays[] = $closingDay;
+                            }
+                        }
                     }
                 }
             }
 
-            return $timeTable;
+            return $closingDays;
         }
 
         return array();

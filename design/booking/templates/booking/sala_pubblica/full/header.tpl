@@ -18,8 +18,8 @@
     </ul>
 </section>
 
-{if $openpa_object.control_booking_sala_pubblica.current_state.current_translation.description|ne('')}
+{if and($current_state.current_translation.description|ne(''),$current_state.current_translation.name|ne($current_state.current_translation.description))}
     <div class="lead">
-        <p>{$openpa_object.control_booking_sala_pubblica.current_state.current_translation.description}</p>
+        <p>{$current_state.current_translation.description|wash()}</p>
     </div>
 {/if}

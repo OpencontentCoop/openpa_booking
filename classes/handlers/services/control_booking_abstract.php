@@ -26,7 +26,7 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
         $this->fnData['current_state_code'] = 'getCurrentStateCode';
         $this->fnData['current_state'] = 'getCurrentState';
         $this->fnData['collaboration_item'] = 'getCollaborationItem';
-        $this->data['state_colors'] = self::getStateColors();
+        $this->data['state_colors'] = static::getStateColors();
         $this->fnData['reservation_manager_ids'] = 'getApproverIds';
         $this->fnData['start'] = 'getStartDateTime';
         $this->data['start_moment'] = $this->getStartDateTime()->format('c');
@@ -39,14 +39,14 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
     public static function getStateColors()
     {
         $data = array();
-        $data[self::STATUS_APPROVED] = "#419641";
-        $data[self::STATUS_DENIED] = "#666666";
-        $data[self::STATUS_PENDING] = "#e38d13";
-        $data[self::STATUS_EXPIRED] = "#000000";
-        $data[self::STATUS_WAITING_FOR_CHECKOUT] = "#0000FF";
-        $data[self::STATUS_WAITING_FOR_PAYMENT] = "#CC66FF";
+        $data[static::STATUS_APPROVED] = "#419641";
+        $data[static::STATUS_DENIED] = "#666666";
+        $data[static::STATUS_PENDING] = "#e38d13";
+        $data[static::STATUS_EXPIRED] = "#000000";
+        $data[static::STATUS_WAITING_FOR_CHECKOUT] = "#0000FF";
+        $data[static::STATUS_WAITING_FOR_PAYMENT] = "#CC66FF";
         $data['current'] = '#ff0000';
-        $data['none'] = '#cccccc';
+        $data['none'] = '#333';
 
         return $data;
     }
@@ -71,51 +71,51 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
 
     public static function getStates()
     {
-        return OpenPABase::initStateGroup(self::$stateGroupIdentifier, self::$stateIdentifiers);
+        return OpenPABase::initStateGroup(static::$stateGroupIdentifier, static::$stateIdentifiers);
     }
 
     public static function getStateObject($stateCode)
     {
-        $states = OpenPABase::initStateGroup(self::$stateGroupIdentifier, self::$stateIdentifiers);
+        $states = OpenPABase::initStateGroup(static::$stateGroupIdentifier, static::$stateIdentifiers);
         $stateObject = null;
         foreach ($states as $state) {
             switch ($stateCode) {
-                case self::STATUS_PENDING: {
+                case static::STATUS_PENDING: {
                     if ($state->attribute('identifier') == 'in_attesa_di_approvazione') {
                         $stateObject = $state;
                     }
                 }
                     break;
 
-                case self::STATUS_WAITING_FOR_CHECKOUT: {
+                case static::STATUS_WAITING_FOR_CHECKOUT: {
                     if ($state->attribute('identifier') == 'in_attesa_di_pagamento') {
                         $stateObject = $state;
                     }
                 }
                     break;
 
-                case self::STATUS_WAITING_FOR_PAYMENT: {
+                case static::STATUS_WAITING_FOR_PAYMENT: {
                     if ($state->attribute('identifier') == 'in_attesa_di_verifica_pagamento') {
                         $stateObject = $state;
                     }
                 }
                     break;
 
-                case self::STATUS_APPROVED: {
+                case static::STATUS_APPROVED: {
                     if ($state->attribute('identifier') == 'confermato') {
                         $stateObject = $state;
                     }
                 }
                     break;
 
-                case self::STATUS_DENIED: {
+                case static::STATUS_DENIED: {
                     if ($state->attribute('identifier') == 'rifiutato') {
                         $stateObject = $state;
                     }
                 }
                     break;
 
-                case self::STATUS_EXPIRED: {
+                case static::STATUS_EXPIRED: {
                     if ($state->attribute('identifier') == 'scaduto') {
                         $stateObject = $state;
                     }
@@ -129,18 +129,18 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
 
     protected function getCurrentState()
     {
-        return self::getStateObject($this->getCurrentStateCode());
+        return static::getStateObject($this->getCurrentStateCode());
     }
 
     protected function getCurrentStateCode()
     {
-        $current = self::STATUS_PENDING;
+        $current = static::STATUS_PENDING;
         if ($this->isValid()) {
-            $states = OpenPABase::initStateGroup(self::$stateGroupIdentifier, self::$stateIdentifiers);
+            $states = OpenPABase::initStateGroup(static::$stateGroupIdentifier, static::$stateIdentifiers);
             $currentStates = $this->container->getContentObject()->attribute('state_id_array');
             foreach ($states as $state) {
                 if (in_array($state->attribute('id'), $currentStates)) {
-                    $current = self::getStateCodeFromIdentifier($state->attribute('identifier'));
+                    $current = static::getStateCodeFromIdentifier($state->attribute('identifier'));
                 }
             }
         }
@@ -150,8 +150,8 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
 
     public static function getStateCodeFromIdentifier($identifier)
     {
-        $code = self::STATUS_PENDING;
-        foreach(self::$stateIdentifiers as $index => $value){
+        $code = static::STATUS_PENDING;
+        foreach(static::$stateIdentifiers as $index => $value){
             if ($value == $identifier){
                 return $index;
             }
@@ -163,7 +163,7 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
     public static function getStateIdentifierFromCode($code)
     {
         $value = null;
-        foreach(self::$stateIdentifiers as $index => $value){
+        foreach(static::$stateIdentifiers as $index => $value){
             if (is_numeric($index) && $index == $code){
                 return $value;
             }
@@ -172,10 +172,10 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
         return $code;
     }
 
-    public static function assignState(eZContentObject $object, $stateCode, $checkPermission = true)
+    public static function assignState(eZContentObject $object, $stateCode, $checkPermission = false)
     {
         if ($object instanceof eZContentObject) {
-            $state = self::getStateObject($stateCode);
+            $state = static::getStateObject($stateCode);
             eZDebug::writeDebug('Change (' . $checkPermission . ')  state to ' . $stateCode . ' for object ' . $object->attribute('id'), __METHOD__);
             if ($state instanceof eZContentObjectState) {
                 if ($checkPermission) {
@@ -201,17 +201,17 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
     public function changeState($stateCode, $checkPermission = false)
     {
         $currentState = $this->getCurrentStateCode();
-        $params = array('state_before' => self::getStateObject($currentState));
+        $params = array('state_before' => static::getStateObject($currentState));
         if ($currentState != $stateCode) {
-            self::assignState($this->container->getContentObject(), $stateCode, $checkPermission);
+            static::assignState($this->container->getContentObject(), $stateCode, $checkPermission);
             if ($this->container->getContentMainNode()->childrenCount()) {
                 /** @var eZContentObjectTreeNode[] $children */
                 $children = $this->container->getContentMainNode()->children();
                 foreach($children as $child){
-                    self::assignState($child->object(), $stateCode, false);
+                    static::assignState($child->object(), $stateCode, false);
                 }
             }
-            $params['state_after'] = self::getStateObject($stateCode);
+            $params['state_after'] = static::getStateObject($stateCode);
             $this->notify('change_state', $params);
         }
     }

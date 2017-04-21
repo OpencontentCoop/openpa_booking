@@ -83,15 +83,17 @@ class OpenPABookingOperators
                 break;
 
             case 'booking_states':
-                $operatorValue = ObjectHandlerServiceControlBooking::getStates();
+                $operatorValue = ObjectHandlerServiceControlBookingSalaPubblica::getStates();
                 break;
 
             case 'booking_state_colors':
                 $colors = array();
-                $stateColors = ObjectHandlerServiceControlBooking::getStateColors();
+                $stateColors = ObjectHandlerServiceControlBookingSalaPubblica::getStateColors();
                 foreach($stateColors as $index => $stateColor){
                     if (is_numeric($index)) {
-                        $colors[ObjectHandlerServiceControlBooking::getStateIdentifierFromCode($index)] = $stateColor;
+                        $colors[ObjectHandlerServiceControlBookingSalaPubblica::getStateIdentifierFromCode($index)] = $stateColor;
+                    }else{
+                        $colors[$index] = $stateColor;
                     }
                 }
                 $operatorValue = $colors;

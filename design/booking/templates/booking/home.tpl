@@ -43,7 +43,7 @@
                         </select>
                     </div>
                 {/if}
-                <div class="form-group">
+                {*<div class="form-group">
                     <label for="stuff" class="hide">{'Numero di posti'|i18n('booking')}</label>
                     <select id="stuff" name="numero_posti" class="form-control">
                         <option value="">{'Numero di posti'|i18n('booking')}</option>
@@ -52,7 +52,7 @@
                         <option value="3">{'Da 200 a 400'|i18n('booking')}</option>
                         <option value="4">{'Oltre 400'|i18n('booking')}</option>
                     </select>
-                </div>
+                </div>*}
                 <div class="form-group" style="display: none">
                     <label for="destinazione_uso" class="hide">{"Destinazione d'uso"|i18n('booking')}</label>
                     <select id="destinazione_uso" name="destinazione_uso" class="form-control">

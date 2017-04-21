@@ -103,9 +103,16 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
         $cleanRequestData = function ($value) {
             return str_replace('*', ' ', $value);
         };
+
         $cleanRequest = array_map($cleanRequestData, $requestData);
 
-        $availabilityRequest = array();
+        if (isset( $cleanRequest['show_unavailable'] ) && (int)$cleanRequest['show_unavailable'] == 1) {
+            $this->showUnavailableLocations = true;
+        }
+
+        $availabilityRequest = array(
+            'raw' => $cleanRequest
+        );
 
         if (isset( $cleanRequest['from'] ) && isset( $cleanRequest['to'] )) {
             $availabilityRequest['calendar'] = "calendar[] = [{$cleanRequest['from']},{$cleanRequest['to']}]";
@@ -169,9 +176,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
             $dateFilter = $request['calendar'];
             $stateIdList = array(
                 ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED)->attribute('id'),
-                //            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED )->attribute( 'id' ),
                 ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_PENDING)->attribute('id'),
-                //            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED )->attribute( 'id' ),
                 ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT)->attribute('id'),
                 ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT)->attribute('id')
             );
@@ -238,7 +243,8 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
 
             if (isset( $request['calendar'] )) {
                 $object = $content->getContentObject($this->language);
-                if (ObjectHandlerServiceControlBookingSalaPubblica::isValidDay(new DateTime($request['from']), new DateTime($request['to']), $object)
+                if (ObjectHandlerServiceControlBookingSalaPubblica::isValidDay(new DateTime($request['from']),
+                    new DateTime($request['to']), $object)
                 ) {
                     $geoFeature = $content->geoJsonSerialize();
                     $locationAvailabilityInfo = $this->getLocationAvailabilityInfo($content, $bookedLocations);
@@ -256,18 +262,18 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                     if ($location['location_busy_level'] <= 0 || $this->showUnavailableLocations) {
 
                         $geoFeature->properties->add('content', $location);
-                        if ($geoFeature->geometry->coordinates){
+                        if ($geoFeature->geometry->coordinates) {
                             $geoJson->add($geoFeature);
                         }
                         $availableLocations[] = $location;
                     }
                 }
-            }else{
+            } else {
                 $geoFeature = $content->geoJsonSerialize();
                 $location = $filterContent->filterContent($content);
                 $location['is_availability_request'] = false;
                 $geoFeature->properties->add('content', $location);
-                if ($geoFeature->geometry->coordinates){
+                if ($geoFeature->geometry->coordinates) {
                     $geoJson->add($geoFeature);
                 }
                 $availableLocations[] = $location;
@@ -296,11 +302,12 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                     $status = $value['status'];
                     if ($status == ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED
                         || $status == ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT
-                        || $status == ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT) {
+                        || $status == ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT
+                    ) {
                         $busyLevel = 1;
                     }
                     $owner = $value['owner'];
-                    if ($owner == eZUser::currentUserID()){
+                    if ($owner == eZUser::currentUserID()) {
                         $isSelfBooked = $value['id'];
                     }
                 }
@@ -326,21 +333,21 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
         foreach ($requestStuffIdList as $requestStuffId) {
             $bookingCount[$requestStuffId] = 0;
             $busyLevel[$requestStuffId] = -1;
-            if (isset( $bookedStuff[$requestStuffId] )){
+            if (isset( $bookedStuff[$requestStuffId] )) {
                 $isAvailable = false;
                 $bookingCount[$requestStuffId] = count($bookedStuff[$requestStuffId]);
-                foreach($bookedStuff[$requestStuffId] as $status){
-                    switch($status){
+                foreach ($bookedStuff[$requestStuffId] as $status) {
+                    switch ($status) {
                         case 'pending':
                             $busyLevel[$requestStuffId] = 0;
-                            if ($globalBusyLevel < 0){
+                            if ($globalBusyLevel < 0) {
                                 $globalBusyLevel = 0;
                             }
                             break;
 
                         case 'approved':
                             $busyLevel[$requestStuffId] = 1;
-                            if ($globalBusyLevel < 1){
+                            if ($globalBusyLevel < 1) {
                                 $globalBusyLevel = 1;
                             }
                             break;
@@ -367,15 +374,15 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
 
         $queryParts = array();
 
-        $from = eZHTTPTool::instance()->getVariable('start', false);
+        $start = eZHTTPTool::instance()->getVariable('start', false);
         $end = eZHTTPTool::instance()->getVariable('end', false);
-        $queryParts['calendar'] = "calendar[] = [{$from},{$end}]";
+        $queryParts['calendar'] = "calendar[] = [{$start},{$end}]";
 
         $stateIdList = eZHTTPTool::instance()->getVariable('states', array(
             ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED)->attribute('id'),
-            //          ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED )->attribute( 'id' ),
+//          ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED )->attribute( 'id' ),
             ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_PENDING)->attribute('id'),
-            //          ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED )->attribute( 'id' ),
+//          ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED )->attribute( 'id' ),
             ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT)->attribute('id'),
             ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT)->attribute('id')
         ));
@@ -403,7 +410,74 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
             }
         }
 
+        $data = array_merge($data, $this->getAvailableData($start, $end));
+
         return $data;
+    }
+
+    private function getAvailableData($start, $end)
+    {
+        $events = array();
+        if ($this->currentSalaObject instanceof eZContentObject) {
+            $startDate = new DateTime($start, new DateTimeZone('UTC'));
+            $endDate = new DateTime($end, new DateTimeZone('UTC'));
+            if ($startDate instanceof DateTime && $endDate instanceof DateTime) {
+
+                $openingHours = ObjectHandlerServiceControlBookingSalaPubblica::getOpeningHours($this->currentSalaObject);
+                $closingDays = ObjectHandlerServiceControlBookingSalaPubblica::getClosingDays($this->currentSalaObject);
+
+                $byDayInterval = new DateInterval('P1D');
+                $byDayPeriod = new DatePeriod($startDate, $byDayInterval, $endDate);
+                /** @var DateTime[] $byDayPeriod */
+                foreach ($byDayPeriod as $date) {
+                    $do = true;
+                    if (!empty($openingHours)) {
+                        foreach ($closingDays as $closingDay) {
+                            if (ObjectHandlerServiceControlBookingSalaPubblica::isInClosingDay($closingDay, $date,
+                                $date)
+                            ) {
+                                $do = false;
+                            }
+                        }
+                    }
+                    if ($do) {
+
+                        if (!empty($openingHours)) {
+                            $weekDayNumber = $date->format('w');
+                            if (isset( $openingHours[$weekDayNumber] )) {
+                                foreach ($openingHours[$weekDayNumber] as $dayValues) {
+                                    $testStart = clone $date;
+                                    $testStart->setTime($dayValues['from_time']['hour'],
+                                        $dayValues['from_time']['minute']);
+                                    $testEnd = clone $date;
+                                    $testEnd->setTime($dayValues['to_time']['hour'], $dayValues['to_time']['minute']);
+
+                                    $item = new stdClass();
+                                    $item->id = md5($testStart->format('U'));
+                                    $item->url = null;
+                                    $item->start = $testStart->format('c');
+                                    $item->end = $testEnd->format('c');
+                                    $item->rendering = 'background';
+                                    $events[] = $item;
+                                }
+                            }
+                        }else{
+                            $item = new stdClass();
+                            $item->id = md5($date->format('U'));
+                            $item->url = null;
+                            $item->start = $date->format('c');
+                            $item->end = $date->setTime(23,59)->format('c');
+                            $item->rendering = 'background';
+                            $events[] = $item;
+                        }
+
+                    }
+                }
+            }
+
+        }
+
+        return $events;
     }
 
     private function convertToCalendarItem($hit)
@@ -417,7 +491,10 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
         if ($openpaObject->hasAttribute('control_booking_sala_pubblica')
             && $openpaObject->attribute('control_booking_sala_pubblica')->attribute('is_valid')
         ) {
-            $state = ObjectHandlerServiceControlBookingSalaPubblica::getStateObject($openpaObject->attribute('control_booking_sala_pubblica')->attribute('current_state_code'));
+            /** @var ObjectHandlerServiceControlBooking $service */
+            $service = $openpaObject->attribute('control_booking_sala_pubblica');
+
+            $state = ObjectHandlerServiceControlBookingSalaPubblica::getStateObject($service->attribute('current_state_code'));
             if ($state instanceof eZContentObjectState) {
                 $url = 'openpa_booking/view/sala_pubblica/' . $object->attribute('id');
                 eZURI::transformURI($url);
@@ -425,8 +502,10 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                 $item->id = $object->attribute('id');
                 $item->url = $url;
 
+                $participants = OpenPABookingCollaborationParticipants::instanceFrom($service->getCollaborationItem());
+
                 if ($this->currentStuffObject instanceof eZContentObject) {
-                    $statuses = $openpaObject->attribute('control_booking_sala_pubblica')->attribute('stuff_statuses');
+                    $statuses = $service->attribute('stuff_statuses');
                     $stuffStateName = '?';
                     if (isset( $statuses[$this->currentStuffObject->attribute('id')] )) {
                         $stuffStateName = $statuses[$this->currentStuffObject->attribute('id')];
@@ -448,16 +527,16 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                     if (in_array($object->attribute('id'), $current)) {
                         $item->color = $colors['current'];
                         //$item->title = $object->attribute( 'owner' )->attribute( 'name' );
-                    } elseif ($object->attribute('can_read')) {
-                        $item->color = $colors[$openpaObject->attribute('control_booking_sala_pubblica')->attribute('current_state_code')];
+                    } elseif ($participants->currentUserIsParticipant()) {
+                        $item->color = $colors[$service->attribute('current_state_code')];
                     } else {
                         $item->color = $colors['none'];
                     }
                 }
 
-                $item->start = $openpaObject->attribute('control_booking_sala_pubblica')->attribute('start')->format('c');
-                $item->end = $openpaObject->attribute('control_booking_sala_pubblica')->attribute('end')->format('c');
-                $item->allDay = $openpaObject->attribute('control_booking_sala_pubblica')->attribute('all_day');
+                $item->start = $service->attribute('start')->format('c');
+                $item->end = $service->attribute('end')->format('c');
+                $item->allDay = $service->attribute('all_day');
 
                 return $item;
             }

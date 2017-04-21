@@ -73,7 +73,6 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 $collaborationItem = $serviceObject->getCollaborationItem();
                 if ($collaborationItem instanceof eZCollaborationItem) {
                     $module = eZModule::exists("collaboration");
-
                     return $module->run('item', array('full', $collaborationItem->attribute('id')));
 
                 } else {
@@ -89,6 +88,45 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         }
 
         return null;
+    }
+
+    public function add()
+    {
+        $serviceClass = $this->serviceClass();
+        if ($this->currentObject instanceof eZContentObject) {
+            $http = eZHTTPTool::instance();
+
+            $start = $http->getVariable('start', false);
+            $end = $http->getVariable('end', false);
+
+            try {
+                $serviceClass->isValidDate($start, $end, $this->currentObject);
+            } catch (Exception $e) {
+                SocialUser::addFlashAlert($e->getMessage(), 'error');
+                $this->module->redirectTo('content/view/full/' . $this->currentObject->attribute('main_node_id') . '/(error)/' . urlencode($e->getMessage()) . '#error');
+
+                return null;
+            }
+
+            if( SocialUser::current()->hasBlockMode() ){
+                $this->module->redirectTo('/');
+
+                return null;
+            }
+
+            $object = $serviceClass->createObject($this->currentObject, $start, $end);
+
+            if ($object instanceof eZContentObject) {
+                if (!$this->module instanceof eZModule) {
+                    throw new Exception("eZModule non trovato");
+                }
+                $this->module->redirectTo('content/edit/' . $object->attribute('id') . '/' . $object->attribute('current_version'));
+
+                return null;
+            } else {
+                throw new Exception("Non è possibile creare l'oggetto prenotazione");
+            }
+        }
     }
 
     public function workflow($parameters, $process, $event)
@@ -422,12 +460,40 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
             if (isset($parameters['stuff_id'])){
                 return $this->changeStuffApprovalState($item, $parameters['stuff_id'], ObjectHandlerServiceControlBookingSalaPubblica::STUFF_APPROVED);
             }
-        }elseif ($this->isCustomAction('DenyStuff')){
+        }
+
+        if ($this->isCustomAction('DenyStuff')){
             $parameters = $this->customInput('OpenpaBookingActionParameters');
             if (isset($parameters['stuff_id'])){
                 return $this->changeStuffApprovalState($item, $parameters['stuff_id'], ObjectHandlerServiceControlBookingSalaPubblica::STUFF_DENIED);
             }
         }
+
+        if ($this->isCustomAction('Expire')){
+            $serviceObject = $this->serviceObject($item);
+            $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED);
+            OpenPABookingCollaborationHandler::changeApprovalStatus(
+                $item,
+                OpenPABookingCollaborationHandler::STATUS_DENIED
+            );
+        }
+
+        if ($this->isCustomAction('ReturnOk')){
+            $serviceObject = $this->serviceObject($item);
+            $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+            if ($participants->currentUserIsApprover()){
+                $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_OK);
+            }
+        }
+
+        if ($this->isCustomAction('ReturnKo')){
+            $serviceObject = $this->serviceObject($item);
+            $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+            if ($participants->currentUserIsApprover()) {
+                $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_KO);
+            }
+        }
+
         return false;
     }
 

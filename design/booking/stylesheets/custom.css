@@ -573,10 +573,10 @@ span.classattribute-description{
     justify-content: space-between;
     margin-bottom: 20px;
 }
-.center-pills>li.state_filter{
+li.state_filter{
     opacity: .3;
 }
-.center-pills>li.active{
+li.active{
     opacity: 1 !important;
 }
 
@@ -614,8 +614,9 @@ span.classattribute-description{
     bottom: -10px;
 }
 
-.booking-pills>li>a{
-    background: #ddd;
+.booking-pills>li>a,
+.booking-pills>li>a:hover{
+    background: #fff;
 }
 .booking-filters{
     padding: 10px 8px 0;

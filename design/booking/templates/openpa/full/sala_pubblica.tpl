@@ -31,7 +31,7 @@
             </div>
         {/if}
 
-        {if or($node|has_attribute('opening_hours'), $node|has_attribute('closing_days'))}
+        {if or($node|has_attribute('opening_hours'), and( $node|has_attribute('closing_days'), is_set($node|attribute('closing_days').content.cells[0]), $node|attribute('closing_days').content.cells[0]|ne('')))}
             <div class="panel panel-info">
                 {if $node|has_attribute('opening_hours')}
                     <div class="panel-heading"><b>{$openpa.opening_hours.label|wash()}</b></div>
@@ -53,7 +53,8 @@
                     </table>
                     {undef $matrix}
                 {/if}
-                {if $node|has_attribute('closing_days')}
+
+                {if and( $node|has_attribute('closing_days'), is_set($node|attribute('closing_days').content.cells[0]), $node|attribute('closing_days').content.cells[0]|ne(''))}
                     <div class="panel-heading"><b>{$openpa.closing_days.label|wash()}</b></div>
                     {def $matrix=$node|attribute('closing_days').content}
                     <table class="table table-condensed" cellspacing="0">
@@ -84,7 +85,7 @@
                             {if and( $openpa_attribute.full.show_label, $openpa_attribute.full.collapse_label )}
                                 <strong>{$openpa_attribute.label}</strong>
                             {/if}
-                            {attribute_view_gui attribute=$openpa_attribute.contentobject_attribute href=cond($openpa_attribute.full.show_link|not, 'no-link', '')}
+                            {attribute_view_gui attribute=$openpa_attribute.contentobject_attribute href='no-link'}
                         </div>
                     </div>
                 {/foreach}
@@ -117,6 +118,16 @@
 
 </div>
 
+{* https://github.com/blueimp/Gallery vedi atom/gallery.tpl *}
+<div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls">
+    <div class="slides"></div>
+    <h3 class="title"><span class="sr-only">gallery</span></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
 
 
 

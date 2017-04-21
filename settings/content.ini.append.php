@@ -5,6 +5,8 @@
 CategoryList[booking_description]=Presentazione dell’attività
 CategoryList[booking_stuff]=Attrezzatura
 CategoryList[booking_services]=Comunicazione e patrocinio
+CategoryList[booking_definitions]=Prenotazione
+
 
 
 */ ?>

@@ -40,22 +40,20 @@
         <span class="sr-only">Loading...</span>
     </div>
 
-    <div class="content-main" style="display: none">
+    <div class="content-list" style="display: none">
         {def $preselected = array()}
-        <ul class="nav nav-pills center-pills">
+        <ul class="list-inline text-center">
         {foreach $states as $state}
             <li class="{$state.identifier} state_filter {if and($preselected|count|gt(0),$preselected|contains($state.identifier))}active{/if}" data-state="{$state.id}">
-                <a href="#">
+                <a href="#" class="label label-{$state.identifier}">
                     {$state.current_translation.name|wash()}
                 </a>
             </li>
         {/foreach}
         </ul>
-
         <div id="table">
             <div class="content-data"></div>
         </div>
-
     </div>
 
 

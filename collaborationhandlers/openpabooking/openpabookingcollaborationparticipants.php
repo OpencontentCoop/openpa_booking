@@ -152,6 +152,11 @@ class OpenPABookingCollaborationParticipants
         return self::$instances[$collaborationItem->attribute('id')];
     }
 
+    public function currentUserIsParticipant()
+    {
+        return $this->userIsParticipant(eZUser::currentUserID());
+    }
+
     public function currentUserIsApprover()
     {
         return $this->userIsApprover(eZUser::currentUserID());
@@ -165,6 +170,11 @@ class OpenPABookingCollaborationParticipants
     public function currentUserIsObserver()
     {
         return $this->userIsObserver(eZUser::currentUserID());
+    }
+
+    public function userIsParticipant($userID)
+    {
+        return in_array($userID, $this->getUserIdList());
     }
 
     public function userIsAuthor($userID)
