@@ -277,4 +277,9 @@ class OpenPABooking
     {
         return (bool)$this->getAttributeString('enable_header_only_logo') == 1;
     }
+
+    public function isStuffSubWorkflowEnabled()
+    {
+        return false;
+    }
 }

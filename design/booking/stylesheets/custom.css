@@ -332,6 +332,10 @@ div.alert p{margin-bottom: 10px !important}
     background-color: #eee;
 }
 
+.service_teaser.vertical{
+    margin-bottom: 30px;
+}
+
 .service_teaser.vertical .service_photo figure,
 .service_teaser.booking .service_photo figure {
     min-height: 150px;
@@ -345,31 +349,35 @@ div.alert p{margin-bottom: 10px !important}
 
 .service_teaser.inverted,
 .service_teaser.booking{
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
     border-radius: 6px 6px 0 0;
+    border:none;
+}
+.service_teaser.booking.add{
+    margin-bottom: 30px !important;
+    border-radius: 0 0 6px 6px;
+    position: relative;
 }
 
-.service_teaser.book-none,
-.service_teaser.book-try,
-.service_teaser.book-now{
-    margin-bottom: 20px !important;
-}
-.service_teaser.book-now {
-    border-top: 2px dashed #4cae4c;
-    border-radius: 0 0 6px 6px;
-}
-.service_teaser.book-try {
-    border-top: 2px dashed #eea236;
-    border-radius: 0 0 6px 6px;
+.service_teaser .service_details{
+    position: relative;
 }
 
-.service_teaser.book-try .service_details,
-.service_teaser.book-now .service_details{
+.service_teaser .service_details.book-calendar,
+.service_teaser .service_details.book-none,
+.service_teaser .service_details.book-try,
+.service_teaser .service_details.book-now,
+.service_teaser .service_details.book-already{
     min-height: auto;
     padding: 0;
 }
-.service_teaser.book-now .service_details a{
-    padding: 20px;
+
+.service_teaser .service_details.book-now {
+    border-top: 2px dashed #4cae4c;
+}
+
+.service_teaser .service_details.book-now a{
+    padding: 30px 16px;
     display: block;
     color: #fff;
     font-size: 20px;
@@ -377,29 +385,114 @@ div.alert p{margin-bottom: 10px !important}
     background: #5cb85c;
     font-weight: bold;
     cursor: pointer;
+    border: none;
 }
 
-.service_teaser.book-try .service_details{
-    padding: 20px;
-    background: #fcf8e3;
+.service_teaser .service_details.book-already {
+    border-top: 2px dashed #5bc0de;
 }
 
-.service_teaser.book-try .service_details p{
+.service_teaser .service_details.book-already a{
+    padding: 30px 16px;
+    display: block;
+    color: #fff;
+    font-size: 20px;
+    text-align: center;
+    background: #5bc0de;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+
+.service_teaser .service_details.book-calendar {
+    border: none;
+    position: absolute;
+    height: 100%;
+    padding: 0;
+    color: #fff;
+    text-align: center;
+    right: 0;
+}
+a.book-calendar-button{
+    background:#5bc0de !important;
+    color: #fff !important;;
+    line-height: 1.1;
+    text-align: center;
+    display: block;
+    padding: 10px;
+    height: 90px;
+    width: 90px;
+    margin: auto;
+    border-radius: 90px;
+    font-size: 14px;
+    font-weight: bold;
+}
+.service_teaser .service_details.book-calendar a.book-calendar-button{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+a.book-calendar-button:hover{
+    background: #f90f00  !important;;
+}
+a.book-calendar-button i{
+    font-weight: normal;
+    font-size: 30px;
+    display: block;
+    margin-top: -5px;
+    margin-bottom: 2px;
+}
+
+.service_teaser .service_details.book-none {
+    border-top: 2px dashed #ccc;
+    padding: 30px;
+    background:#ddd;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.service_teaser .service_details.book-try{
+    border-top: 2px dashed #eea236;
+    padding: 30px 16px;
+    background: #fcf8e3 !important;
+}
+
+.service_teaser .service_details.book-try .btn{
+    white-space: normal;
+    font-weight: bold;
+    font-size: 20px;
+}
+.booking_date, .booking_hours{
+    white-space: nowrap;
+}
+.service_teaser .service_details.book-none p,
+.service_teaser .service_details.book-try p{
     margin: 0 0 5px 0;
 }
 
-.service_teaser.book-now .service_details span{
+.service_teaser .service_details.book-now span{
     white-space: nowrap;
 }
 
-.service_teaser.book-now .service_details a:hover{
+.service_teaser .service_details.book-now a:hover{
     border-color:#f90f00;
-    background: #f90f00;
+    background: #f90f00 !important;
+    color: #fff;
+}
+
+.service_teaser .service_details.book-already span{
+    white-space: nowrap;
+}
+
+.service_teaser .service_details.book-already a:hover{
+    border-color:#f90f00;
+    background: #f90f00 !important;
     color: #fff;
 }
 
 .service_teaser.booking.inverted {
-    border-radius: 6px;
     background: rgba(250,250,250,0.8);
     color: #333;
 }
@@ -485,4 +578,54 @@ span.classattribute-description{
 }
 .center-pills>li.active{
     opacity: 1 !important;
+}
+
+.leaflet-popup-content{
+    margin: 0 !important;
+}
+.leaflet-container a.leaflet-popup-close-button{
+    z-index: 2147483647;
+}
+
+.booking-pills > li {
+    float:none;
+    display:inline-block;
+    *display:inline; /* ie7 fix */
+    zoom:1; /* hasLayout ie7 trigger */
+    font-size: 1.5em;
+}
+
+.booking-pills {
+    text-align:center;
+    margin-bottom: 20px;
+}
+
+.booking-pills > li.active:after{
+    border-top: 10px solid #f90f00;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    content: "";
+    height: 0;
+    left: 0;
+    margin: auto;
+    position: absolute;
+    right: 0;
+    width: 0;
+    bottom: -10px;
+}
+
+.booking-filters{
+    padding: 10px 8px 0;
+    text-align: center;
+    border: 1px solid #ccc;
+    /*border-radius: 6px;*/
+    background: #ddd;
+    margin: 0 0 20px;
+}
+.booking-filters select{
+    min-width: 150px;
+}
+
+.booking-filters .form-group{
+    margin-bottom: 8px;
 }

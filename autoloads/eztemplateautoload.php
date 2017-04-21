@@ -10,6 +10,7 @@ $eZTemplateOperatorArray[] = array(
         'location_node_id',
         'location_class_identifiers',
         'stuff_node_id',
-        'stuff_class_identifiers'
+        'stuff_class_identifiers',
+        'stuff_sub_workflow_is_enabled'
     )
 );

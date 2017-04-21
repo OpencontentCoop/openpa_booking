@@ -6,7 +6,7 @@
             <div class="panel-heading"><b>{'Prenotazioni richieste'|i18n('booking')}</b></div>
             <table class="table">
                 <tr>
-                    <th>{'Luogo'|i18n('booking')}</th>
+                    <th>{'Richiesta'|i18n('booking')}</th>
                     <td colspan="2">
                         <a href="{concat('openpa_booking/locations/', $sala.main_node_id)|ezurl(no)}">{$sala.name|wash()}</a>
                         <a href="#calendarModal" role="button" data-key="sala" data-param="{$sala.id}" data-name="{$sala.name|wash()}" data-toggle="modal"><i class="fa fa-calendar"></i> </a>
@@ -40,65 +40,69 @@
                     {/foreach}
                 {/if}
             </table>
-            <div class="panel-heading"><b>{'Attrezzatura richiesta'|i18n('booking')}</b></div>
-            <table class="table">
-                {if $content_object.data_map.stuff.has_content}
 
-                    <tr>
-                        <th>Attrezzatura</th>
-                        <th>Responsabile</th>
-                        <th>Stato richiesta</th>
-                        <th></th>
-                    </tr>
-                    {def $stuff_list = $content_object.data_map.stuff.content.relation_list}
-                    {if is_set($node)}
-                        {set $stuff_list = $node.data_map.stuff.content.relation_list}
-                    {/if}
-                    {foreach $stuff_list as $item}
-                        {def $stuff = fetch(content, object, hash(object_id, $item.contentobject_id))
-                             $stuff_manager_ids = array()}
-                        {foreach $stuff.data_map.reservation_manager.content.relation_list as $user}
-                            {set $stuff_manager_ids = $stuff_manager_ids|append($user.contentobject_id)}
-                        {/foreach}
+            {if stuff_sub_workflow_is_enabled()}
+                <div class="panel-heading"><b>{'Attrezzatura richiesta'|i18n('booking')}</b></div>
+                <table class="table">
+                    {if $content_object.data_map.stuff.has_content}
+
                         <tr>
-                            <td>
-                                {$stuff.name|wash()}
-                                <a href="#calendarModal" role="button" data-key="stuff" data-param="{$stuff.id}" data-name="{$stuff.name|wash()}" data-toggle="modal"><i class="fa fa-calendar"></i> </a>
-                            </td>
-                            <td>
-                                {attribute_view_gui attribute=$stuff.data_map.reservation_manager}
-                            </td>
-                            <td>
-                                {if is_set($item.extra_fields.booking_status)}
-                                    <span class="label label-{$item.extra_fields.booking_status.identifier}">
-                                        {$item.extra_fields.booking_status.value|wash()}
-                                    </span>
-                                {/if}
-                            </td>
-                            <td>
-                                {if and(
-                                    $item.extra_fields.booking_status.identifier|eq('pending'),
-                                    $stuff_manager_ids|contains(fetch('user', 'current_user').contentobject_id)
-                                )}
-                                <form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">
-                                    <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[stuff_id]" value="{$stuff.id}" />
-                                    <input class="btn btn-success btn-xs" type="submit" name="CollaborationAction_AcceptStuff" value="Approva" />
-                                    <input class="btn btn-danger btn-xs" type="submit" name="CollaborationAction_DenyStuff" value="Rifiuta" />
-                                    <input type="hidden" name="CollaborationActionCustom" value="custom"/>
-                                    <input type="hidden" name="CollaborationTypeIdentifier" value="openpabooking"/>
-                                    <input type="hidden" name="CollaborationItemID" value="{$collab_item.id}"/>
-                                </form>
-                                {/if}
-                            </td>
+                            <th>Attrezzatura</th>
+                            <th>Responsabile</th>
+                            <th>Stato richiesta</th>
+                            <th></th>
                         </tr>
-                        {undef $stuff $stuff_manager_ids}
-                    {/foreach}
-                {else}
-                    <tr>
-                        <td><em>Nessuna</em></td>
-                    </tr>
-                {/if}
-            </table>
+                        {def $stuff_list = $content_object.data_map.stuff.content.relation_list}
+                        {if is_set($node)}
+                            {set $stuff_list = $node.data_map.stuff.content.relation_list}
+                        {/if}
+                        {foreach $stuff_list as $item}
+                            {def $stuff = fetch(content, object, hash(object_id, $item.contentobject_id))
+                                 $stuff_manager_ids = array()}
+                            {foreach $stuff.data_map.reservation_manager.content.relation_list as $user}
+                                {set $stuff_manager_ids = $stuff_manager_ids|append($user.contentobject_id)}
+                            {/foreach}
+                            <tr>
+                                <td>
+                                    {$stuff.name|wash()}
+                                    <a href="#calendarModal" role="button" data-key="stuff" data-param="{$stuff.id}" data-name="{$stuff.name|wash()}" data-toggle="modal"><i class="fa fa-calendar"></i> </a>
+                                </td>
+                                <td>
+                                    {attribute_view_gui attribute=$stuff.data_map.reservation_manager}
+                                </td>
+                                <td>
+                                    {if is_set($item.extra_fields.booking_status)}
+                                        <span class="label label-{$item.extra_fields.booking_status.identifier}">
+                                            {$item.extra_fields.booking_status.value|wash()}
+                                        </span>
+                                    {/if}
+                                </td>
+                                <td>
+                                    {if and(
+                                        $item.extra_fields.booking_status.identifier|eq('pending'),
+                                        $stuff_manager_ids|contains(fetch('user', 'current_user').contentobject_id)
+                                    )}
+                                    <form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">
+                                        <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[stuff_id]" value="{$stuff.id}" />
+                                        <input class="btn btn-success btn-xs" type="submit" name="CollaborationAction_AcceptStuff" value="Approva" />
+                                        <input class="btn btn-danger btn-xs" type="submit" name="CollaborationAction_DenyStuff" value="Rifiuta" />
+                                        <input type="hidden" name="CollaborationActionCustom" value="custom"/>
+                                        <input type="hidden" name="CollaborationTypeIdentifier" value="openpabooking"/>
+                                        <input type="hidden" name="CollaborationItemID" value="{$collab_item.id}"/>
+                                    </form>
+                                    {/if}
+                                </td>
+                            </tr>
+                            {undef $stuff $stuff_manager_ids}
+                        {/foreach}
+                    {else}
+                        <tr>
+                            <td><em>Nessuna</em></td>
+                        </tr>
+                    {/if}
+                </table>
+            {/if}
+
         </div>
     </div>
 </div>

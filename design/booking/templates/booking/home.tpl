@@ -9,6 +9,7 @@
     'moment-timezone-with-data.js',
     'jquery.opendataSearchView.js',
     'jquery.timepicker.js',
+    'datepicker-it.js',
     'jsrender.js'
 ))}
 
@@ -20,71 +21,83 @@
 ))}
 
 <section class="hgroup noborder">
-<div class="row">
-    <div class="col-sm-3">
-        <aside class="widget" data-filter="q">
-            <h4>Cerca disponibilità</h4>
-            <div class="form-group">
-                <label for="from" class="">{'Data'|i18n('booking')}</label>
-                <input type="text" class="form-control date" name="date" placeholder="{'Data'|i18n('booking')}" value="" />
-            </div>
-            <div class="form-group">
-                <label for="from_hours" class="">{'Dalle ore'|i18n('booking')}</label>
-                <input class="form-control time" type="text" name="from_hours" placeholder="{'Dalle ore'|i18n('booking')}" value="" />
-            </div>
-            <div class="form-group">
-                <label for="to_hours" class="">{'Alle ore'|i18n('booking')}</label>
-                <input class="form-control time" type="text" name="to_hours" placeholder="{'Alle ore'|i18n('booking')}" value="" />
-            </div>
-            <div class="form-group">
-                <label for="stuff">{'Attrezzatura richiesta'|i18n('booking')}</label>
-                <select id="stuff" name="stuff" class="form-control" multiple="multiple">
-                    <option value="0">{'Nessuna'|i18n('booking')}</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="stuff">{'Numero di posti'|i18n('booking')}</label>
-                <select id="stuff" name="numero_posti" class="form-control">
-                    <option value="0">{'Qualsiasi'|i18n('booking')}</option>
-                    <option value="1">{'Fino a 100'|i18n('booking')}</option>
-                    <option value="2">{'Da 100 a 200'|i18n('booking')}</option>
-                    <option value="3">{'Da 200 a 400'|i18n('booking')}</option>
-                    <option value="4">{'Oltre 400'|i18n('booking')}</option>
-                </select>
-            </div>
-            <div class="form-group" style="display: none">
-                <label for="destinazione_uso">{"Destinazione d'uso"|i18n('booking')}</label>
-                <select id="destinazione_uso" name="destinazione_uso" class="form-control">
-                    <option value=""></option>
-                </select>
-            </div>
-        </aside>
 
-    </div>
-    <div class="col-sm-9">
-        <div class="row">
-            <div class="col-sm-12" style="margin-bottom: 20px">
-                <ul class="nav nav-pills">
-                    <li class="active">
-                        <a data-toggle="tab" href="#list">
-                            <i class="fa fa-th" aria-hidden="true"></i> <span class=""> {'Elenco delle sale disponibili'|i18n('booking')}</span>
-                        </a>
-                    </li>
+        <form class="form-inline booking-filters">
+                <div class="form-group">
+                    <label for="from" class="hide">{'Data'|i18n('booking')}</label>
+                    <input type="text" class="form-control date" name="date" placeholder="{'Data'|i18n('booking')}" value="" />
+                </div>
+                <div class="form-group">
+                    <label for="from_hours" class="hide">{'Dalle ore'|i18n('booking')}</label>
+                    <input class="form-control time" type="text" name="from_hours" placeholder="{'Dalle ore'|i18n('booking')}" value="" />
+                </div>
+                <div class="form-group">
+                    <label for="to_hours" class="hide">{'Alle ore'|i18n('booking')}</label>
+                    <input class="form-control time" type="text" name="to_hours" placeholder="{'Alle ore'|i18n('booking')}" value="" />
+                </div>
+                {if stuff_sub_workflow_is_enabled()}
+                    <div class="form-group">
+                        <label for="stuff">{'Attrezzatura richiesta'|i18n('booking')}</label>
+                        <select id="stuff" name="stuff" class="form-control" multiple="multiple">
+                            <option value="0">{'Nessuna'|i18n('booking')}</option>
+                        </select>
+                    </div>
+                {/if}
+                <div class="form-group">
+                    <label for="stuff" class="hide">{'Numero di posti'|i18n('booking')}</label>
+                    <select id="stuff" name="numero_posti" class="form-control">
+                        <option value="">{'Numero di posti'|i18n('booking')}</option>
+                        <option value="1">{'Fino a 100'|i18n('booking')}</option>
+                        <option value="2">{'Da 100 a 200'|i18n('booking')}</option>
+                        <option value="3">{'Da 200 a 400'|i18n('booking')}</option>
+                        <option value="4">{'Oltre 400'|i18n('booking')}</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display: none">
+                    <label for="destinazione_uso" class="hide">{"Destinazione d'uso"|i18n('booking')}</label>
+                    <select id="destinazione_uso" name="destinazione_uso" class="form-control">
+                        <option value="">{"Destinazione d'uso"|i18n('booking')}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success" name="find_availability">
+                        <i class="fa fa-search"></i> Cerca disponibilità
+                    </button>
+                    <button type="submit" class="btn btn-danger" name="reset" style="display: none">
+                        <i class="fa fa-times"></i> Annulla ricerca
+                    </button>
+                </div>
+        </form>
+        <ul class="nav nav-pills booking-pills">
+            <li class="active">
+                <a data-toggle="tab" href="#list-panel">
+                    <i class="fa fa-th" aria-hidden="true"></i> <span class=""> {'Elenco delle sale disponibili'|i18n('booking')}</span>
+                </a>
+            </li>
 
-                    <li>
-                        <a data-toggle="tab" href="#geo">
-                            <i class="fa fa-map" aria-hidden="true"></i> <span class="">{'Sale disponibili sulla mappa'|i18n('booking')}</span>
-                        </a>
-                    </li>
-                </ul>
+            <li>
+                <a data-toggle="tab" href="#geo-panel">
+                    <i class="fa fa-map" aria-hidden="true"></i> <span class="">{'Mappa delle sale disponibili'|i18n('booking')}</span>
+                </a>
+            </li>
+
+            <li>
+                <a data-toggle="tab" href="#stuff-panel">
+                    <i class="fa fa-th" aria-hidden="true"></i> <span class=""> {'Elenco delle attrezzature disponibili'|i18n('booking')}</span>
+                </a>
+            </li>
+        </ul>
+        <div class="tab-content" style="margin-bottom: 40px;" id="booking_items">
+            <div id="list-panel" class="tab-pane active">
+                <div id="sala_pubblica" class="booking-container row"></div>
+            </div>
+
+            <div id="geo-panel" class="tab-pane"><div id="map" style="width: 100%; height: 700px"></div></div>
+
+            <div id="stuff-panel" class="tab-pane">
+                <div id="attrezzatura_sala" class="booking-container row"></div>
             </div>
         </div>
-        <div class="tab-content" style="margin-bottom: 40px;">
-            <div id="list" class="tab-pane active"><div id="booking_items" class="row"></div></div>
-            <div id="geo" class="tab-pane"><div id="map" style="width: 100%; height: 700px"></div></div>
-        </div>
-    </div>
-</div>
 </section>
 
 {include uri='design:booking/parts/tpl-spinner.tpl'}
@@ -113,6 +126,13 @@ $.opendataTools.settings('onError', function(errorCode,errorMessage,jqXHR){ldeli
 
 {literal}
 $(document).ready(function () {
+
+    var spinner = $($.templates("#tpl-spinner").render({}));
+    var dateInput = $('[name="date"]');
+    var fromHoursInput = $('[name="from_hours"]');
+    var toHoursInput = $('[name="to_hours"]');
+    var availableAttrezzature = [];
+
     $( ".date" ).datepicker({
         changeMonth: true,
         changeYear: true,
@@ -126,70 +146,86 @@ $(document).ready(function () {
         disableTimeRanges: [['00:00','07:00']]
     });
 
-    $('[name="from_hours"]').on('changeTime', function() {
+    fromHoursInput.on('changeTime', function() {
         var currentDate = $(this).timepicker('getTime');
         currentDate.setHours(currentDate.getHours()+1);
-        $('[name="to_hours"]').timepicker('setTime', currentDate);
+        toHoursInput.timepicker('setTime', currentDate);
     });
 
     var setInitialCurrentIntervalRequest = function(){
         var tomorrow = moment().add(1,'days').hours(16);
-        $('[name="date"]').val(tomorrow.format("DD-MM-YYYY"));
-        $('[name="from_hours"]').val(tomorrow.format("HH")+':00');
+        dateInput.val(tomorrow.format("DD-MM-YYYY"));
+        fromHoursInput.val(tomorrow.format("HH")+':00');
         tomorrow.add(2,'hours');
-        $('[name="to_hours"]').val(tomorrow.format("HH")+':00');
+        toHoursInput.val(tomorrow.format("HH")+':00');
     };
-    setInitialCurrentIntervalRequest();
+    //setInitialCurrentIntervalRequest();
 
-    var spinner = $($.templates("#tpl-spinner").render({}));
 
-    $.opendataTools.findAll('classes [attrezzatura_sala]', function(Attrezzature){
-        $.each(Attrezzature, function(){
-            $('[name="stuff"]').append('<option value="'+this.metadata.id+'">'+this.metadata.name['ita-IT']+'</option>')
-        });
+    var getCurrentRequest = function () {
 
-        var getCurrentRequest = function(){
-            var currentMoment = moment($('[name="date"]').val(), "DD-MM-YYYY");
-            var fromHours = $('[name="from_hours"]').timepicker('getTime').getHours();
-            var toHours = $('[name="to_hours"]').timepicker('getTime').getHours();
-            var fromMoment = currentMoment.clone().set('hour', fromHours);
-            var from = fromMoment.format('X');
-            var toMoment = currentMoment.clone().set('hour', toHours);
-            var to = toMoment.format('X');
-            var currentRequest = {
-                date: currentMoment.format("DD-MM-YYYY"),
-                from_moment: fromMoment,
-                to_moment: toMoment,
-                date_formatted: currentMoment.format("dddd D MMMM YYYY"),
-                from_hours_formatted: fromHours,
-                to_hours_formatted: toHours,
-                from: parseInt(from),
-                to: parseInt(to),
-                has_stuff: false,
-                stuff: [],
-                stuff_id_list: null,
-                numero_posti:  $('[name="numero_posti"]').val(),
-                destinazione_uso:  $('[name="destinazione_uso"]').val()
-            };
-            var attrezzatureRichieste = $('[name="stuff"]').val();
-            var stuffIdList = [];
-            $.each(Attrezzature, function () {
-                if ($.inArray(this.metadata.id.toString(), attrezzatureRichieste) > -1) {
-                    currentRequest.stuff.push(this);
-                    stuffIdList.push(this.metadata.id);
-                    currentRequest.has_stuff = true;
-                }
-            });
-            currentRequest.stuff_id_list = stuffIdList.join('-');
-            return currentRequest;
+        var currentRequest = {
+            date: null,
+            from_moment: null,
+            to_moment: null,
+            date_formatted: null,
+            from_hours_formatted: null,
+            to_hours_formatted: null,
+            from: null,
+            to: null,
+            has_stuff: false,
+            stuff: [],
+            stuff_id_list: null,
+            numero_posti: $('[name="numero_posti"]').val(),
+            destinazione_uso: $('[name="destinazione_uso"]').val()
         };
 
+        if (dateInput.val() != '') {
+            var currentMoment = moment(dateInput.val(), "DD-MM-YYYY");
+            currentRequest.date = currentMoment;
+            currentRequest.date_formatted = currentMoment.format("dddd D MMMM YYYY");
+
+            if (fromHoursInput.timepicker('getTime')) {
+                var fromHours = fromHoursInput.timepicker('getTime').getHours();
+                var fromMoment = currentMoment.clone().set('hour', fromHours);
+                var from = fromMoment.format('X');
+                currentRequest.from_moment = fromMoment;
+                currentRequest.from_hours_formatted = fromHours;
+                currentRequest.from = parseInt(from);
+            }
+
+            if (toHoursInput.timepicker('getTime')) {
+                var toHours = toHoursInput.timepicker('getTime').getHours();
+                var toMoment = currentMoment.clone().set('hour', toHours);
+                var to = toMoment.format('X');
+                currentRequest.to_moment = toMoment;
+                currentRequest.to_hours_formatted = toHours;
+                currentRequest.to = parseInt(to);
+            }
+        }
+
+        {/literal}{if stuff_sub_workflow_is_enabled()}{literal}
+        var attrezzatureRichieste = $('[name="stuff"]').val();
+        var stuffIdList = [];
+        $.each(availableAttrezzature, function () {
+            if ($.inArray(this.metadata.id.toString(), attrezzatureRichieste) > -1) {
+                currentRequest.stuff.push(this);
+                stuffIdList.push(this.metadata.id);
+                currentRequest.has_stuff = true;
+            }
+        });
+        currentRequest.stuff_id_list = stuffIdList.join('-');
+        {/literal}{/if}{literal}
+        return currentRequest;
+    };
+
+
+    var initBookingGui = function() {
         var map = L.map('map').setView([0, 0], 1);
         L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
         var markers = L.markerClusterGroup();
         map.addLayer(markers);
         map.scrollWheelZoom.disable();
-
         var markerBuilder = function (response) {
             return L.geoJson(response, {
                 pointToLayer: function (feature, latlng) {
@@ -197,7 +233,7 @@ $(document).ready(function () {
                     return L.marker(latlng, {icon: customIcon});
                 },
                 onEachFeature: function (feature, layer) {
-                    var popupDefault = '<p class="text-center"><i class="fa fa-circle-o-notch fa-spin"></i>'+feature.properties.name+'</p>';
+                    var popupDefault = '<p class="text-center"><i class="fa fa-circle-o-notch fa-spin"></i>' + feature.properties.name + '</p>';
                     var popup = new L.Popup();
                     popup.setContent(popupDefault);
                     layer.on('click', function (e) {
@@ -219,7 +255,7 @@ $(document).ready(function () {
             map.fitBounds(markers.getBounds());
         });
 
-        var loadMarkersInMap =  function(data){
+        var loadMarkersInMap = function (data) {
             markers.clearLayers();
             if (data.features.length > 0) {
                 var geoJsonLayer = markerBuilder(data);
@@ -228,72 +264,197 @@ $(document).ready(function () {
             }
         };
 
-        $('#booking_items').opendataSearchView({
-            query: '',
-            onInit: function (view) {
+        var fixupRequestAndDoSearch = function(view) {
+            if (dateInput.val() == ''){
+                var tomorrow = moment().add(1,'days').hours(16);
+                dateInput.val(tomorrow.format("DD-MM-YYYY"));
+            }
+            var date = moment(dateInput.val(), "DD-MM-YYYY");
+            if (fromHoursInput.val() == ''){
+                if (toHoursInput.val() == '') {
+                    date.hours(16);
+                }else{
+                    var hours = toHoursInput.timepicker('getTime').getHours() - 2;
+                    date.hours(hours);
+                }
+                fromHoursInput.val(date.format("HH") + ':00');
+            }
+            date.add(2,'hours');
+            if (toHoursInput.val() == '') {
+                toHoursInput.val(date.format("HH") + ':00');
+            }
+            view.doSearch();
+        };
 
-                var destinazioni = $.opendataTools.find('classes sala_pubblica facets [destinazione_uso] limit 1', function(data){
-                    if (data.facets.length > 0) {
-                        $.each(data.facets[0].data, function(index, value){
-                            $('[name="destinazione_uso"]').append('<option value="'+index+'">'+index+'</option>');
-                        });
-                        $('[name="destinazione_uso"]').parents('.form-group').show();
+        var resetContainers = function(){
+            $('.booking-container').html('');
+        };
+
+        var appendToContainers = function(locations){
+            var template = $.templates("#tpl-prenotazione");
+            $.views.helpers($.opendataTools.helpers);
+            $('.booking-container').each(function(){
+                var container = $(this);
+                var classIdentifier = container.attr('id');
+                var htmlOutput = [];
+                $.each(locations, function(){
+                    var location = this;
+                    if (location.metadata.classIdentifier == classIdentifier){
+                        htmlOutput.push(template.render(location));
                     }
                 });
-
-                $.opendataTools.settings('endpoint',{
-                    'search': $.opendataTools.settings('endpoint').booking
-                });
-                $('[name="stuff"], [name="date"], [name="destinazione_uso"], [name="numero_posti"]').on('change', function(e){
-                    view.doSearch();
-                    e.preventDefault();
-                });
-                $('.time').on('changeTime', function(e) {
-                    view.doSearch();
-                    e.preventDefault();
-                });
-            },
-            onBuildQuery: function(queryParts){
-                var request = getCurrentRequest();
-                var from = request.from_moment.format('DD-MM-YYYY*HH:mm');
-                var to = request.to_moment.subtract(1,'seconds').format('DD-MM-YYYY*HH:mm');
-                return "from="+from+"&to="+to+"&stuff="+request.stuff_id_list+"&numero_posti="+request.numero_posti+"&destinazione_uso="+request.destinazione_uso+"&";
-            },
-            onBeforeSearch: function (query, view) {
-                view.container.html(spinner);
-            },
-            onLoadResults: function (response, query, appendResults, view) {
-                view.container.html('');
-                var currentRequest = getCurrentRequest();
-                var template = $.templates("#tpl-prenotazione");
-                $.views.helpers($.opendataTools.helpers);
-                if (response.features.length > 0) {
-                    var htmlOutput = [];
-                    $.each(response.features, function () {
-                        var location = this.properties.content;
-                        location.currentRequest = currentRequest;
-                        htmlOutput.push(template.render(location));
-                    });
-                    var itemsCount = htmlOutput.length;
+                var itemsCount = htmlOutput.length;
+                if(itemsCount > 0) {
                     var itemPerColumn = Math.ceil(htmlOutput.length / 2);
                     var column;
                     for (i = 0; i < itemsCount; i++) {
                         if (i == 0 || i == itemPerColumn) {
                             column = $('<div class="col-sm-6"></div>');
-                            view.container.append(column);
+                            container.append(column);
                         }
                         column.append(htmlOutput[i]);
                     }
-                    loadMarkersInMap(response);
                 }else{
-                    view.container.append($.templates("#tpl-empty"));
+                    container.html($.templates("#tpl-empty"));
+                }
+            });
+        };
+
+        var showSpinnerInContainers = function(){
+            $('.booking-container').html(spinner);
+        };
+
+        var showEmptyInContainers = function(){
+            $('.booking-container').append($.templates("#tpl-empty"));
+        };
+
+
+        $('#booking_items').opendataSearchView({
+            query: '',
+            onInit: function (view) {
+                var destinazioni = $.opendataTools.find('classes sala_pubblica facets [destinazione_uso] limit 1', function (data) {
+                    if (data.facets.length > 0) {
+                        $.each(data.facets[0].data, function (index, value) {
+                            $('[name="destinazione_uso"]').append('<option value="' + index + '">' + index + '</option>');
+                        });
+                        $('[name="destinazione_uso"]').parents('.form-group').show();
+                    }
+                });
+                $.opendataTools.settings('endpoint', {
+                    'search': $.opendataTools.settings('endpoint').booking
+                });
+                $('[name="destinazione_uso"], [name="numero_posti"]').on('change', function (e) {
+                    view.doSearch();
+                    $('[name="reset"]').show();
+                    $('[name="find_availability"]').hide();
+                    e.preventDefault();
+                });
+                $('[name="date"]').on('change', function (e) {
+                    fixupRequestAndDoSearch(view);
+                    $('[name="reset"]').show();
+                    $('[name="find_availability"]').hide();
+                    e.preventDefault();
+                });
+                $('.time').on('changeTime', function (e) {
+                    fixupRequestAndDoSearch(view);
+                    $('[name="reset"]').show();
+                    $('[name="find_availability"]').hide();
+                    e.preventDefault();
+                });
+
+                $('[name="find_availability"]').on('click', function (e) {
+                    fixupRequestAndDoSearch(view);
+                    $('[name="reset"]').show();
+                    $('[name="find_availability"]').hide();
+                    e.preventDefault();
+                });
+
+                $('[name="reset"]').on('click', function (e) {
+                    dateInput.val('');
+                    fromHoursInput.val('');
+                    toHoursInput.val('');
+                    $('[name="destinazione_uso"], [name="numero_posti"]').val('');
+                    view.doSearch();
+                    $('[name="reset"]').hide();
+                    $('[name="find_availability"]').show();
+                    e.preventDefault();
+                });
+            },
+            onBuildQuery: function (queryParts) {
+                var requestVars = [];
+                var requestString = '';
+
+                var request = getCurrentRequest();
+                if (request.from) {
+                    requestVars.push({
+                        'key': 'from',
+                        'value': request.from_moment.format('DD-MM-YYYY*HH:mm')
+                    });
+                }
+                if (request.to) {
+                    requestVars.push({
+                        'key': 'to',
+                        'value': request.to_moment.subtract(1, 'seconds').format('DD-MM-YYYY*HH:mm')
+                    });
+                }
+                if (request.stuff_id_list){
+                    requestVars.push({
+                        'key': 'stuff_id_list',
+                        'value': request.stuff_id_list
+                    });
+                }
+                if (request.destinazione_uso){
+                    requestVars.push({
+                        'key': 'destinazione_uso',
+                        'value': request.destinazione_uso
+                    });
+                }
+                if (request.numero_posti){
+                    requestVars.push({
+                        'key': 'numero_posti',
+                        'value': request.numero_posti
+                    });
+                }
+                $.each(requestVars, function(index, value){
+                    requestString += this.key+'='+this.value+'&';
+                });
+                return requestString;
+            },
+            onBeforeSearch: function (query, view) {
+                showSpinnerInContainers();
+            },
+            onLoadResults: function (response, query, appendResults, view) {
+                resetContainers();
+                var currentRequest = getCurrentRequest();
+                if (response.contents.length > 0) {
+                    var locations = [];
+                    $.each(response.contents, function () {
+                        var location = this;
+                        location.currentRequest = currentRequest;
+                        locations.push(location)
+                    });
+                    appendToContainers(locations);
+                    loadMarkersInMap(response.geo);
+                } else {
+                    showEmptyInContainers();
                 }
             },
             onLoadErrors: function (errorCode, errorMessage, jqXHR, view) {
                 view.container.html('<div class="alert alert-danger">' + errorMessage + '</div>')
             }
         }).data('opendataSearchView').init().doSearch();
+    };
+{/literal}{if stuff_sub_workflow_is_enabled()}{literal}
+    $.opendataTools.findAll('classes [attrezzatura_sala]', function(responseData){
+        $.each(responseData, function(){
+            $('[name="stuff"]').append('<option value="'+this.metadata.id+'">'+this.metadata.name['ita-IT']+'</option>')
+        });
+        availableAttrezzature = responseData;
+        initBookingGui();
     });
+{/literal}{else}{literal}
+    initBookingGui();
+{/literal}{/if}{literal}
 });
 {/literal}
 </script>

@@ -8,15 +8,13 @@
 
 <section class="hgroup">
     <h1>
-        <span class="label label-primary">{$content_object.id}</span> Richiesta di prenotazione "{$sala.name|wash()}"
+        <span class="label label-default">{$content_object.id}</span> Richiesta di prenotazione "{$sala.name|wash()}"
     </h1>
 
     {def $current_state_code = $openpa_object.control_booking_sala_pubblica.current_state_code
          $current_state = $openpa_object.control_booking_sala_pubblica.current_state}
     <ul class="breadcrumb pull-right" id="current-post-breadcrumb">
-        <li>
-            <span class="label" style="background: {$colors[$current_state_code]}">{$current_state.current_translation.name|wash()}</span>
-        </li>
+        <li>{$current_state.current_translation.name|wash()}</li>
     </ul>
 </section>
 

@@ -115,21 +115,21 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                     eZSearch::addObject( $currentObject, true );
                 }
 
-                if (in_array($currentObject->attribute('class_identifier'),
-                    ObjectHandlerServiceControlBookingSalaPubblica::stuffClassIdentifiers())) {
-
-                    $idList = ObjectHandlerServiceControlBookingSalaPubblica::getStuffManagerIds($currentObject);
-                    foreach($idList as $id){
-                        if (eZUser::fetch($id)){
-                            $role = eZRole::fetchByName(ObjectHandlerServiceControlBookingSalaPubblica::ROLE_ADMIN);
-                            if ($role instanceof eZRole){
-
-                            }
-
-                        }
-                    }
-                    eZSearch::addObject( $currentObject, true );
-                }
+//                if (in_array($currentObject->attribute('class_identifier'),
+//                    ObjectHandlerServiceControlBookingSalaPubblica::stuffClassIdentifiers())) {
+//
+//                    $idList = ObjectHandlerServiceControlBookingSalaPubblica::getStuffManagerIds($currentObject);
+//                    foreach($idList as $id){
+//                        if (eZUser::fetch($id)){
+//                            $role = eZRole::fetchByName(ObjectHandlerServiceControlBookingSalaPubblica::ROLE_ADMIN);
+//                            if ($role instanceof eZRole){
+//
+//                            }
+//
+//                        }
+//                    }
+//                    eZSearch::addObject( $currentObject, true );
+//                }
             }
         }
         if ($trigger == 'post_checkout') {
@@ -257,7 +257,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 $do = false;
                 if (isset( $parameters['manual_price'] )) {
                     $manualPrice = $parameters['manual_price'];
-                    if (empty( $manualPrice ) || !preg_match("#^[0-9]+(.){0,1}[0-9]{0,2}$#", $manualPrice)) {
+                    if (!empty( $manualPrice ) && !preg_match("#^[0-9]+(.){0,1}[0-9]{0,2}$#", $manualPrice)) {
                         $error = "Prezzo non valido";
                         throw new Exception($error);
                     } else {
@@ -281,8 +281,8 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 if ($sala instanceof eZContentObject) {
 
                     $productType = eZShopFunctions::productTypeByObject($sala);
-
-                    if ($productType) {
+                    $price = $serviceObject->getPrice();
+                    if ($productType && $price > 0) {
 
                         $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT);
 
@@ -330,7 +330,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         ObjectHandlerServiceControlBookingSalaPubblica $serviceObject
     ) {
         if (in_array($currentObject->attribute('main_node')->attribute('parent')->attribute('class_identifier'),
-            $serviceObject->salaPubblicaClassIdentifiers())
+            $serviceObject->bookableClassIdentifiers())
         ) {
             self::createUpdateApproval($currentObject, $serviceObject, true);
         }

@@ -1,21 +1,21 @@
 {if fetch(user, has_access_to, hash('module', 'openpa_booking', 'function', 'book') )}
 {literal}
     <script id="tpl-prenotazione" type="text/x-jsrender">
-    <div class="service_teaser vertical booking {{if !location_available || !stuff_available}}inverted{{/if}}">
+    <div class="service_teaser vertical {{if is_availability_request}}booking {{if !location_available || !stuff_available}}inverted{{/if}} {{/if}}">
+        {{if ~mainImageUrl(data)}}
         <div class="service_photo">
           <figure style="background-image:url({{if ~mainImageUrl(data)}}{{:~mainImageUrl(data)}}){{else}}{/literal}{social_pagedata().logo_path|ezroot(no)}{literal});background-size:contain{{/if}}"></figure>
         </div>
+        {{/if}}
         <div class="service_details clearfix">
             <h2 class="section_header skincolored noborder">
+                <a class="book-calendar-button pull-right" href="{{:~settings('accessPath')}}/openpa_booking/locations/{{:metadata.mainNodeId}}">
+                    <i class="fa fa-calendar"></i> Vedi calendario
+                </a>
                 <a href="{{:~settings('accessPath')}}/openpa_booking/locations/{{:metadata.mainNodeId}}">
-                    <b>{{:~i18n(data,'titolo')}}</b>
+                    <b>{{:~i18n(metadata.name)}}</b>
                 </a>
             </h2>
-            <!--<p>
-                <a class="btn btn-xs btn-default" href="{{:~settings('accessPath')}}/openpa_booking/locations/{{:metadata.mainNodeId}}">
-                    <i class="fa fa-calendar"></i> Vai al calendario
-                </a>
-            </p>-->
             <ul class="list list-unstyled">
             {{if ~i18n(data,'abstract')}}
               {{:~i18n(data,'abstract')}}
@@ -41,11 +41,12 @@
             </ul>
         </div>
     </div>
-    {{if location_available && stuff_available}}
-        <div class="service_teaser vertical booking book-now">
-            <div class="service_details clearfix">
+    {{if is_availability_request}}
+    <div class="service_teaser vertical booking {{if is_availability_request}} {{if !location_available || !stuff_available}}inverted{{/if}} {{/if}} add">
+        {{if location_available && stuff_available}}
+            <div class="service_details clearfix book-now">
                 <a href="{{:~settings('accessPath')}}/openpa_booking/add/sala_pubblica/{{:metadata.id}}?start={{:currentRequest.from}}&end={{:currentRequest.to}}&stuff={{:currentRequest.stuff_id_list}}">
-                    Prenota per <span class="booking_date">{{:currentRequest.date_formatted}}</span> <span class="booking_hours">dalle {{:currentRequest.from_hours_formatted}} alle {{:currentRequest.to_hours_formatted}}</span>
+                    Prenota subito per <span class="booking_date">{{:currentRequest.date_formatted}}</span> <span class="booking_hours">dalle {{:currentRequest.from_hours_formatted}} alle {{:currentRequest.to_hours_formatted}}</span>
                     {{if currentRequest.has_stuff}}
                     <br /> <small>con
                     {{for currentRequest.stuff}}
@@ -55,19 +56,23 @@
                     {{/if}}
                 </a>
             </div>
-        </div>
-    {{else location_busy_level == 0 || stuff_global_busy_level > -1}}
-        <div class="service_teaser vertical booking book-try">
-            <div class="service_details clearfix">
-            {{if location_busy_level == 0}}
-                <p>{{if location_bookings == 1}}C'è una prenotazione{{else}}Ci sono {{: location_bookings}} prenotazioni{{/if}} in attesa, puoi metterti in coda di prenotazione</p>
-            {{/if}}
-            {{if !stuff_available && stuff_global_busy_level > -1}}
-                <p>L'attrezzatura è già stata richiesta in altre prenotazioni in attesa</p>
-            {{/if}}
+        {{else location_self_booked > 0}}
+            <div class="service_details clearfix book-already">
+                <a href="{{:~settings('accessPath')}}/openpa_booking/view/sala_pubblica/{{:location_self_booked}}">
+                    Vai alla tua prenotazione per <br /><span class="booking_date">{{:currentRequest.date_formatted}}</span>
+                </a>
+            </div>
+        {{else location_busy_level == 0 || stuff_global_busy_level > -1}}
+            <div class="service_details clearfix book-try">
+                {{if location_busy_level == 0}}
+                    <p>{{if location_bookings == 1}}C'è una prenotazione{{else}}Ci sono {{: location_bookings}} prenotazioni{{/if}} in attesa, puoi metterti in coda di prenotazione</p>
+                {{/if}}
+                {{if !stuff_available && stuff_global_busy_level > -1}}
+                    <p>L'attrezzatura è già stata richiesta in altre prenotazioni in attesa</p>
+                {{/if}}
 
                 <a class="btn btn-{{if location_busy_level == 0}}warning{{else}}success{{/if}} btn-block" href="{{:~settings('accessPath')}}/openpa_booking/add/sala_pubblica/{{:metadata.id}}?start={{:currentRequest.from}}&end={{:currentRequest.to}}&stuff={{if stuff_available}}{{:currentRequest.stuff_id_list}}{{/if}}">
-                    {{if location_busy_level == 0}}Metti in coda una prenotazione {{else}} Prenota {{/if}}per <br /><span class="booking_date">{{:currentRequest.date_formatted}}</span> <span class="booking_hours">dalle {{:currentRequest.from_hours_formatted}} alle {{:currentRequest.to_hours_formatted}}</span>
+                    {{if location_busy_level == 0}}Prenota in coda {{else}} Prenota subito {{/if}}per <br /><span class="booking_date">{{:currentRequest.date_formatted}}</span> <span class="booking_hours">dalle {{:currentRequest.from_hours_formatted}} alle {{:currentRequest.to_hours_formatted}}</span>
                     {{if currentRequest.has_stuff && stuff_available}}
                     <br /> <small>con
                     {{for currentRequest.stuff}}
@@ -79,17 +84,16 @@
                     {{/if}}
                 </a>
             </div>
-        </div>
-    {{else (!location_available && location_busy_level > 0) || (!stuff_available && stuff_global_busy_level > 0)}}
-        <div class="service_teaser vertical booking book-none">
-            <div class="service_details clearfix">
+        {{else (!location_available && location_busy_level > 0) || (!stuff_available && stuff_global_busy_level > 0)}}
+            <div class="service_details clearfix book-none">
                 {{if !location_available && location_busy_level > 0 }}
-                    <p>Sala non disponibile per il giorno selezionato</p>
+                    <p>Sala non disponibile per il giorno e l'orario selezionati</p>
                 {{/if}}
                 {{if !stuff_available && stuff_global_busy_level > 0 }}
                     <p>Attrezzatura non disponibile per il giorno selezionato</p>
                 {{/if}}
             </div>
+        {{/if}}
         </div>
     {{/if}}
     </script>
@@ -97,14 +101,16 @@
 {else}
 {literal}
     <script id="tpl-prenotazione" type="text/x-jsrender">
-    <div class="service_teaser vertical booking {{if !location_available || !stuff_available}}inverted{{/if}}">
+    <div class="service_teaser vertical {{if is_availability_request}}booking {{if !location_available || !stuff_available}}inverted{{/if}} {{/if}}">
+        {{if ~mainImageUrl(data)}}
         <div class="service_photo">
           <figure style="background-image:url({{if ~mainImageUrl(data)}}{{:~mainImageUrl(data)}}){{else}}{/literal}{social_pagedata().logo_path|ezroot(no)}{literal});background-size:contain{{/if}}"></figure>
         </div>
+        {{/if}}
         <div class="service_details clearfix">
             <h2 class="section_header skincolored noborder">
                 <a href="{{:~settings('accessPath')}}/openpa_booking/locations/{{:metadata.mainNodeId}}">
-                    <b>{{:~i18n(data,'titolo')}}</b>
+                    <b>{{:~i18n(metadata.name)}}</b>
                 </a>
             </h2>
             <!--<p>
@@ -137,13 +143,15 @@
             </ul>
         </div>
     </div>
-    <div class="service_teaser vertical booking book-now">
-        <div class="service_details clearfix">
+    {{if is_availability_request}}
+    <div class="service_teaser vertical booking add">
+        <div class="service_details book-now clearfix">
             <a href="#login">
                 Accedi per prenotare
             </a>
         </div>
     </div>
+    {{/if}}
     </script>
 {/literal}
 {/if}

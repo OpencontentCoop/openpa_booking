@@ -10,7 +10,7 @@
 
 {def $stuff_id_string = 'null'
      $stuff_ids = array()}
-{if $object.data_map.stuff.has_content}
+{if and( stuff_sub_workflow_is_enabled(), $object.data_map.stuff.has_content)}
     {foreach $object.data_map.stuff.content.relation_list as $item}
         {set $stuff_ids = $stuff_ids|append($item.contentobject_id)}
     {/foreach}
@@ -124,9 +124,9 @@
                 var currentRequest = getCurrentRequest();
                 var template = $.templates("#tpl-schedule");
                 $.views.helpers($.opendataTools.helpers);
-                if (response.features.length > 0){
-                    $.each(response.features, function () {
-                        var location = this.properties.content;
+                if (response.contents.length > 0){
+                    $.each(response.contents, function () {
+                        var location = this;
                         location.currentRequest = currentRequest;
                         if(location.stuff_available && location.location_available) {
                             if (scheduler.find('[data-from="' + currentRequest.from_moment + '"]').length == 0) {

@@ -377,6 +377,11 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return 'sala_pubblica';
     }
 
+    public function bookableClassIdentifiers()
+    {
+        return array('sala_pubblica','attrezzatura_sala');
+    }
+
     public function salaPubblicaClassIdentifiers()
     {
         return array('sala_pubblica');
@@ -395,7 +400,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     public function createObject(eZContentObject $parentObject, $start, $end)
     {
         $object = null;
-        if (in_array($parentObject->attribute('class_identifier'), $this->salaPubblicaClassIdentifiers())) {
+        if (in_array($parentObject->attribute('class_identifier'), $this->bookableClassIdentifiers())) {
             $classIdentifier = $this->prenotazioneClassIdentifier();
             $class = eZContentClass::fetchByIdentifier($classIdentifier);
             if (!$class instanceof eZContentClass) {
@@ -431,7 +436,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                     $dataMap['to_time']->store();
                 }
 
-                if (isset( $dataMap['stuff'] ) && eZHTTPTool::instance()->hasGetVariable('stuff')) {
+                if (isset( $dataMap['stuff'] )
+                    && eZHTTPTool::instance()->hasGetVariable('stuff')
+                    && OpenPABooking::instance()->isStuffSubWorkflowEnabled()) {
 
                     $stuffIdList = explode('-', eZHTTPTool::instance()->getVariable('stuff'));
                     $stuffStringParts = array();
@@ -485,10 +492,11 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 /** @var eZContentObjectAttribute[] $salaDataMap */
                 $salaDataMap = $sala->attribute('data_map');
                 $priceRangeMatrix = isset( $salaDataMap['price_range'] ) ? $salaDataMap['price_range']->content() : new eZMatrix('null');
-
-                foreach ($priceRangeMatrix->Matrix['rows']['sequential'] as $row) {
-                    if ($row['columns'][0] == $identifier) {
-                        $price = floatval($row['columns'][2]);
+                if (isset( $priceRangeMatrix->Matrix['rows'] )) {
+                    foreach ((array)$priceRangeMatrix->Matrix['rows']['sequential'] as $row) {
+                        if ($row['columns'][0] == $identifier) {
+                            $price = floatval($row['columns'][2]);
+                        }
                     }
                 }
             }
@@ -906,7 +914,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $classes = array_merge(
             array(
                 $self->prenotazioneClassIdentifier(),
-            ), $self->salaPubblicaClassIdentifiers(), self::stuffClassIdentifiers()
+            ), $self->bookableClassIdentifiers(), self::stuffClassIdentifiers()
         );
 
         OpenPALog::warning("ATTENZIONE ALLINEAMENTO CLASSI DISATTIVATO PER QUESTO INSTALLER");
@@ -929,13 +937,15 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $prenotazioneClass = eZContentClass::fetchByIdentifier($self->prenotazioneClassIdentifier());
 
         $parentClasses = array();
-        foreach ($self->salaPubblicaClassIdentifiers() as $identifier) {
+        foreach ($self->bookableClassIdentifiers() as $identifier) {
             $class = eZContentClass::fetchByIdentifier($identifier);
             if ($class) {
                 $stuffClassIdList[] = $class->attribute('id');
                 $parentClasses[] = $class->attribute('id');
             }
         }
+
+        $stuffClassIdList = array_unique($stuffClassIdList);
 
         $defaultMemberRole = eZRole::fetchByName('Member');
 

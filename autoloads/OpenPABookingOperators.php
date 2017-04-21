@@ -16,7 +16,8 @@ class OpenPABookingOperators
             'location_node_id',
             'location_class_identifiers',
             'stuff_node_id',
-            'stuff_class_identifiers'
+            'stuff_class_identifiers',
+            'stuff_sub_workflow_is_enabled'
         );
     }
 
@@ -94,6 +95,10 @@ class OpenPABookingOperators
                     }
                 }
                 $operatorValue = $colors;
+                break;
+
+            case 'stuff_sub_workflow_is_enabled':
+                $operatorValue = OpenPABooking::instance()->isStuffSubWorkflowEnabled();
                 break;
         }
     }

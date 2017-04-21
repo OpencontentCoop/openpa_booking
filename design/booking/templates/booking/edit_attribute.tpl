@@ -6,6 +6,7 @@
     'moment-timezone-with-data.js',
     'jquery.opendataSearchView.js',
     'jquery.timepicker.js',
+    'datepicker-it.js',
     'jsrender.js'
 ))}
 

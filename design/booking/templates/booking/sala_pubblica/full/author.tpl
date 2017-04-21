@@ -1,6 +1,17 @@
 {def $sala = $content_object.data_map.sala.content}
 {include uri='design:booking/sala_pubblica/full/header.tpl'}
 
+{if $collab_item.data_int3|eq(0)}
+    <form method="post" class="form-inline text-center" action="{"collaboration/action/"|ezurl(no)}">
+        <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[]" value="" />
+        <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Expire" value="Cancella prenotazione" />
+        <input type="hidden" name="CollaborationActionCustom" value="custom"/>
+        <input type="hidden" name="CollaborationTypeIdentifier" value="openpabooking"/>
+        <input type="hidden" name="CollaborationItemID" value="{$collab_item.id}"/>
+    </form>
+    <br />
+{/if}
+
 {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(1)}
     <div class="text-center lead">
     {def $basket = fetch('shop', 'basket')

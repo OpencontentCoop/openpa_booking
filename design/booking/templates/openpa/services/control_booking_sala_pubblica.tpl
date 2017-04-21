@@ -23,7 +23,7 @@
 {ezcss_require( array( 'fullcalendar.min.css' ) )}
 
 {def $query = concat('openpa/data/booking_sala_pubblica?sala=', $node.contentobject_id)|ezurl()}
-{if is_set($stuff)}
+{if and(stuff_sub_workflow_is_enabled(),is_set($stuff))}
     {set $query = concat('openpa/data/booking_sala_pubblica?stuff=', $stuff)|ezurl()}
 {/if}
 

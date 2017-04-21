@@ -33,7 +33,7 @@
                             {/case}
 
                             {case match="Approvato da"}
-                                Responsabile della sala
+                                Responsabile
                             {/case}
 
                             {case}

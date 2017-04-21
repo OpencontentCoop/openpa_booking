@@ -9,6 +9,8 @@
         </div>
     {/foreach}
     {undef $range_user}
+{else}
+    <input type="hidden" value="nessuno" name="{$attribute_base}_ezstring_data_text_{$attribute.id}"/>
 {/if}
 
 {/default}

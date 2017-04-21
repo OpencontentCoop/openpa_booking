@@ -19,7 +19,8 @@
     $.opendataTools.settings('endpoint', {ldelim}
         'search': '{'/opendata/api/content/search/'|ezurl(no,full)}',
         'class': '{'/opendata/api/classes/'|ezurl(no,full)}'
-        {rdelim});
+    {rdelim});
+    $.opendataTools.settings('stuff_sub_workflow_is_enabled', {cond(stuff_sub_workflow_is_enabled(), 'true', 'false')});
 </script>
 
 <section class="hgroup">

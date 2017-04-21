@@ -23,15 +23,17 @@ $(document).ready(function () {
         var mainStatus = '<li><span class="label label-' + stateClass + '">' + stateName + '</span></li>';
 
         var subStatuses = [];
-        if (row.data[tools.settings('language')].stuff.length){
-            $.each(row.data[tools.settings('language')].stuff, function(){
-                var bookingStatus = this.extra.in_context && this.extra.in_context.booking_status ? this.extra.in_context.booking_status : 'default';
-                //if (bookingStatus != 'approved') {
+        if (tools.settings('stuff_sub_workflow_is_enabled')) {
+            if (row.data[tools.settings('language')].stuff && row.data[tools.settings('language')].stuff.length) {
+                $.each(row.data[tools.settings('language')].stuff, function () {
+                    var bookingStatus = this.extra.in_context && this.extra.in_context.booking_status ? this.extra.in_context.booking_status : 'default';
+                    //if (bookingStatus != 'approved') {
                     subStatuses.push(
                         '<li class="stuff-list"><small><span class="label label-' + bookingStatus + '"></span>' + this.name[tools.settings('language')] + '</small></li>'
                     );
-                //}
-            });
+                    //}
+                });
+            }
         }
 
         return '<ul class="list list-unstyled">'+mainStatus+subStatuses.join('')+'</ul>';
@@ -77,14 +79,14 @@ $(document).ready(function () {
                     {"data": "metadata.stateIdentifiers", "name": 'state', "title": 'Stato', "sortable": false},
                     {"data": "metadata.published", "name": 'published', "title": 'Creata il'},
                     {"data": "metadata.ownerName", "name": 'raw[meta_owner_name_t]', "title": 'Autore'},
-                    {"data": "data." + tools.settings('language') + ".from_time", "name": 'from_time', "title": 'Periodo'},
-                    {"data": "data." + tools.settings('language') + ".sala", "name": 'sala', "title": 'Luogo'},
+                    //{"data": "data." + tools.settings('language') + ".from_time", "name": 'from_time', "title": 'Periodo'},
+                    {"data": "data." + tools.settings('language') + ".sala", "name": 'sala', "title": 'Richiesta'},
                     {"data": "metadata.mainNodeId", "name": 'id', "title": '', "sortable": false}
                 ],
                 "columnDefs": [
                     {
                         "render": function (data, type, row) {
-                            return '<a href="' + tools.settings('accessPath') + '/openpa_booking/view/sala_pubblica/' + row.metadata.id + '"><span class="label label-primary">' + data + '</span></a>';
+                            return '<a href="' + tools.settings('accessPath') + '/openpa_booking/view/sala_pubblica/' + row.metadata.id + '"><span class="label label-default">' + data + '</span></a>';
                         },
                         "targets": [0]
                     },
@@ -106,15 +108,15 @@ $(document).ready(function () {
                         },
                         "targets": [3]
                     },
-                    {
-                        "render": function (data, type, row) {
-                            var contentData = row.data;
-                            var from = typeof contentData[tools.settings('language')] != 'undefined' ? contentData[tools.settings('language')].from_time : contentData[Object.keys(contentData)[0]].from_time;
-                            var to = typeof contentData[tools.settings('language')] != 'undefined' ? contentData[tools.settings('language')].to_time : contentData[Object.keys(contentData)[0]].to_time;
-                            return moment(new Date(from)).format('DD/MM/YYYY HH:mm') + '-' + moment(new Date(to)).format('HH:mm');
-                        },
-                        "targets": [4]
-                    },
+                    //{
+                    //    "render": function (data, type, row) {
+                    //        var contentData = row.data;
+                    //        var from = typeof contentData[tools.settings('language')] != 'undefined' ? contentData[tools.settings('language')].from_time : contentData[Object.keys(contentData)[0]].from_time;
+                    //        var to = typeof contentData[tools.settings('language')] != 'undefined' ? contentData[tools.settings('language')].to_time : contentData[Object.keys(contentData)[0]].to_time;
+                    //        return moment(new Date(from)).format('DD/MM/YYYY HH:mm') + '-' + moment(new Date(to)).format('HH:mm');
+                    //    },
+                    //    "targets": [4]
+                    //},
                     {
                         "render": function (data, type, row) {
                             var contentData = row.data;
@@ -125,13 +127,15 @@ $(document).ready(function () {
                             }
                             return '?';
                         },
-                        "targets": [5]
+                        //"targets": [5]
+                        "targets": [4]
                     },
                     {
                         "render": function (data, type, row) {
                             return '<a href="' + tools.settings('accessPath') + '/openpa_booking/view/sala_pubblica/' + row.metadata.id + '" class="btn btn-xs btn-default">Entra</a>';
                         },
-                        "targets": [6]
+                        //"targets": [6]
+                        "targets": [5]
                     }
                 ]
             },
