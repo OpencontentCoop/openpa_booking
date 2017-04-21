@@ -423,6 +423,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
             $endDate = new DateTime($end, new DateTimeZone('UTC'));
             if ($startDate instanceof DateTime && $endDate instanceof DateTime) {
 
+                $now = new DateTime();
                 $openingHours = ObjectHandlerServiceControlBookingSalaPubblica::getOpeningHours($this->currentSalaObject);
                 $closingDays = ObjectHandlerServiceControlBookingSalaPubblica::getClosingDays($this->currentSalaObject);
 
@@ -430,7 +431,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                 $byDayPeriod = new DatePeriod($startDate, $byDayInterval, $endDate);
                 /** @var DateTime[] $byDayPeriod */
                 foreach ($byDayPeriod as $date) {
-                    $do = true;
+                    $do = $date > $now;
                     if (!empty($openingHours)) {
                         foreach ($closingDays as $closingDay) {
                             if (ObjectHandlerServiceControlBookingSalaPubblica::isInClosingDay($closingDay, $date,
@@ -500,7 +501,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                 eZURI::transformURI($url);
                 $item = new stdClass();
                 $item->id = $object->attribute('id');
-                $item->url = $url;
+                $item->url = null;
 
                 $participants = OpenPABookingCollaborationParticipants::instanceFrom($service->getCollaborationItem());
 
@@ -526,9 +527,10 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                     $item->title = $state->attribute('current_translation')->attribute('name');
                     if (in_array($object->attribute('id'), $current)) {
                         $item->color = $colors['current'];
-                        //$item->title = $object->attribute( 'owner' )->attribute( 'name' );
+                        $item->url = $url;
                     } elseif ($participants->currentUserIsParticipant()) {
                         $item->color = $colors[$service->attribute('current_state_code')];
+                        $item->url = $url;
                     } else {
                         $item->color = $colors['none'];
                     }
