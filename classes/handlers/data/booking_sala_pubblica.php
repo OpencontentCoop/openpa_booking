@@ -506,7 +506,12 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                 $item->id = $object->attribute('id');
                 $item->url = null;
 
-                $participants = OpenPABookingCollaborationParticipants::instanceFrom($service->getCollaborationItem());
+                $participants = null;
+                $collaborationItem = $service->getCollaborationItem();
+                if ($collaborationItem instanceof eZCollaborationItem){
+                    $participants = OpenPABookingCollaborationParticipants::instanceFrom($collaborationItem);
+                }
+
 
                 if ($this->currentStuffObject instanceof eZContentObject) {
                     $statuses = $service->attribute('stuff_statuses');
@@ -531,7 +536,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                     if (in_array($object->attribute('id'), $current)) {
                         $item->color = $colors['current'];
                         $item->url = $url;
-                    } elseif ($participants->currentUserIsParticipant()) {
+                    } elseif ($participants && $participants->currentUserIsParticipant()) {
                         $item->color = $colors[$service->attribute('current_state_code')];
                         $item->url = $url;
                     } else {
