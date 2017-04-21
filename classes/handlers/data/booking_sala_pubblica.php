@@ -262,7 +262,9 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                     if ($location['location_busy_level'] <= 0 || $this->showUnavailableLocations) {
 
                         $geoFeature->properties->add('content', $location);
-                        if ($geoFeature->geometry->coordinates) {
+                        if ($geoFeature->geometry->coordinates
+                            && ( (int)$geoFeature->geometry->coordinates[0] != 0 && (int)$geoFeature->geometry->coordinates[1] != 0 )
+                        ) {
                             $geoJson->add($geoFeature);
                         }
                         $availableLocations[] = $location;
@@ -273,12 +275,13 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                 $location = $filterContent->filterContent($content);
                 $location['is_availability_request'] = false;
                 $geoFeature->properties->add('content', $location);
-                if ($geoFeature->geometry->coordinates) {
+                if ($geoFeature->geometry->coordinates
+                    && ( (int)$geoFeature->geometry->coordinates[0] != 0 && (int)$geoFeature->geometry->coordinates[1] != 0 )
+                ) {
                     $geoJson->add($geoFeature);
                 }
                 $availableLocations[] = $location;
             }
-
         }
 
         return array(
