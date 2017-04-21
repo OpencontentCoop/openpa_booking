@@ -597,7 +597,7 @@ span.classattribute-description{
 
 .booking-pills {
     text-align:center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 .booking-pills > li.active:after{
@@ -614,13 +614,16 @@ span.classattribute-description{
     bottom: -10px;
 }
 
+.booking-pills>li>a{
+    background: #ddd;
+}
 .booking-filters{
     padding: 10px 8px 0;
     text-align: center;
     border: 1px solid #ccc;
     /*border-radius: 6px;*/
     background: #ddd;
-    margin: 0 0 20px;
+    margin: 0 0 30px;
 }
 .booking-filters select{
     min-width: 150px;
