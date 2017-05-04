@@ -426,6 +426,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
             $endDate = new DateTime($end, new DateTimeZone('UTC'));
             if ($startDate instanceof DateTime && $endDate instanceof DateTime) {
 
+                $diff = $startDate->diff($endDate);
                 $now = new DateTime();
                 $openingHours = ObjectHandlerServiceControlBookingSalaPubblica::getOpeningHours($this->currentSalaObject);
                 $closingDays = ObjectHandlerServiceControlBookingSalaPubblica::getClosingDays($this->currentSalaObject);
@@ -463,6 +464,11 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                                     $item->end = $testEnd->format('c');
                                     $item->rendering = 'background';
                                     $events[] = $item;
+
+                                    $cloneItem = clone $item;
+                                    $cloneItem->id = '_' . $item->id;
+                                    $cloneItem->allDay = true;
+                                    $events[] = $cloneItem;
                                 }
                             }
                         }else{
@@ -473,6 +479,11 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
                             $item->end = $date->setTime(23,59)->format('c');
                             $item->rendering = 'background';
                             $events[] = $item;
+
+                            $cloneItem = clone $item;
+                            $cloneItem->id = '_' . $item->id;
+                            $cloneItem->allDay = true;
+                            $events[] = $cloneItem;
                         }
 
                     }

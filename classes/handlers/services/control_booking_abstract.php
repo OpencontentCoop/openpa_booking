@@ -29,11 +29,11 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
         $this->data['state_colors'] = static::getStateColors();
         $this->fnData['reservation_manager_ids'] = 'getApproverIds';
         $this->fnData['start'] = 'getStartDateTime';
-        $this->data['start_moment'] = $this->getStartDateTime()->format('c');
-        $this->data['start_timestamp'] = $this->getStartDateTime()->getTimestamp();
+        $this->fnData['start_moment'] = 'getStartMoment';
+        $this->fnData['start_timestamp'] = 'getStartTimestamp';
         $this->fnData['end'] = 'getEndDateTime';
-        $this->data['end_timestamp'] = $this->getEndDateTime()->getTimestamp();
-        $this->data['end_moment'] = $this->getEndDateTime()->format('c');
+        $this->fnData['end_timestamp'] = 'getEndMoment';
+        $this->fnData['end_moment'] = 'getEndTimestamp';
     }
 
     public static function getStateColors()
@@ -49,6 +49,26 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
         $data['none'] = '#333';
 
         return $data;
+    }
+
+    protected function getStartMoment()
+    {
+        return $this->getStartDateTime()->format('c');
+    }
+
+    protected function getStartTimestamp()
+    {
+        return $this->getStartDateTime()->getTimestamp();
+    }
+
+    protected function getEndMoment()
+    {
+        return $this->getEndDateTime()->getTimestamp();
+    }
+
+    protected function getEndTimestamp()
+    {
+        return $this->getEndDateTime()->format('c');
     }
 
     /**

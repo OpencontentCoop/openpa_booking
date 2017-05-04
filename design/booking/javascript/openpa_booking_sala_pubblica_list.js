@@ -76,11 +76,11 @@ $(document).ready(function () {
                 "order": [[2, "desc"]],
                 "columns": [
                     {"data": "metadata.id", "name": 'id', "title": 'ID'},
+                    {"data": "data." + tools.settings('language') + ".sala", "name": 'sala', "title": 'Richiesta'},
                     {"data": "metadata.stateIdentifiers", "name": 'state', "title": 'Stato', "sortable": false},
                     {"data": "metadata.published", "name": 'published', "title": 'Creata il'},
                     {"data": "metadata.ownerName", "name": 'raw[meta_owner_name_t]', "title": 'Autore'},
                     {"data": "data." + tools.settings('language') + ".from_time", "name": 'from_time', "title": 'Periodo'},
-                    {"data": "data." + tools.settings('language') + ".sala", "name": 'sala', "title": 'Richiesta'},
                     {"data": "metadata.mainNodeId", "name": 'id', "title": '', "sortable": false}
                 ],
                 "columnDefs": [
@@ -94,19 +94,19 @@ $(document).ready(function () {
                         "render": function (data, type, row) {
                             return renderStatus(data, row);
                         },
-                        "targets": [1]
+                        "targets": [2]
                     },
                     {
                         "render": function (data, type, row) {
                             return moment(new Date(data)).format('DD/MM/YYYY HH:mm');
                         },
-                        "targets": [2]
+                        "targets": [3]
                     },
                     {
                         "render": function (data, type, row) {
                             return typeof data[tools.settings('language')] != 'undefined' ? data[tools.settings('language')] : data[Object.keys(data)[0]];
                         },
-                        "targets": [3]
+                        "targets": [4]
                     },
                     {
                         "render": function (data, type, row) {
@@ -115,7 +115,7 @@ $(document).ready(function () {
                             var to = typeof contentData[tools.settings('language')] != 'undefined' ? contentData[tools.settings('language')].to_time : contentData[Object.keys(contentData)[0]].to_time;
                             return moment(new Date(from)).format('DD/MM/YYYY HH:mm') + '-' + moment(new Date(to)).format('HH:mm');
                         },
-                        "targets": [4]
+                        "targets": [5]
                     },
                     {
                         "render": function (data, type, row) {
@@ -127,7 +127,7 @@ $(document).ready(function () {
                             }
                             return '?';
                         },
-                        "targets": [5]
+                        "targets": [1]
                     },
                     {
                         "render": function (data, type, row) {
@@ -139,12 +139,14 @@ $(document).ready(function () {
             },
             "loadDatatableCallback": function (self) {
                 var input = $('.dataTables_filter input');
-                input.unbind().attr('placeholder', 'Premi invio per cercare');
-                input.bind('keyup', function (e) {
-                    if (e.keyCode == 13) {
-                        self.datatable.search(this.value).draw();
-                    }
-                });
+                input.parents('.dataTables_filter').hide();
+
+                //input.unbind().attr('placeholder', 'Premi invio per cercare');
+                //input.bind('keyup', function (e) {
+                //    if (e.keyCode == 13) {
+                //        self.datatable.search(this.value).draw();
+                //    }
+                //});
             }
         })
         .on('xhr.dt', function (e, settings, json, xhr) {
@@ -161,10 +163,7 @@ $(document).ready(function () {
 
 
     var loadFilteredDatatable = function () {
-        var States = [];
-        $('li.state_filter.active').each(function () {
-            States.push($(this).data('state'));
-        });
+        var States = $('#stateFilter').val() || [];
         if (States.length > 0) {
             datatable.settings.builder.filters['state'] = {
                 'field': 'state',
@@ -172,17 +171,12 @@ $(document).ready(function () {
                 'value': States
             };
         } else {
-            $('li.state_filter').addClass('active');
             datatable.settings.builder.filters['state'] = null;
         }
         datatable.loadDataTable();
     };
 
-    $('li.state_filter a').on('click', function (e) {
-        if (!e.shiftKey) {
-            $('li.state_filter').removeClass('active');
-        }
-        $(this).parent().toggleClass('active');
+    $('#stateFilter').chosen({'width':'350px'}).on('change', function (e) {
         loadFilteredDatatable();
         e.preventDefault();
     });

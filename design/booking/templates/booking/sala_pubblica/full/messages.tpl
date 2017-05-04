@@ -11,7 +11,7 @@
 <form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">
     <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[]" value=""/>
     <textarea name="Collaboration_OpenpaBookingComment" cols="40" rows="5" class="form-control"></textarea>
-    <input class="btn btn-block btn.xs btn-primary" type="submit" name="CollaborationAction_Comment"
+    <input class="btn btn-block btn-xs btn-info" type="submit" name="CollaborationAction_Comment"
            value="Aggiungi un messaggio"/>
 
     <input type="hidden" name="CollaborationActionCustom" value="custom"/>

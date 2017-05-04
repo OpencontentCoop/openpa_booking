@@ -17,7 +17,8 @@ class OpenPABookingOperators
             'location_class_identifiers',
             'stuff_node_id',
             'stuff_class_identifiers',
-            'stuff_sub_workflow_is_enabled'
+            'stuff_sub_workflow_is_enabled',
+            'openpa_agenda_link'
         );
     }
 
@@ -102,6 +103,21 @@ class OpenPABookingOperators
             case 'stuff_sub_workflow_is_enabled':
                 $operatorValue = OpenPABooking::instance()->isStuffSubWorkflowEnabled();
                 break;
+
+            case 'openpa_agenda_link':
+                $operatorValue = $this->findOpenpaAgendaLink();
+                break;
         }
+    }
+
+    private function findOpenpaAgendaLink()
+    {
+        $link = false;
+        $siteAccessName = OpenPABase::getCustomSiteaccessName('agenda');
+        $extensions = eZSiteAccess::getIni( $siteAccessName )->variable('ExtensionSettings', 'ActiveAccessExtensions');
+        if (in_array('openpa_agenda', $extensions)){
+            $link = '//' . eZSiteAccess::getIni( $siteAccessName )->variable('SiteSettings', 'SiteURL') . '/editorialstuff/add/agenda';
+        }
+        return $link;
     }
 }

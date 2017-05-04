@@ -19,10 +19,13 @@
                 <div class="panel-body">
                     {foreach $openpa.content_contacts.attributes as $openpa_attribute}
                         <div class="row">
-                            {if $openpa_attribute.full.show_label}
+                            {if and( $openpa_attribute.full.show_label, $openpa_attribute.full.collapse_label|not() )}
                                 <div class="col-md-3"><strong>{$openpa_attribute.label}: </strong></div>
                             {/if}
-                            <div class="col-md-{if $openpa_attribute.full.show_label}9{else}12{/if}">
+                            <div class="col-md-{if and( $openpa_attribute.full.show_label, $openpa_attribute.full.collapse_label|not() )}9{else}12{/if}">
+                                {if and( $openpa_attribute.full.show_label, $openpa_attribute.full.collapse_label )}
+                                    <strong>{$openpa_attribute.label}</strong>
+                                {/if}
                                 {attribute_view_gui attribute=$openpa_attribute.contentobject_attribute href=cond($openpa_attribute.full.show_link|not, 'no-link', '')}
                             </div>
                         </div>
@@ -105,11 +108,10 @@
             </div>
         {/if}
 
-        {if fetch(user, has_access_to, hash('module', 'openpa_booking', 'function', 'book') )}
-            <section class="hgroup">
-                {include uri=$openpa.control_booking_sala_pubblica.template}
-            </section>
-        {/if}
+        <section class="hgroup">
+            {include uri=$openpa.control_booking_sala_pubblica.template}
+        </section>
+
 
         {if is_set( $openpa.content_main.parts.full_text )}
             {attribute_view_gui attribute=$openpa.content_main.parts.full_text.contentobject_attribute}

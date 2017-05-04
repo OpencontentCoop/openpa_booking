@@ -42,7 +42,7 @@
 
     <div class="content-list" style="display: none">
         {def $preselected = array()}
-        <ul class="list-inline text-center">
+        <ul class="list-inline text-center" style="display:none">
         {foreach $states as $state}
             <li class="{$state.identifier} state_filter {if and($preselected|count|gt(0),$preselected|contains($state.identifier))}active{/if}" data-state="{$state.id}">
                 <a href="#" class="label label-{$state.identifier}">
@@ -51,6 +51,18 @@
             </li>
         {/foreach}
         </ul>
+
+        <div id="stateFilterWrapper" class="col-md-6">
+        <label for="stateFilter">Filtra per stato:</label>
+        <select class="list-inline text-center form-control" id="stateFilter" multiple="multiple" data-placeholder=" " style="min-width:350px;width:350px;">
+            {foreach $states as $state}
+                <option value="{$state.id}" {if and($preselected|count|gt(0),$preselected|contains($state.identifier))}selected="selected"{/if} data-state="{$state.id}">
+                    {$state.current_translation.name|wash()}
+                </option>
+            {/foreach}
+        </select>
+        </div>
+
         <div id="table">
             <div class="content-data"></div>
         </div>

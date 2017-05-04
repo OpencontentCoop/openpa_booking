@@ -106,11 +106,9 @@
                 </div>
             {/if}
 
-            {if fetch(user, has_access_to, hash('module', 'openpa_booking', 'function', 'book') )}
-                <section class="hgroup">
-                    {include uri=$openpa.control_booking_sala_pubblica.template stuff=$node.contentobject_id}
-                </section>
-            {/if}
+            <section class="hgroup">
+                {include uri=$openpa.control_booking_sala_pubblica.template stuff=$node.contentobject_id}
+            </section>
 
             {if is_set( $openpa.content_main.parts.full_text )}
                 {attribute_view_gui attribute=$openpa.content_main.parts.full_text.contentobject_attribute}

@@ -1,11 +1,9 @@
 
-{if fetch( 'user', 'current_user' ).is_logged_in}
-
 {def $colors = object_handler($node.object).control_booking_sala_pubblica.state_colors}
 
 {if is_set( $view_parameters.error )}
-    <div class="alert message-warning">
-        {$view_parameters.error|urldecode}
+    <div class="alert alert-danger message-warning">
+        {$view_parameters.error|urldecode|wash()}
     </div>
 {/if}
 
@@ -44,6 +42,9 @@
             </h4>
         </div>
         <div class="modal-body">
+            {{if display_alert}}
+             <div class="alert alert-danger">Orario non disponibile</div>
+            {{/if}}
             <form class="form-inline">
                 <div class="form-group">
                     <label for="from_hours">{/literal}{'Dalle ore'|i18n('booking')}{literal}</label>
@@ -122,7 +123,7 @@
                 return requestString;
             };
 
-            var findAvailability = function(start,end){
+            var findAvailability = function(start,end,fromSelectHours){
                 $.opendataTools.find(buildRequest(start,end), function (response) {
                     var htmlOutput = '';
                     if (response.contents.length > 0) {
@@ -136,8 +137,8 @@
                             date_formatted: start.format("dddd D MMMM YYYY"),
                             from_hours_formatted: start.format("HH:mm"),
                             to_hours_formatted: end.format("HH:mm"),
-                            from: moment.parseZone(start.format()).utc().format('X'),
-                            to: moment.parseZone(end.format()).utc().format('X'),
+                            from: moment().year(start.year()).months(start.months()).days(start.days()).hours(start.hours()).minutes(start.minutes()).seconds(start.seconds()).format('X'),
+                            to: moment().year(end.year()).months(end.months()).days(end.days()).hours(end.hours()).minutes(end.minutes()).seconds(end.seconds()).format('X'),
                             has_stuff: false
                         };
                         console.log(location.currentRequest);
@@ -151,20 +152,25 @@
                         dialog.find('.book-calendar-button').hide();
                         dialog.modal();
                     }else{
-                        dialog.modal('hide');
+                        if (fromSelectHours) {
+                            displayHoursForm(start,true);
+                        }else{
+                            dialog.modal('hide');
+                        }
                         calendar.fullCalendar('unselect');
                     }
                 });
             };
 
-            var displayHoursForm = function(start){
+            var displayHoursForm = function(start,displayAlert){
                 var template = $.templates("#tpl-select-hours");
                 dialog.find('.modal-content').html('');
                 var date_formatted = start.format("dddd D MMMM YYYY");
                 dialog.find('.modal-content').append(
                         template.render({
                             date: start,
-                            date_formatted: date_formatted
+                            date_formatted: date_formatted,
+                            display_alert: displayAlert
                         })
                 );
                 dialog.find('.time').timepicker({
@@ -206,7 +212,7 @@
                     var fromMoment = start.clone().set('hour', fromHours);
                     var toHours = toHoursInput.timepicker('getTime').getHours();
                     var toMoment = start.clone().set('hour', toHours);
-                    findAvailability(fromMoment, toMoment);
+                    findAvailability(fromMoment, toMoment, true);
                     e.preventDefault();
                 });
                 dialog.modal();
@@ -214,7 +220,7 @@
 
             var calendar = $('#calendar').fullCalendar({
                 locale: "{/literal}{$moment_language}{literal}",
-                defaultView: "agendaWeek",
+                defaultView: "month",
                 allDaySlot: false,
                 timezone: "Europe/Rome",
                 slotDuration: '00:60:00',
@@ -227,21 +233,21 @@
                     right: 'month,agendaWeek,agendaDay'
                 },
                 events: {url: {/literal}{$query}{literal} },
-{/literal}{if and(stuff_sub_workflow_is_enabled(),is_set($stuff))|not()}{literal}
+{/literal}{if fetch( 'user', 'current_user' ).is_logged_in}{if and(stuff_sub_workflow_is_enabled(),is_set($stuff))|not()}{literal}
                 selectable: true,
-                select: function(start, end, jsEvent, view){
+                select: function(s, e, jsEvent, view){
                     var notBefore = moment();
-                    if (!start.isBefore(notBefore) && start.isSame(end.clone().subtract(1, 'seconds'), 'day')){
-                        if (start.hasTime()){
-                            findAvailability(start,end);
+                    if (!s.isBefore(notBefore) && s.isSame(e.clone().subtract(1, 'seconds'), 'day')){
+                        if (s.hasTime()){
+                            findAvailability(s,e);
                         }else{
-                            displayHoursForm(start);
+                            displayHoursForm(s);
                         }
                     }else{
                         calendar.fullCalendar('unselect');
                     }
                 },
-{/literal}{/if}{literal}
+{/literal}{/if}{/if}{literal}
                 eventClick: function(event) {
                     if (event.url) {
                         window.open(event.url);
@@ -258,10 +264,17 @@
 
 <div class="panel">
     <div class="panel-body">
+        {if fetch( 'user', 'current_user' ).is_logged_in}
         <div style="margin-bottom: 20px">
-            <p class="lead">Per inserire una prenotazione clicca sul calendario e trascina il mouse negli orari che desideri. I periodi disponibili sono evidenziati in verde</p>
+            <p class="lead">Per inserire una prenotazione clicca sul calendario. I periodi disponibili sono evidenziati in verde</p>
         </div>
+        {else}
+            <div style="margin-bottom: 20px">
+                <p class="lead">Per inserire una prenotazione <a href="#login">devi iscriverti</a></p>
+            </div>
+        {/if}
         <div id='calendar'></div>
+        {if fetch( 'user', 'current_user' ).is_logged_in}
         <div style="margin-top: 20px">
             <p><strong>Legenda</strong></p>
             {foreach booking_states() as $state}
@@ -285,6 +298,7 @@
             </p>
             {/if}
         </div>
+        {/if}
     </div>
 </div>
 
@@ -295,4 +309,5 @@
     </div>
 </div>
 
-{/if}
+
+

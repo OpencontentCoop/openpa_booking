@@ -53,7 +53,11 @@
             <table class="table">
 
                 <tr>
+                    {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(0)}
                     <th>{'Costo previsto'|i18n('booking')}</th>
+                    {else}
+                    <th>{'Costo'|i18n('booking')}</th>
+                    {/if}
                     <td>
                         {def $price = $content_object.data_map.price.content.inc_vat_price}
                         {$price|l10n( currency )}

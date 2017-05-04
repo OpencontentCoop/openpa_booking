@@ -11,6 +11,7 @@ $eZTemplateOperatorArray[] = array(
         'location_class_identifiers',
         'stuff_node_id',
         'stuff_class_identifiers',
-        'stuff_sub_workflow_is_enabled'
+        'stuff_sub_workflow_is_enabled',
+        'openpa_agenda_link'
     )
 );

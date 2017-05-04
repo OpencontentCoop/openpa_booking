@@ -113,11 +113,11 @@
                     <b>{{:~i18n(metadata.name)}}</b>
                 </a>
             </h2>
-            <!--<p>
-                <a class="btn btn-xs btn-default" href="{{:~settings('accessPath')}}/openpa_booking/locations/{{:metadata.mainNodeId}}">
-                    <i class="fa fa-calendar"></i> Vai al calendario
+            <p>
+                <a class="book-calendar-button pull-right" href="{{:~settings('accessPath')}}/openpa_booking/locations/{{:metadata.mainNodeId}}">
+                    <i class="fa fa-calendar"></i> Vedi calendario
                 </a>
-            </p>-->
+            </p>
             <ul class="list list-unstyled">
             {{if ~i18n(data,'abstract')}}
               {{:~i18n(data,'abstract')}}
