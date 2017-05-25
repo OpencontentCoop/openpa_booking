@@ -821,6 +821,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
      */
     public static function isValidDay(DateTime $startDateTime, DateTime $endDateTime, eZContentObject $sala)
     {
+        if ($startDateTime >= $endDateTime){
+            return false;
+        }
+
         $openingHours = self::getOpeningHours($sala);
         if (!empty( $openingHours )) {
             $weekDayNumber = $startDateTime->format('w');

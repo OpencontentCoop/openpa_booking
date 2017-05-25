@@ -229,7 +229,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
         $geoJson = new FeatureCollection();
         $availableLocations = array();
 
-        if (eZINI::instance()->variable('DebugSettings', 'DebugOutput') == 'enabled') {
+        if (eZINI::instance()->variable('DebugSettings', 'DebugOutput') == 'enabled' || isset($_GET['debug'])) {
             $geoJson->debug = array(
                 'request' => $request,
                 'bookings_query' => $bookingQuery,
