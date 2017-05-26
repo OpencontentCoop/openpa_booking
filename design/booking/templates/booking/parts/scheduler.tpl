@@ -36,18 +36,22 @@
         var getCurrentRequest = function(){
             var currentMoment = moment($('[name="date"]').val(), "DD-MM-YYYY");
             var fromHours = "{/literal}{$object.data_map.from_time.content.timestamp|l10n(shorttime)|explode(':')[0]}{literal}";
+            var fromMinutes = "{/literal}{$object.data_map.from_time.content.timestamp|l10n(shorttime)|explode(':')[1]}{literal}";
             var toHours = "{/literal}{$object.data_map.to_time.content.timestamp|l10n(shorttime)|explode(':')[0]}{literal}";
+            var toMinutes = "{/literal}{$object.data_map.to_time.content.timestamp|l10n(shorttime)|explode(':')[1]}{literal}";
             var fromMoment = currentMoment.clone().set('hour', fromHours);
+            fromMoment.set('minutes', fromMinutes);
             var from = fromMoment.format('X');
             var toMoment = currentMoment.clone().set('hour', toHours);
+            toMoment.set('minutes', toMinutes);
             var to = toMoment.format('X');
             return {
                 date: currentMoment.format("DD-MM-YYYY"),
                 from_moment: fromMoment,
                 to_moment: toMoment,
                 date_formatted: currentMoment.format("dddd D MMMM YYYY"),
-                from_hours_formatted: fromHours,
-                to_hours_formatted: toHours,
+                from_hours_formatted: fromMoment.format("HH:mm"),
+                to_hours_formatted: toMoment.format("HH:mm"),
                 from: parseInt(from),
                 to: parseInt(to),
                 has_stuff: {/literal}{cond(count(stuff_ids)|gt(0), 'true', 'false')}{literal},

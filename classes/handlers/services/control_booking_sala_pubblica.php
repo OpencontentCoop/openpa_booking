@@ -764,7 +764,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $endDateTime = new DateTime('now', new DateTimeZone('Europe/Rome'));
             $endDateTime->setTimestamp($end);
         }
-        
+
         $salaSubtree = array();
         if ($sala instanceof eZContentObject) {
             $salaSubtree[] = $sala->attribute('main_node_id');
