@@ -65,7 +65,7 @@ $(document).ready(function () {
                 fromMoment.set('minutes', fromMinutes);
                 var from = fromMoment.format('X');
                 currentRequest.from_moment = fromMoment;
-                currentRequest.from_hours_formatted = fromHours;
+                currentRequest.from_hours_formatted = fromMoment.format('HH:mm');
                 currentRequest.from = parseInt(from);
             }
 
@@ -76,7 +76,7 @@ $(document).ready(function () {
                 toMoment.set('minutes', toMinutes);
                 var to = toMoment.format('X');
                 currentRequest.to_moment = toMoment;
-                currentRequest.to_hours_formatted = toHours;
+                currentRequest.to_hours_formatted = toMoment.format('HH:mm');;
                 currentRequest.to = parseInt(to);
             }
         }

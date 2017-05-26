@@ -136,8 +136,8 @@
                             date_formatted: start.format("dddd D MMMM YYYY"),
                             from_hours_formatted: start.format("HH:mm"),
                             to_hours_formatted: end.format("HH:mm"),
-                            from: moment().year(start.year()).month(start.month()).days(start.days()).hours(start.hours()).minutes(start.minutes()).seconds(start.seconds()).format('X'),
-                            to: moment().year(end.year()).month(end.month()).days(end.days()).hours(end.hours()).minutes(end.minutes()).seconds(end.seconds()).format('X'),
+                            from: moment().year(start.year()).month(start.month()).dates(start.dates()).hours(start.hours()).minutes(start.minutes()).seconds(start.seconds()).format('X'),
+                            to: moment().year(end.year()).month(end.month()).dates(end.dates()).hours(end.hours()).minutes(end.minutes()).seconds(end.seconds()).format('X'),
                             has_stuff: false
                         };
                         htmlOutput = templatePrenotazione.render(response.contents);
