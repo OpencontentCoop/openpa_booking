@@ -237,6 +237,7 @@
                 events: {url: {/literal}{$query}{literal} },
 {/literal}{if fetch( 'user', 'current_user' ).is_logged_in}{if and(stuff_sub_workflow_is_enabled(),is_set($stuff))|not()}{literal}
                 selectable: true,
+                selectLongPressDelay: 1,
                 select: function(s, e, jsEvent, view){
                     var notBefore = moment();
                     if (!s.isBefore(notBefore) && s.isSame(e.clone().subtract(1, 'seconds'), 'day')){
