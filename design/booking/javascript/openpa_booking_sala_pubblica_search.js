@@ -15,7 +15,7 @@ $(document).ready(function () {
     });
     $('.time').timepicker({
         'timeFormat': 'H:i',
-        step: 60,
+        step: 30,
         disableTimeRanges: [['00:00','07:00']]
     });
 
@@ -60,7 +60,9 @@ $(document).ready(function () {
 
             if (fromHoursInput.timepicker('getTime')) {
                 var fromHours = fromHoursInput.timepicker('getTime').getHours();
+                var fromMinutes = fromHoursInput.timepicker('getTime').getMinutes();
                 var fromMoment = currentMoment.clone().set('hour', fromHours);
+                fromMoment.set('minutes', fromMinutes);
                 var from = fromMoment.format('X');
                 currentRequest.from_moment = fromMoment;
                 currentRequest.from_hours_formatted = fromHours;
@@ -69,7 +71,9 @@ $(document).ready(function () {
 
             if (toHoursInput.timepicker('getTime')) {
                 var toHours = toHoursInput.timepicker('getTime').getHours();
+                var toMinutes = toHoursInput.timepicker('getTime').getMinutes();
                 var toMoment = currentMoment.clone().set('hour', toHours);
+                toMoment.set('minutes', toMinutes);
                 var to = toMoment.format('X');
                 currentRequest.to_moment = toMoment;
                 currentRequest.to_hours_formatted = toHours;
@@ -274,7 +278,7 @@ $(document).ready(function () {
                 if (request.to) {
                     requestVars.push({
                         'key': 'to',
-                        'value': request.to_moment.subtract(1, 'seconds').format('DD-MM-YYYY*HH:mm')
+                        'value': request.to_moment.format('DD-MM-YYYY*HH:mm')
                     });
                 }
                 if (request.stuff_id_list){

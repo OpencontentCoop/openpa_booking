@@ -115,9 +115,22 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
         );
 
         if (isset( $cleanRequest['from'] ) && isset( $cleanRequest['to'] )) {
-            $availabilityRequest['calendar'] = "calendar[] = [{$cleanRequest['from']},{$cleanRequest['to']}]";
-            $availabilityRequest['from'] = $cleanRequest['from'];
-            $availabilityRequest['to'] = $cleanRequest['to'];
+
+            $from = new \DateTime( $cleanRequest['from'], new \DateTimeZone('UTC') );
+            if ( !$from instanceof \DateTime) {
+                throw new Exception( "Problem with date {$cleanRequest['from']}" );
+            }
+            $fromValue = ezfSolrDocumentFieldBase::convertTimestampToDate( $from->add(new DateInterval('PT1S'))->format('U') );
+
+            $to = new \DateTime( $cleanRequest['to'], new \DateTimeZone('UTC') );
+            if ( !$to instanceof \DateTime) {
+                throw new Exception( "Problem with date {$cleanRequest['to']}" );
+            }
+            $toValue = ezfSolrDocumentFieldBase::convertTimestampToDate( $to->sub(new DateInterval('PT1S'))->format('U') );
+
+            $availabilityRequest['calendar'] = "calendar[] = [{$fromValue},{$toValue}]";
+            $availabilityRequest['from'] = $from;
+            $availabilityRequest['to'] = $to;
         }
 
         if (isset( $cleanRequest['stuff'] )) {
@@ -243,8 +256,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
 
             if (isset( $request['calendar'] )) {
                 $object = $content->getContentObject($this->language);
-                if (ObjectHandlerServiceControlBookingSalaPubblica::isValidDay(new DateTime($request['from']),
-                    new DateTime($request['to']), $object)
+                if (ObjectHandlerServiceControlBookingSalaPubblica::isValidDay($request['from'], $request['to'], $object)
                 ) {
                     $geoFeature = $content->geoJsonSerialize();
                     $locationAvailabilityInfo = $this->getLocationAvailabilityInfo($content, $bookedLocations);

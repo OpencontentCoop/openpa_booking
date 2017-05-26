@@ -106,7 +106,7 @@
                 });
                 requestVars.push({
                     'key': 'to',
-                    'value': end.clone().subtract(1, 'seconds').format('DD-MM-YYYY*HH:mm')
+                    'value': end.format('DD-MM-YYYY*HH:mm')
                 });
                 requestVars.push({
                     'key': 'location',
@@ -116,7 +116,6 @@
                     'key': 'show_unavailable',
                     'value': 1
                 });
-
                 $.each(requestVars, function(index, value){
                     requestString += this.key+'='+this.value+'&';
                 });
@@ -137,11 +136,10 @@
                             date_formatted: start.format("dddd D MMMM YYYY"),
                             from_hours_formatted: start.format("HH:mm"),
                             to_hours_formatted: end.format("HH:mm"),
-                            from: moment().year(start.year()).months(start.months()).days(start.days()).hours(start.hours()).minutes(start.minutes()).seconds(start.seconds()).format('X'),
-                            to: moment().year(end.year()).months(end.months()).days(end.days()).hours(end.hours()).minutes(end.minutes()).seconds(end.seconds()).format('X'),
+                            from: moment().year(start.year()).month(start.month()).days(start.days()).hours(start.hours()).minutes(start.minutes()).seconds(start.seconds()).format('X'),
+                            to: moment().year(end.year()).month(end.month()).days(end.days()).hours(end.hours()).minutes(end.minutes()).seconds(end.seconds()).format('X'),
                             has_stuff: false
                         };
-                        console.log(location.currentRequest);
                         htmlOutput = templatePrenotazione.render(response.contents);
                         var template = $.templates("#tpl-start-booking");
                         dialog.find('.modal-content').html('');
@@ -175,7 +173,7 @@
                 );
                 dialog.find('.time').timepicker({
                     'timeFormat': 'H:i',
-                    step: 60,
+                    step: 30,
                     disableTimeRanges: [['00:00','07:00']]
                 });
                 var fromHoursInput = dialog.find('[name="from_hours"]');
@@ -183,12 +181,12 @@
                 fromHoursInput.on('changeTime', function() {
                     var currentDate = $(this).timepicker('getTime');
                     if (toHoursInput.val() == '') {
-                        currentDate.setHours(currentDate.getHours() + 1);
+                        currentDate.setMinutes(currentDate.getMinutes() + 30);
                         toHoursInput.timepicker('setTime', currentDate);
                     }else{
                         var toDate = toHoursInput.timepicker('getTime');
-                        if (currentDate.getHours() >= toDate.getHours()){
-                            currentDate.setHours(currentDate.getHours()+1);
+                        if (currentDate >= toDate){
+                            currentDate.setMinutes(currentDate.getMinutes()+30);
                             toHoursInput.timepicker('setTime', currentDate);
                         }
                     }
@@ -201,7 +199,7 @@
                         fromHoursInput.timepicker('setTime', currentDate);
                     }else{
                         var fromDate = fromHoursInput.timepicker('getTime');
-                        if (currentDate.getHours() <= fromDate.getHours()){
+                        if (currentDate <= fromDate){
                             currentDate.setHours(fromDate.getHours()+1);
                             toHoursInput.timepicker('setTime', currentDate);
                         }
@@ -209,9 +207,13 @@
                 });
                 dialog.find('[name="continue"]').on('click', function(e){
                     var fromHours = fromHoursInput.timepicker('getTime').getHours();
+                    var fromMinutes = fromHoursInput.timepicker('getTime').getMinutes();
                     var fromMoment = start.clone().set('hour', fromHours);
+                    fromMoment.set('minutes', fromMinutes);
                     var toHours = toHoursInput.timepicker('getTime').getHours();
+                    var toMinutes = toHoursInput.timepicker('getTime').getMinutes();
                     var toMoment = start.clone().set('hour', toHours);
+                    toMoment.set('minutes', toMinutes);
                     findAvailability(fromMoment, toMoment, true);
                     e.preventDefault();
                 });
@@ -223,7 +225,7 @@
                 defaultView: "month",
                 allDaySlot: false,
                 timezone: "Europe/Rome",
-                slotDuration: '00:60:00',
+                slotDuration: '00:30:00',
                 minTime: "{/literal}{$min_time}{literal}",
                 maxTime: "{/literal}{$max_time}{literal}",
                 contentHeight: 600,

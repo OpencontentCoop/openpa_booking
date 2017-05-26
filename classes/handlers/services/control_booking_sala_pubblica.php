@@ -114,61 +114,42 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 $filters[] = $stateFilters;
             }
         }
+
+        $fromField = OpenPASolr::generateSolrField('from_time', 'date');
+        $fromValue = strftime('%Y-%m-%dT%H:%M:%SZ', (int)$start->getTimestamp() + 1);
+        $toField = OpenPASolr::generateSolrField('to_time', 'date');
+        $toValue = strftime('%Y-%m-%dT%H:%M:%SZ', (int)$end->getTimestamp() - 1) ;
+
         $dateFilter = array(
             'or',
             array(
                 'and',
-                OpenPASolr::generateSolrField('from_time',
-                    'date') => '[ ' . ezfSolrDocumentFieldBase::preProcessValue($start->getTimestamp(),
-                        'date') . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue($end->getTimestamp(),
-                        'date') . ' ]',
-                OpenPASolr::generateSolrField('to_time',
-                    'date') => '[ ' . ezfSolrDocumentFieldBase::preProcessValue($start->getTimestamp(),
-                        'date') . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue($end->getTimestamp(),
-                        'date') . ' ]'
+                $fromField => '[ ' . $fromValue . ' TO ' . $toValue . ' ]',
+                $toField => '[ ' . $fromValue . ' TO ' . $toValue . ' ]'
             ),
             array(
                 'and',
-                OpenPASolr::generateSolrField('from_time',
-                    'date') => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue($start->getTimestamp(),
-                        'date') . ' ]',
-                OpenPASolr::generateSolrField('to_time',
-                    'date') => '[ ' . ezfSolrDocumentFieldBase::preProcessValue($end->getTimestamp(),
-                        'date') . ' TO * ]'
+                $fromField => '[ * TO ' . $fromValue . ' ]',
+                $toField => '[ ' . $toValue . ' TO * ]'
             ),
             array(
                 'and',
-                OpenPASolr::generateSolrField('from_time',
-                    'date') => '[ ' . ezfSolrDocumentFieldBase::preProcessValue($start->getTimestamp(),
-                        'date') . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue($end->getTimestamp(),
-                        'date') . ' ]',
-                OpenPASolr::generateSolrField('to_time',
-                    'date') => '[ ' . ezfSolrDocumentFieldBase::preProcessValue($end->getTimestamp(),
-                        'date') . ' TO * ]'
+                $fromField => '[ ' . $fromValue . ' TO ' . $toValue . ' ]',
+                $toField => '[ ' . $toValue . ' TO * ]'
             ),
             array(
                 'and',
-                OpenPASolr::generateSolrField('from_time',
-                    'date') => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue($start->getTimestamp(),
-                        'date') . ' ]',
-                OpenPASolr::generateSolrField('to_time',
-                    'date') => '[ ' . ezfSolrDocumentFieldBase::preProcessValue($start->getTimestamp(),
-                        'date') . ' TO ' . ezfSolrDocumentFieldBase::preProcessValue($end->getTimestamp(),
-                        'date') . ' ]'
-            )
-            ,
+                $fromField => '[ * TO ' . $fromValue . ' ]',
+                $toField => '[ ' . $fromValue . ' TO ' . $toValue . ' ]'
+            ),
             array(
                 'and',
-                OpenPASolr::generateSolrField('from_time',
-                    'date') => '[' . ezfSolrDocumentFieldBase::preProcessValue($start->getTimestamp(),
-                        'date') . ' TO * ]',
-                OpenPASolr::generateSolrField('to_time',
-                    'date') => '[ * TO ' . ezfSolrDocumentFieldBase::preProcessValue($end->getTimestamp(),
-                        'date') . ' ]'
+                $fromField => '[' . $fromValue . ' TO * ]',
+                $toField => '[ * TO ' . $toValue . ' ]'
             )
         );
         $filters[] = $dateFilter;
-        $sortBy = array(OpenPASolr::generateSolrField('from_time', 'date') => 'desc', 'published' => 'asc');
+        $sortBy = array($fromField => 'desc', 'published' => 'asc');
         $solrSearch = new eZSolr();
         $search = $solrSearch->search('', array(
             'SearchSubTreeArray' => $sala,

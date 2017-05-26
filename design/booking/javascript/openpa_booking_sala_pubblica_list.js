@@ -73,7 +73,7 @@ $(document).ready(function () {
                 "ajax": {
                     url: tools.settings('accessPath') + "/opendata/api/datatable/search/"
                 },
-                "order": [[2, "desc"]],
+                "order": [[0, "desc"]],
                 "columns": [
                     {"data": "metadata.id", "name": 'id', "title": 'ID'},
                     {"data": "data." + tools.settings('language') + ".sala", "name": 'sala', "title": 'Richiesta'},
