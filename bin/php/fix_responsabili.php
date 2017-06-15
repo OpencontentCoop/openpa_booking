@@ -22,7 +22,10 @@ try
     $responsabili = array();
 
     /** @var eZContentObjectTreeNode[] $locations */
-    $locations = eZContentObjectTreeNode::subTreeByNodeID(array(), OpenPABooking::stuffNodeId());
+    $locations = array_merge(
+        eZContentObjectTreeNode::subTreeByNodeID(array(), OpenPABooking::stuffNodeId()),
+        eZContentObjectTreeNode::subTreeByNodeID(array(), OpenPABooking::locationsNodeId())
+    );
     foreach($locations as $location){
         $dataMap = $location->dataMap();
         if (isset($dataMap['reservation_manager']) && $dataMap['reservation_manager']->hasContent()){
