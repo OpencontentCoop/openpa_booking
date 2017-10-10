@@ -204,6 +204,8 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
                         array($state->attribute('id')));
                 } else {
                     $object->assignState($state);
+                    $object->setAttribute('modified', time());
+                    $object->store();
                     eZSearch::updateObjectState(
                         $object->attribute('id'),
                         array($state->attribute('id'))

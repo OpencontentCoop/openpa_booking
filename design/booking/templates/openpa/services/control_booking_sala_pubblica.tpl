@@ -125,10 +125,10 @@
             var findAvailability = function(start,end,fromSelectHours){
                 $.opendataTools.find(buildRequest(start,end), function (response) {
                     var htmlOutput = '';
-                    if (response.contents.length > 0) {
+                    if (response.locations.length > 0) {
                         var templatePrenotazione = $.templates("#tpl-prenotazione");
                         $.views.helpers($.opendataTools.helpers);
-                        var location = response.contents[0];
+                        var location = response.locations[0];
                         location.currentRequest = {
                             date: start,
                             from_moment: start,
@@ -140,7 +140,7 @@
                             to: moment().year(end.year()).month(end.month()).dates(end.dates()).hours(end.hours()).minutes(end.minutes()).seconds(end.seconds()).format('X'),
                             has_stuff: false
                         };
-                        htmlOutput = templatePrenotazione.render(response.contents);
+                        htmlOutput = templatePrenotazione.render(response.locations);
                         var template = $.templates("#tpl-start-booking");
                         dialog.find('.modal-content').html('');
                         dialog.find('.modal-content').append(

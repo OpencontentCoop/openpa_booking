@@ -128,8 +128,8 @@
                 var currentRequest = getCurrentRequest();
                 var template = $.templates("#tpl-schedule");
                 $.views.helpers($.opendataTools.helpers);
-                if (response.contents.length > 0){
-                    $.each(response.contents, function () {
+                if (response.locations.length > 0){
+                    $.each(response.locations, function () {
                         var location = this;
                         location.currentRequest = currentRequest;
                         if(location.stuff_available && location.location_available) {

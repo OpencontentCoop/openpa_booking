@@ -103,13 +103,19 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 $serviceClass->isValidDate($start, $end, $this->currentObject);
             } catch (Exception $e) {
                 SocialUser::addFlashAlert($e->getMessage(), 'error');
-                $this->module->redirectTo('content/view/full/' . $this->currentObject->attribute('main_node_id') . '/(error)/' . urlencode($e->getMessage()) . '#error');
+                if ($this->module instanceof eZModule) {
+                    $this->module->redirectTo('content/view/full/' . $this->currentObject->attribute('main_node_id') . '/(error)/' . urlencode($e->getMessage()) . '#error');
+                }else{
+                    throw $e;
+                }
 
                 return null;
             }
 
             if( SocialUser::current()->hasBlockMode() ){
-                $this->module->redirectTo('/');
+                if ($this->module instanceof eZModule) {
+                    $this->module->redirectTo('/');
+                }
 
                 return null;
             }
@@ -117,10 +123,9 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
             $object = $serviceClass->createObject($this->currentObject, $start, $end);
 
             if ($object instanceof eZContentObject) {
-                if (!$this->module instanceof eZModule) {
-                    throw new Exception("eZModule non trovato");
+                if ($this->module instanceof eZModule) {
+                    $this->module->redirectTo('content/edit/' . $object->attribute('id') . '/' . $object->attribute('current_version'));
                 }
-                $this->module->redirectTo('content/edit/' . $object->attribute('id') . '/' . $object->attribute('current_version'));
 
                 return null;
             } else {
@@ -245,6 +250,11 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
 
     public function approve(eZCollaborationItem $item, $parameters = array())
     {
+        $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+        if (!$participants->currentUserIsApprover()){
+            throw new Exception("L'utente corrente non ha i permessi di eseguire questa azione");
+        }
+
         $prenotazione = OpenPABookingCollaborationHandler::contentObject($item);
         $serviceObject = $this->serviceObject($item);
         if ($serviceObject
@@ -283,6 +293,11 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
 
     public function defer(eZCollaborationItem $item, $parameters = array())
     {
+        $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+        if (!$participants->currentUserIsApprover()){
+            throw new Exception("L'utente corrente non ha i permessi di eseguire questa azione");
+        }
+
         $prenotazione = OpenPABookingCollaborationHandler::contentObject($item);
         $serviceObject = $this->serviceObject($prenotazione);
         if ($serviceObject
@@ -304,7 +319,6 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 }
             }
 
-            $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
             if ($participants->userIsApprover($prenotazione->attribute('owner_id'))) {
 
                 OpenPABookingCollaborationHandler::handler($item)->approve($item, array());
@@ -341,6 +355,11 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
 
     public function deny(eZCollaborationItem $item, $parameters = array())
     {
+        $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+        if (!$participants->currentUserIsApprover()){
+            throw new Exception("L'utente corrente non ha i permessi di eseguire questa azione");
+        }
+
         $prenotazione = OpenPABookingCollaborationHandler::contentObject($item);
         /** @var ObjectHandlerServiceControlBookingSalaPubblica $service */
         $service = $this->serviceObject($prenotazione);
@@ -453,8 +472,51 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         }
     }
 
+    public function expire(eZCollaborationItem $item, $parameters = array())
+    {
+        $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+        if (!$participants->currentUserIsApprover() && !$participants->currentUserIsAuthor()){
+            throw new Exception("L'utente corrente non ha i permessi di eseguire questa azione");
+        }
+        $serviceObject = $this->serviceObject($item);
+        $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED);
+        OpenPABookingCollaborationHandler::changeApprovalStatus(
+            $item,
+            OpenPABookingCollaborationHandler::STATUS_DENIED
+        );
+    }
+
+    public function returnOK(eZCollaborationItem $item, $parameters = array())
+    {
+        $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+        if (!$participants->currentUserIsApprover()){
+            throw new Exception("L'utente corrente non ha i permessi di eseguire questa azione");
+        }
+        $serviceObject = $this->serviceObject($item);
+        $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+        if ($participants->currentUserIsApprover()){
+            $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_OK);
+        }
+    }
+
+    public function returnKO(eZCollaborationItem $item, $parameters = array())
+    {
+        $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+        if (!$participants->currentUserIsApprover()){
+            throw new Exception("L'utente corrente non ha i permessi di eseguire questa azione");
+        }
+        $serviceObject = $this->serviceObject($item);
+        $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+        if ($participants->currentUserIsApprover()) {
+            $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_KO);
+        }
+    }
+
+
     public function handleCustomAction(eZModule $module, eZCollaborationItem $item)
     {
+        $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
+
         if ($this->isCustomAction('AcceptStuff')){
             $parameters = $this->customInput('OpenpaBookingActionParameters');
             if (isset($parameters['stuff_id'])){
@@ -470,28 +532,15 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         }
 
         if ($this->isCustomAction('Expire')){
-            $serviceObject = $this->serviceObject($item);
-            $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED);
-            OpenPABookingCollaborationHandler::changeApprovalStatus(
-                $item,
-                OpenPABookingCollaborationHandler::STATUS_DENIED
-            );
+            $this->expire($item);
         }
 
         if ($this->isCustomAction('ReturnOk')){
-            $serviceObject = $this->serviceObject($item);
-            $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
-            if ($participants->currentUserIsApprover()){
-                $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_OK);
-            }
+            $this->returnOK($item);
         }
 
         if ($this->isCustomAction('ReturnKo')){
-            $serviceObject = $this->serviceObject($item);
-            $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
-            if ($participants->currentUserIsApprover()) {
-                $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_KO);
-            }
+            $this->returnKO($item);
         }
 
         return false;

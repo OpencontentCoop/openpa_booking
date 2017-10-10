@@ -64,7 +64,11 @@ abstract class BookingHandlerBase implements OpenPABookingHandlerInterface
             try {
                 $serviceClass->isValidDate($start, $end, $this->currentObject);
             } catch (Exception $e) {
-                $this->module->redirectTo('content/view/full/' . $this->currentObject->attribute('main_node_id') . '/(error)/' . urlencode($e->getMessage()) . '#error');
+                if ($this->module instanceof eZModule) {
+                    $this->module->redirectTo('content/view/full/' . $this->currentObject->attribute('main_node_id') . '/(error)/' . urlencode($e->getMessage()) . '#error');
+                }else{
+                    throw $e;
+                }
 
                 return null;
             }
@@ -72,10 +76,9 @@ abstract class BookingHandlerBase implements OpenPABookingHandlerInterface
             $object = $serviceClass->createObject($this->currentObject, $start, $end);
 
             if ($object instanceof eZContentObject) {
-                if (!$this->module instanceof eZModule) {
-                    throw new Exception("eZModule non trovato");
+                if ($this->module instanceof eZModule) {
+                    $this->module->redirectTo('content/edit/' . $object->attribute('id') . '/' . $object->attribute('current_version'));
                 }
-                $this->module->redirectTo('content/edit/' . $object->attribute('id') . '/' . $object->attribute('current_version'));
 
                 return null;
             } else {

@@ -118,7 +118,7 @@ $(document).ready(function () {
                         layer.on('click', function (e) {
                             var template = $.templates("#tpl-prenotazione");
                             $.views.helpers($.opendataTools.helpers);
-                            var location = e.target.feature.properties.content;
+                            var location = e.target.feature.properties.location;
                             location.currentRequest = getCurrentRequest();
                             var htmlOutput = template.render(location);
                             popup.setContent(htmlOutput);
@@ -310,15 +310,15 @@ $(document).ready(function () {
             onLoadResults: function (response, query, appendResults, view) {
                 resetContainers();
                 var currentRequest = getCurrentRequest();
-                if (response.contents.length > 0) {
+                if (response.locations.length > 0) {
                     var locations = [];
-                    $.each(response.contents, function () {
+                    $.each(response.locations, function () {
                         var location = this;
                         location.currentRequest = currentRequest;
                         locations.push(location)
                     });
                     appendToContainers(locations);
-                    loadMarkersInMap(response.geo);
+                    loadMarkersInMap(response.geojson);
                 } else {
                     showEmptyInContainers();
                 }

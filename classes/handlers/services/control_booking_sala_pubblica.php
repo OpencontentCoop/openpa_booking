@@ -116,9 +116,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
 
         $fromField = OpenPASolr::generateSolrField('from_time', 'date');
-        $fromValue = strftime('%Y-%m-%dT%H:%M:%SZ', (int)$start->getTimestamp() + 1);
+        $fromValue = strftime('%Y-%m-%dT%H:%M:%SZ', (int)$start->format('U') + 1);
         $toField = OpenPASolr::generateSolrField('to_time', 'date');
-        $toValue = strftime('%Y-%m-%dT%H:%M:%SZ', (int)$end->getTimestamp() - 1) ;
+        $toValue = strftime('%Y-%m-%dT%H:%M:%SZ', (int)$end->format('U') - 1) ;
 
         $dateFilter = array(
             'or',
@@ -155,6 +155,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             'SearchSubTreeArray' => $sala,
             'SearchLimit' => $count ? 1 : 1000,
             'SortBy' => $sortBy,
+            'Limitation' => array(),
             'Filter' => $filters
         ));
 
@@ -406,9 +407,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $orderAttribute->store();
         }
         if ($order->attribute('status_id') != eZOrderStatus::DELIVERED) {
-            $this->changeState(self::STATUS_WAITING_FOR_PAYMENT, false);
+            $this->changeState(self::STATUS_WAITING_FOR_PAYMENT);
         } else {
-            $this->changeState(self::STATUS_APPROVED, false);
+            $this->changeState(self::STATUS_APPROVED);
         }
     }
 
@@ -578,6 +579,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $parts[0] = $price;
             $dataMap['price']->fromString(implode('|', $parts));
             $dataMap['price']->store();
+
+            $this->container->getContentObject()->setAttribute('modified', time());
+            $this->container->getContentObject()->store();
+            eZSearch::addObject($this->container->getContentObject(), true);
 
             return true;
         }
@@ -778,19 +783,23 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             null,
             true
         );
+
+        $locale = eZLocale::instance();
+        $dayString = $locale->formatDate($startDateTime->format('U'));
+        $dayString .= ' dalle ' . $locale->formatShortTime($startDateTime->format('U')) . ' alle ' . $locale->formatShortTime($endDateTime->format('U'));
+
         if ($data > 0) {
-            throw new Exception("Giorno o orario non disponibile");
+            throw new Exception("Giorno o orario non disponibile: $dayString");
         }
 
         $now = time();
-        if ($start < $now) {
-            throw new Exception("Giorno o orario non disponibile");
+        if ($startDateTime->format('U') < $now) {
+            throw new Exception("Giorno o orario non prenotabile: $dayString");
         }
 
         if (!self::isValidDay($startDateTime, $endDateTime, $sala)) {
-            throw new Exception("Giorno o orario non disponibile");
+            throw new Exception("Giorno o orario non disponibile per la sala selezionata: $dayString");
         }
-
     }
 
     /**
