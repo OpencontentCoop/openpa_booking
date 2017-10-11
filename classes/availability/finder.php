@@ -42,7 +42,8 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
             $stateIdList = self::getStateIdList();
             $statusFilter = "and state in [" . implode(',', $stateIdList) . "]";
 
-            $bookingQuery = "$dateFilter $statusFilter classes [{$classes}]";
+            $class = $service->prenotazioneClassIdentifier();
+            $bookingQuery = "$dateFilter $statusFilter classes [{$class}]";
             $bookings = self::findAll($bookingQuery, array());
 
             foreach ($bookings as $item) {
