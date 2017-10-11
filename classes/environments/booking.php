@@ -8,7 +8,7 @@ class BookingEnvironmentSettings extends DefaultEnvironmentSettings
 {
     private $serviceClass;
 
-    public function __construct(array $properties)
+    public function __construct(array $properties = array())
     {
         parent::__construct($properties);
         $this->serviceClass = new ObjectHandlerServiceControlBookingSalaPubblica();
@@ -106,6 +106,13 @@ class BookingEnvironmentSettings extends DefaultEnvironmentSettings
             $originalIdentifierBlackList);
 
         return $content;
+    }
+
+    public function instanceCreateStruct($data)
+    {
+        $struct = parent::instanceCreateStruct($data);
+
+        return $struct;
     }
 
 

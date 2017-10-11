@@ -170,7 +170,7 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
         try {
             return $contentSearch->search($query, $limitation);
         } catch (Exception $e) {
-            eZDebug::writeError($e->getMessage() . "\n" . $e->getTraceAsString(), __METHOD__);
+            eZDebug::writeError($query . "\n" . $e->getMessage() . "\n" . $e->getTraceAsString(), __METHOD__);
             $error = new \Opencontent\Opendata\Api\Values\SearchResults();
             $error->nextPageQuery = null;
             $error->searchHits = array();
