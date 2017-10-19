@@ -49,13 +49,40 @@ class BookingApiController extends ezpRestMvcController
         $this->currentEnvironment->__set('request', $this->request);
         $this->contentRepository->setEnvironment($this->currentEnvironment);
         $this->contentSearch->setEnvironment($this->currentEnvironment);
+    }
 
+    /**
+     * Intercetta il custom header X-Booking-User e impersona l'utente se l'utente corrente è un api super user
+     *
+     * @throws Exception
+     */
+    private function setCurrentUser()
+    {
+        if (isset($this->request->raw['HTTP_X_BOOKING_USER'])){
+            $user = eZUser::currentUser();
+            $hasAccess = $user->hasAccessTo('social_user', 'api_super_user');
+            if ($hasAccess['accessWord'] != 'yes') {
+                throw new Exception('Current user is not an api super user');
+            }
+
+            $userId = (int)$this->request->raw['HTTP_X_BOOKING_USER'];
+            $user = eZUser::fetch($userId);
+            if (!$user instanceof eZUser){
+                throw new Exception("Booking-User $userId not found");
+            }
+
+            if ( $userId != eZUser::currentUserID() ) {
+                eZUser::setCurrentlyLoggedInUser( $user, $userId );
+            }
+        }
         $this->currentUserId = eZUser::currentUserID();
     }
 
     public function doListLocations()
     {
         try {
+            $this->setCurrentUser();
+
             $service = $this->getHandler()->serviceClass();
             $classes = implode(',', $service->bookableClassIdentifiers());
             $result = new ezpRestMvcResult();
@@ -71,6 +98,8 @@ class BookingApiController extends ezpRestMvcController
     public function doGetLocation()
     {
         try {
+            $this->setCurrentUser();
+
             $id = $this->request->variables['Id'];
             $result = new ezpRestMvcResult();
             $service = $this->getHandler()->serviceClass();
@@ -90,6 +119,8 @@ class BookingApiController extends ezpRestMvcController
     public function doAddLocation()
     {
         try {
+            $this->setCurrentUser();
+
             if (SocialUser::current()->hasBlockMode()) {
                 throw new NotAllowedException('location', 'add');
             }
@@ -123,6 +154,8 @@ class BookingApiController extends ezpRestMvcController
     public function doGetLocationsAvailability()
     {
         try {
+            $this->setCurrentUser();
+
             $day = $this->request->variables['Day'];
             $from = $this->request->variables['From'];
             $to = $this->request->variables['To'];
@@ -158,6 +191,8 @@ class BookingApiController extends ezpRestMvcController
     public function doGetLocationAvailability()
     {
         try {
+            $this->setCurrentUser();
+
             $day = $this->request->variables['Day'];
             $from = $this->request->variables['From'];
             $to = $this->request->variables['To'];
@@ -195,6 +230,8 @@ class BookingApiController extends ezpRestMvcController
     public function doGetLocationUnavailability()
     {
         try {
+            $this->setCurrentUser();
+
             $from = $this->request->variables['From'];
             $to = $this->request->variables['To'];
             $location = $this->request->variables['Id'];
@@ -239,6 +276,8 @@ class BookingApiController extends ezpRestMvcController
     public function doAddBooking()
     {
         try {
+            $this->setCurrentUser();
+
             if (SocialUser::current()->hasBlockMode()) {
                 throw new NotAllowedException('booking', 'add');
             }
@@ -260,6 +299,8 @@ class BookingApiController extends ezpRestMvcController
     public function doListBooking()
     {
         try {
+            $this->setCurrentUser();
+
             $service = $this->getHandler()->serviceClass();
             $classes = $service->prenotazioneClassIdentifier();
             $result = new ezpRestMvcResult();
@@ -279,6 +320,8 @@ class BookingApiController extends ezpRestMvcController
     public function doGetBooking()
     {
         try {
+            $this->setCurrentUser();
+
             $result = new ezpRestMvcResult();
             $result->variables = $this->getBooking($this->request->variables['Id']);
         } catch (Exception $e) {
@@ -291,6 +334,8 @@ class BookingApiController extends ezpRestMvcController
     public function doAddComment()
     {
         try {
+            $this->setCurrentUser();
+
             $id = (int)$this->request->variables['Id'];
             $this->getBooking($id);
 
@@ -323,6 +368,8 @@ class BookingApiController extends ezpRestMvcController
     public function doListComment()
     {
         try {
+            $this->setCurrentUser();
+
             $id = (int)$this->request->variables['Id'];
             $this->getBooking($id);
 
@@ -362,6 +409,8 @@ class BookingApiController extends ezpRestMvcController
     public function doMarkAvailable()
     {
         try {
+            $this->setCurrentUser();
+
             $id = (int)$this->request->variables['Id'];
             $this->getBooking($id);
 
@@ -389,6 +438,8 @@ class BookingApiController extends ezpRestMvcController
     public function doMarkApprove()
     {
         try {
+            $this->setCurrentUser();
+
             $id = (int)$this->request->variables['Id'];
             $this->getBooking($id);
 
@@ -412,6 +463,8 @@ class BookingApiController extends ezpRestMvcController
     public function doMarkDeny()
     {
         try {
+            $this->setCurrentUser();
+
             $id = (int)$this->request->variables['Id'];
             $this->getBooking($id);
 
@@ -435,6 +488,8 @@ class BookingApiController extends ezpRestMvcController
     public function doMarkExpire()
     {
         try {
+            $this->setCurrentUser();
+
             $id = (int)$this->request->variables['Id'];
             $this->getBooking($id);
 
@@ -458,6 +513,8 @@ class BookingApiController extends ezpRestMvcController
     public function doMarkSuccess()
     {
         try {
+            $this->setCurrentUser();
+
             $id = (int)$this->request->variables['Id'];
             $this->getBooking($id);
 
@@ -481,6 +538,8 @@ class BookingApiController extends ezpRestMvcController
     public function doMarkFail()
     {
         try {
+            $this->setCurrentUser();
+
             $id = (int)$this->request->variables['Id'];
             $this->getBooking($id);
 

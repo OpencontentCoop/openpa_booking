@@ -2,8 +2,12 @@
 
 [ApiProvider]
 ProviderClass[booking]=BookingApiProvider
+ProviderClass[bookinguser]=SocialUserApiProvider
 
 [BookingApiController_CacheSettings]
+ApplicationCache=disabled
+
+[SocialUserApiController_CacheSettings]
 ApplicationCache=disabled
 
 [Authentication]
