@@ -178,6 +178,15 @@ class BookingApiController extends ezpRestMvcController
             $request = new OpenPABookingSalaPubblicaAvailabilityRequest();
             $request->setFrom($from);
             $request->setTo($to);
+            if (isset($this->request->get['LocationId'])){
+                $request->setLocation((int)$this->request->get['LocationId']);
+            }
+            if (isset($this->request->get['Destination'])){
+                $request->setDestination($this->request->get['Destination']);
+            }
+            if (isset($this->request->get['NumberOfPlaces'])){
+                $request->setPlaces($this->request->get['NumberOfPlaces']);
+            }
 
             $result = new ezpRestMvcResult();
             $result->variables['result'] = $finder->request($request);
