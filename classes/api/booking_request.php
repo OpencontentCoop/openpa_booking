@@ -117,7 +117,7 @@ class BookingApiBookingRequest implements JsonSerializable
                     }
                 }
             }
-            if (!$price){
+            if ($price === false){
                 throw new Exception("User type {$this->userType} not allowed");
             }
         }
