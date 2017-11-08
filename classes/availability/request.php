@@ -37,6 +37,11 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
      */
     private $location;
 
+    public static function getTimeZone()
+    {
+        return new \DateTimeZone('Europe/Rome'); 
+    }
+
     public static function fromString($request)
     {
         $availabilityRequest = new OpenPABookingSalaPubblicaAvailabilityRequest();
@@ -112,7 +117,7 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
         if ($from instanceof DateTime) {
             $this->from = $from;
         }else{
-            $this->from = new \DateTime($from, new \DateTimeZone('UTC'));
+            $this->from = new \DateTime($from, self::getTimeZone());
             if (!$this->from instanceof \DateTime) {
                 throw new Exception("Problem with date {$from}");
             }
@@ -137,7 +142,7 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
         if ($to instanceof DateTime) {
             $this->to = $to;
         }else {
-            $this->to = new \DateTime($to, new \DateTimeZone('UTC'));
+            $this->to = new \DateTime($to, self::getTimeZone());
             if (!$this->to instanceof \DateTime) {
                 throw new Exception("Problem with date {$to}");
             }
@@ -227,10 +232,10 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
     }
 
     public function getCalendarFilter()
-    {
+    {        
         if ($this->from && $this->to) {
-            $from = ezfSolrDocumentFieldBase::convertTimestampToDate($this->from->add(new DateInterval('PT1S'))->format('U'));
-            $to = ezfSolrDocumentFieldBase::convertTimestampToDate($this->to->sub(new DateInterval('PT1S'))->format('U'));
+            $from = $this->from->add(new DateInterval('PT1S'))->format('Y-m-d H:i');
+            $to = $this->to->sub(new DateInterval('PT1S'))->format('Y-m-d H:i');
 
             return "calendar[] = [{$from},{$to}]";
         }

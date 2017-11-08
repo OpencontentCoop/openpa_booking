@@ -162,7 +162,7 @@ class BookingApiController extends ezpRestMvcController
 
             $finder = new OpenPABookingSalaPubblicaAvailabilityFinder();
 
-            $dayDate = DateTime::createFromFormat('Y-n-j', $day);
+            $dayDate = DateTime::createFromFormat('Y-n-j', $day, OpenPABookingSalaPubblicaAvailabilityRequest::getTimeZone());
             if (!$dayDate instanceof DateTime) {
                 throw new Exception("Date $day not valid");
             }
@@ -209,7 +209,7 @@ class BookingApiController extends ezpRestMvcController
 
             $finder = new OpenPABookingSalaPubblicaAvailabilityFinder();
 
-            $dayDate = DateTime::createFromFormat('Y-n-j', $day);
+            $dayDate = DateTime::createFromFormat('Y-n-j', $day, OpenPABookingSalaPubblicaAvailabilityRequest::getTimeZone());
             if (!$dayDate instanceof DateTime) {
                 throw new Exception("Date $day not valid");
             }

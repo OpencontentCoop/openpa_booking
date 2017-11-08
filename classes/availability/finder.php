@@ -61,8 +61,8 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
                 });
                 $status = ObjectHandlerServiceControlBookingSalaPubblica::getStateCodeFromIdentifier($status);
 
-                if (isset( $booking['data'][$this->language]['sala'] ) && !empty( $booking['data'][$this->language]['sala'] )) {
-                    foreach ($booking['data'][$this->language]['sala'] as $location) {
+                if (isset( $booking['data'][$this->language]['location'] ) && !empty( $booking['data'][$this->language]['location'] )) {
+                    foreach ($booking['data'][$this->language]['location'] as $location) {
                         if (!isset( $bookedLocations[$location['id']] )) {
                             $bookedLocations[$location['id']] = array();
                         }
