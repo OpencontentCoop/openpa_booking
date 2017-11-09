@@ -1,7 +1,7 @@
 {def $sala = $content_object.data_map.sala.content}
 {include uri='design:booking/sala_pubblica/full/header.tpl'}
 
-{if or($collab_item.data_int3|eq(0), $collab_item.content.is_approver)}
+{if $collab_item.data_int3|eq(0)}
     <form method="post" class="form-inline text-center" action="{"collaboration/action/"|ezurl(no)}">
         <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[]" value="" />
         <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Expire" value="Cancella prenotazione" />
