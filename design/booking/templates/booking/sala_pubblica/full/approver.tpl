@@ -1,6 +1,16 @@
 {def $sala = $content_object.data_map.sala.content}
 {include uri='design:booking/sala_pubblica/full/header.tpl'}
 
+<form method="post" class="form-inline text-center" action="{"collaboration/action/"|ezurl(no)}">
+    <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[]" value="" />
+    <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Expire" value="Cancella prenotazione" />
+    <input type="hidden" name="CollaborationActionCustom" value="custom"/>
+    <input type="hidden" name="CollaborationTypeIdentifier" value="openpabooking"/>
+    <input type="hidden" name="CollaborationItemID" value="{$collab_item.id}"/>
+</form>
+<br />
+
+
 <form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">
     <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[]" value="" />
 
