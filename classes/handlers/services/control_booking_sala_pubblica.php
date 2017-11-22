@@ -815,25 +815,32 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             return false;
         }
 
-        $openingHours = self::getOpeningHours($sala);
+        $isInValidOpeningHours = true;
+        $openingHours = self::getOpeningHours($sala);        
         if (!empty( $openingHours )) {
-            $weekDayNumber = $startDateTime->format('w');
+            $weekDayNumber = $startDateTime->format('w');            
             if (isset( $openingHours[$weekDayNumber] )) {
+                $isInValidOpeningHours = false;
                 foreach ($openingHours[$weekDayNumber] as $dayValues) {
                     $testStart = clone $startDateTime;
                     $testStart->setTime($dayValues['from_time']['hour'], $dayValues['from_time']['minute']);
                     $testEnd = clone $endDateTime;
                     $testEnd->setTime($dayValues['to_time']['hour'], $dayValues['to_time']['minute']);
-                    $isInRange = $startDateTime >= $testStart && $endDateTime <= $testEnd;
-                    if (!$isInRange) {
-                        return false;
+                    $isInRange = $startDateTime >= $testStart && $endDateTime <= $testEnd;                    
+                    if ($isInRange) {                        
+                        $isInValidOpeningHours = true;
                     }
                 }
             } else {
-                return false;
+                $isInValidOpeningHours = false;
             }
+        }   
+
+        if (!$isInValidOpeningHours){
+            return false;
         }
-        $closingDays = self::getClosingDays($sala);
+
+        $closingDays = self::getClosingDays($sala);        
         foreach ($closingDays as $closingDay) {
             if (self::isInClosingDay($closingDay, $startDateTime, $endDateTime)) {
                 return false;

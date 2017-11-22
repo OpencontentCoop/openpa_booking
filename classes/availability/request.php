@@ -234,8 +234,10 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
     public function getCalendarFilter()
     {        
         if ($this->from && $this->to) {
-            $from = $this->from->add(new DateInterval('PT1S'))->format('Y-m-d H:i');
-            $to = $this->to->sub(new DateInterval('PT1S'))->format('Y-m-d H:i');
+            $cloneForm = clone $this->from;
+            $cloneTo = clone $this->to;
+            $from = $cloneForm->add(new DateInterval('PT60S'))->format('Y-m-d H:i');
+            $to = $cloneTo->sub(new DateInterval('PT60S'))->format('Y-m-d H:i');
 
             return "calendar[] = [{$from},{$to}]";
         }
