@@ -86,7 +86,10 @@ class BookingApiController extends ezpRestMvcController
             $service = $this->getHandler()->serviceClass();
             $classes = implode(',', $service->bookableClassIdentifiers());
             $result = new ezpRestMvcResult();
-            $search = $this->contentSearch->search("classes [$classes]");
+            $locationSubtree = OpenPABooking::locationsNodeId();
+            $stuffSubtree = OpenPABooking::stuffNodeId();
+
+            $search = $this->contentSearch->search("classes [$classes] subtree [{$locationSubtree},{$stuffSubtree}]");
             $result->variables = (array)$search->searchHits;
         } catch (Exception $e) {
             $result = $this->doExceptionResult($e);
