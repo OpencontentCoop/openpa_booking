@@ -81,7 +81,9 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
             }
         }
 
-        $locationQuery = "{$request->getQueryFilters()} classes [{$classes}]";
+        $locationSubtree = OpenPABooking::locationsNodeId();
+        $stuffSubtree = OpenPABooking::stuffNodeId();
+        $locationQuery = "{$request->getQueryFilters()} classes [{$classes}] subtree [{$locationSubtree},{$stuffSubtree}]";
         $locations = self::findAll($locationQuery, array());
 
         $geoJson = new FeatureCollection();

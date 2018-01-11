@@ -212,11 +212,12 @@ $(document).ready(function () {
             $('.booking-container').append($.templates("#tpl-empty"));
         };
 
-
-        $('#booking_items').opendataSearchView({
+        var $bookingItems = $('#booking_items');
+        var locationSubtree = $bookingItems.data('subtree');
+        $bookingItems.opendataSearchView({
             query: '',
             onInit: function (view) {
-                var destinazioni = $.opendataTools.find('classes sala_pubblica facets [destinazione_uso] limit 1', function (data) {
+                var destinazioni = $.opendataTools.find('classes sala_pubblica and subtree ['+locationSubtree+'] facets [destinazione_uso] limit 1', function (data) {
                     if (data.facets.length > 0) {
                         $.each(data.facets[0].data, function (index, value) {
                             $('[name="destinazione_uso"]').append('<option value="' + index + '">' + index + '</option>');

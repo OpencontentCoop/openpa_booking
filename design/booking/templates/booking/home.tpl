@@ -65,7 +65,7 @@
             {if $filters|contains('destinazione_uso')}
                 <div class="form-group" style="display: none">
                     <label for="destinazione_uso" class="hide">{"Destinazione d'uso"|i18n('booking')}</label>
-                    <select id="destinazione_uso" name="destinazione_uso" class="form-control">
+                    <select id="destinazione_uso" name="destinazione_uso" class="form-control" style="max-width: 200px">
                         <option value="">{"Destinazione d'uso"|i18n('booking')}</option>
                     </select>
                 </div>
@@ -108,7 +108,7 @@
             {/if}
         </ul>
         {/if}
-        <div class="tab-content" style="margin-bottom: 40px;" id="booking_items">
+        <div class="tab-content" style="margin-bottom: 40px;" id="booking_items" data-subtree="{location_node_id()},{stuff_node_id()}">
 
             {set $firstActive = false()}
 
