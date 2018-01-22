@@ -3,6 +3,7 @@
 use Opencontent\Opendata\Api\Values\Content;
 use Opencontent\Opendata\Api\Values\ContentData;
 use Opencontent\Opendata\Api\EnvironmentLoader;
+use Opencontent\QueryLanguage\QueryBuilder;
 
 class BookingEnvironmentSettings extends DefaultEnvironmentSettings
 {
@@ -22,17 +23,18 @@ class BookingEnvironmentSettings extends DefaultEnvironmentSettings
         $language = eZLocale::currentLocaleCode();
         $object = $content->getContentObject($language);
         $node = $object->mainNode();
-        if ($node->childrenCount() > 0){
+        if ($node->childrenCount() > 0) {
             $requests = array();
-            foreach($node->children() as $item){
+            foreach ($node->children() as $item) {
                 $requests[] = (int)$item->attribute('contentobject_id');
             }
             $data[$language]['subRequests'] = $requests;
-        }elseif($data[$language]['isSubRequest'] == 1){
+        } elseif ($data[$language]['isSubRequest'] == 1) {
             $data[$language]['parentRequests'] = (int)$node->fetchParent()->attribute('contentobject_id');
         }
 
         $flatContent->data = new ContentData($data);
+
         return $flatContent;
     }
 
@@ -92,11 +94,12 @@ class BookingEnvironmentSettings extends DefaultEnvironmentSettings
 
     protected function removeBlackListedAttributes(Content $content)
     {
-        $originalIdentifierBlackList = $identifierBlackList = (array) EnvironmentLoader::ini()->variable( 'ContentSettings', 'IdentifierBlackListForExternal' );
+        $originalIdentifierBlackList = $identifierBlackList = (array)EnvironmentLoader::ini()->variable('ContentSettings',
+            'IdentifierBlackListForExternal');
         $identifierBlackList[] = 'scheduler';
         $identifierBlackList[] = 'stuff';
         $identifierBlackList[] = 'order_id';
-//        $identifierBlackList[] = 'price';
+        //        $identifierBlackList[] = 'price';
 
         EnvironmentLoader::ini()->setVariable('ContentSettings', 'IdentifierBlackListForExternal',
             $identifierBlackList);
@@ -115,5 +118,15 @@ class BookingEnvironmentSettings extends DefaultEnvironmentSettings
         return $struct;
     }
 
+    public function filterQuery(\ArrayObject $query, QueryBuilder $builder)
+    {
+        $query = parent::filterQuery($query, $builder);
+        $query['SearchSubTreeArray'] = array(
+            OpenPABooking::locationsNodeId(),
+            OpenPABooking::stuffNodeId()
 
+        );
+
+        return $query;
+    }
 }
