@@ -409,4 +409,10 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
     abstract protected function getStartDateTime();
 
     abstract protected function getEndDateTime();
+
+    /**
+     * @param eZContentObject $location
+     * @return eZContentObjectTreeNode
+     */
+    abstract public function getBookingLocationNode(eZContentObject $location);
 }

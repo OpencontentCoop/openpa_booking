@@ -450,7 +450,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
             $languageCode = eZINI::instance()->variable('RegionalSettings', 'Locale');
             $object = eZContentObject::createWithNodeAssignment(
-                $parentObject->attribute('main_node'),
+                $this->getBookingLocationNode($parentObject),
                 $class->attribute('id'),
                 $languageCode,
                 false);
@@ -1216,5 +1216,21 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             }
         }
         parent::notify($action, $params);
+    }
+
+    /**
+     * @param eZContentObject $location
+     * @return eZContentObjectTreeNode
+     */
+    public function getBookingLocationNode(eZContentObject $location)
+    {
+        $assignedNodes = $location->assignedNodes();
+        foreach ($assignedNodes as $node){
+            if (in_array($node->attribute('parent_node_id'), array(OpenPABooking::locationsNodeId(), OpenPABooking::stuffNodeId()))){
+                return $node;
+            }
+        }
+
+        return $location->mainNode();
     }
 }

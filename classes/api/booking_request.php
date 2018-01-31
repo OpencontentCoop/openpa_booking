@@ -142,7 +142,7 @@ class BookingApiBookingRequest implements JsonSerializable
         $mainDate = array_shift($this->dates);
 
         $payload = new PayloadBuilder();
-        $payload->setParentNode($parentObject->mainNodeID());
+        $payload->setParentNode($serviceClass->getBookingLocationNode($parentObject)->attribute('node_id'));
         $payload->setClassIdentifier($serviceClass->prenotazioneClassIdentifier());
         $payload->setLanguages(array(eZINI::instance()->variable('RegionalSettings', 'Locale')));
         $payload->setSectionIdentifier(OpenPABase::initSection('Prenotazioni', 'booking')->attribute('identifier'));
