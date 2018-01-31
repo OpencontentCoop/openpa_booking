@@ -45,9 +45,11 @@ class OpenPABookingSalaPubblicaCalendar
         $stateIdList = OpenPABookingSalaPubblicaAvailabilityFinder::getStateIdList();
         $queryParts[] = "state in [" . implode(',', $stateIdList) . "]";
 
+        $serviceClass = new ObjectHandlerServiceControlBookingSalaPubblica();
         if ($location instanceof eZContentObject) {
             $this->location = $location;
-            $queryParts[] = "subtree [{$location->attribute( 'main_node_id' )}]";
+            $locationNodeId = $serviceClass->getBookingLocationNode($location)->attribute('node_id');
+            $queryParts[] = "subtree [{$locationNodeId}]";
         }
 
         if ($stuff instanceof eZContentObject) {
