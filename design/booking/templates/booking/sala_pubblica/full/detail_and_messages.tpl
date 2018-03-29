@@ -104,7 +104,7 @@
         <div class="panel panel-default">
             <table class="table">
                 {foreach $content_object.data_map as $identifier => $attribute}
-                    {if array('text', 'associazione', 'range_user', 'destinatari', 'patrocinio', 'comunicazione')|contains($attribute.contentclass_attribute_identifier)}
+                    {if array('from_time', 'to_time', 'sala', 'stuff', 'scheduler', 'subrequest', 'price', 'order_id')|contains($attribute.contentclass_attribute_identifier)|not()}
                         <tr>
                             <th>{$attribute.contentclass_attribute_name|wash()}</th>
                             <td>
