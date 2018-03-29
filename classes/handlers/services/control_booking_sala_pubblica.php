@@ -583,7 +583,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $this->container->getContentObject()->setAttribute('modified', time());
             $this->container->getContentObject()->store();
             eZSearch::addObject($this->container->getContentObject(), true);
-
+            $this->container->getContentObject()->resetDataMap();
             return true;
         }
 
