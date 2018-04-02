@@ -22,9 +22,9 @@ class OpenPABookingCollaborationHandler extends eZCollaborationItemHandler
     /*!
      Initializes the handler
     */
-    function OpenPABookingCollaborationHandler()
+    function __construct()
     {
-        $this->eZCollaborationItemHandler(
+        parent::__construct(
             OpenPABookingCollaborationHandler::TYPE_STRING,
             'Prenotazioni',
             array(

@@ -78,7 +78,7 @@ class vcalendar
      *
      * @return void
      */
-    function vcalendar( $config = array() )
+    function __construct( $config = array() )
     {
         $this->_makeVersion();
         $this->calscale = null;
@@ -3090,7 +3090,7 @@ class calendarComponent
      * @author Kjell-Inge Gustafsson, kigkonsult <ical@kigkonsult.se>
      * @since 2.9.6 - 2011-05-17
      */
-    function calendarComponent()
+    function __construct()
     {
         $this->objName = ( isset( $this->timezonetype ) ) ?
             strtolower( $this->timezonetype ) : get_class( $this );
@@ -10621,9 +10621,9 @@ class vevent extends calendarComponent
      *
      * @return void
      */
-    function vevent( $config = array() )
+    function __construct( $config = array() )
     {
-        $this->calendarComponent();
+        parent::__construct();
 
         $this->attach = '';
         $this->attendee = '';
@@ -10797,9 +10797,9 @@ class vtodo extends calendarComponent
      *
      * @return void
      */
-    function vtodo( $config = array() )
+    function __construct( $config = array() )
     {
-        $this->calendarComponent();
+        parent::__construct();
 
         $this->attach = '';
         $this->attendee = '';
@@ -10965,9 +10965,9 @@ class vjournal extends calendarComponent
      *
      * @return void
      */
-    function vjournal( $config = array() )
+    function __construct( $config = array() )
     {
-        $this->calendarComponent();
+        parent::__construct();
 
         $this->attach = '';
         $this->attendee = '';
@@ -11104,9 +11104,9 @@ class vfreebusy extends calendarComponent
      *
      * @return void
      */
-    function vfreebusy( $config = array() )
+    function __construct( $config = array() )
     {
-        $this->calendarComponent();
+        parent::__construct();
 
         $this->attendee = '';
         $this->comment = '';
@@ -11215,9 +11215,9 @@ class valarm extends calendarComponent
      *
      * @return void
      */
-    function valarm( $config = array() )
+    function __construct( $config = array() )
     {
-        $this->calendarComponent();
+        parent::__construct();
 
         $this->action = '';
         $this->attach = '';
@@ -11327,7 +11327,7 @@ class vtimezone extends calendarComponent
      *
      * @return void
      */
-    function vtimezone( $timezonetype = false, $config = array() )
+    function __construct( $timezonetype = false, $config = array() )
     {
         if ( is_array( $timezonetype ) )
         {
@@ -11342,7 +11342,7 @@ class vtimezone extends calendarComponent
         {
             $this->timezonetype = strtoupper( $timezonetype );
         }
-        $this->calendarComponent();
+        parent::__construct();
 
         $this->comment = '';
         $this->dtstart = '';
