@@ -47,13 +47,21 @@
 {if $order.product_items|count()}
 {foreach $order.product_items as $product_item sequence array( 'bglight', 'bgdark' ) as $style}
 <tr>
-    <td>
+    <td style="vertical-align: middle;">
         <p>
             <a href="{concat('openpa_booking/view/sala_pubblica/',$product_item.item_object.contentobject_id)|ezurl(no)}">
-                <span class="label label-primary">Prenotazione {$product_item.item_object.contentobject_id}</span>
+                <span class="label label-primary">
+                    Prenotazione {$product_item.item_object.contentobject_id}                     
+                </span> 
+            </a>        
+            &nbsp;
+            <a href="{concat('openpa_booking/locations/',$product_item.item_object.contentobject.data_map.sala.content.main_node_id)|ezurl(no)}">
+                <span class="label label-primary">
+                    {$product_item.item_object.contentobject.data_map.sala.content.name|wash()}
+                </span>
             </a>
         </p>
-        <ul class="list list-unstyled">
+        <ul class="list list-unstyled">            
             <li>{$product_item.object_name}</li>
             {if $product_item.item_object.contentobject.main_node.children_count}
                 {foreach $product_item.item_object.contentobject.main_node.children as $child}
@@ -69,22 +77,22 @@
             {/if}
         </ul>
     </td>
-    <td>
+    <td style="vertical-align: middle;text-align: center;">
     {$product_item.item_count}
     </td>
-    <td>
+    <td style="vertical-align: middle;text-align: center;">
     {$product_item.vat_value} %
     </td>
-    <td>
+    <td style="vertical-align: middle;text-align: center;">
     {$product_item.price_inc_vat|l10n( 'currency', $locale, $symbol )}
     </td>
-    {*<td>*}
+    {*<td style="vertical-align: middle;text-align: center;">*}
     {*{$product_item.discount_percent}%*}
     {*</td>*}
-    <td>
+    <td style="vertical-align: middle;text-align: center;">
     {$product_item.total_price_ex_vat|l10n( 'currency', $locale, $symbol )}
     </td>
-    <td>
+    <td style="vertical-align: middle;text-align: center;">
     {$product_item.total_price_inc_vat|l10n( 'currency', $locale, $symbol )}
     </td>
 </tr>

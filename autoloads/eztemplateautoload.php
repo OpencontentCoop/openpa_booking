@@ -12,6 +12,9 @@ $eZTemplateOperatorArray[] = array(
         'stuff_node_id',
         'stuff_class_identifiers',
         'stuff_sub_workflow_is_enabled',
-        'openpa_agenda_link'
+        'openpa_agenda_link',
+        'booking_vat_type_list',
+        'booking_is_in_range',
+        'booking_calc_price',
     )
 );

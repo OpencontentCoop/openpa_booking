@@ -18,7 +18,10 @@ class OpenPABookingOperators
             'stuff_node_id',
             'stuff_class_identifiers',
             'stuff_sub_workflow_is_enabled',
-            'openpa_agenda_link'
+            'openpa_agenda_link',
+            'booking_vat_type_list',
+            'booking_is_in_range',
+            'booking_calc_price',
         );
     }
 
@@ -40,7 +43,14 @@ class OpenPABookingOperators
     function namedParameterList()
     {
         return array(
-
+            'booking_is_in_range' => array(
+                'from_time' => array('type' => 'integer', 'required' => true),
+                'to_time' => array('type' => 'integer', 'required' => true),
+                'range_string' => array('type' => 'string', 'required' => true),
+            ),
+            'booking_calc_price' => array(
+                'price_row' => array('type' => 'mixed', 'required' => true),
+            )
         );
     }
 
@@ -61,6 +71,40 @@ class OpenPABookingOperators
     {        
         switch( $operatorName )
         {
+            case 'booking_calc_price':
+                $row = $namedParameters['price_row'];
+                $priceValue = $row['columns'][2];
+                $vatIncluded = $row['columns'][3] == '1';
+                $vatType = eZVatType::fetch((int)$row['columns'][4]);
+                $VATPercent = $vatType instanceof eZVatType ? $vatType->attribute('percentage') : 0;
+                if ($vatIncluded){
+                    $operatorValue = $priceValue / ( $VATPercent + 100 ) * 100;                    
+                }else{
+                    $operatorValue = $priceValue * ( $VATPercent + 100 ) / 100;
+                }
+                break;
+
+            case 'booking_is_in_range':
+                    $startDateTime = new DateTime('now', new DateTimeZone('Europe/Rome'));
+                    $startDateTime->setTimestamp((int)$namedParameters['from_time']);
+                    $endDateTime = new DateTime('now', new DateTimeZone('Europe/Rome'));
+                    $endDateTime->setTimestamp((int)$namedParameters['to_time']);
+
+                    @list($checkStart, $checkEnd) = explode('-', $namedParameters['range_string']);
+                    @list($checkStartHours, $checkStartMinutes) = explode(':', $checkStart);
+                    $checkStartDateTime = clone $startDateTime;
+                    $checkStartDateTime->setTime($checkStartHours, $checkStartMinutes);
+                    
+                    @list($checkEndHours, $checkEndMinutes) = explode(':', $checkEnd);
+                    $checkEndDateTime = clone $endDateTime;
+                    $checkEndDateTime->setTime($checkEndHours, $checkEndMinutes);
+
+                    $operatorValue = $startDateTime >= $checkStartDateTime && $endDateTime <= $checkEndDateTime;
+                break;
+
+            case 'booking_vat_type_list':
+                $operatorValue = eZVatType::fetchList( true, true );
+                break;
 
             case 'location_class_identifiers':
                 $service = new ObjectHandlerServiceControlBookingSalaPubblica();

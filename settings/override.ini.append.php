@@ -33,5 +33,12 @@ MatchFile=edit/booking_appuntamento_sindaco.tpl
 Subdir=templates
 Match[class_identifier]=prenotazione_appuntamento_sindaco
 
+[edit_booking_sala_pubblica_price_range]
+Source=content/datatype/edit/ezmatrix.tpl
+MatchFile=edit/booking_sala_pubblica_price_range.tpl
+Subdir=templates
+Match[class_identifier]=sala_pubblica
+Match[attribute_identifier]=price_range
+
 
 */ ?>

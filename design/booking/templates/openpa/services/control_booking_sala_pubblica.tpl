@@ -226,6 +226,7 @@
                 allDaySlot: false,
                 timezone: "Europe/Rome",
                 slotDuration: '00:30:00',
+                displayEventEnd: true,
                 minTime: "{/literal}{$min_time}{literal}",
                 maxTime: "{/literal}{$max_time}{literal}",
                 contentHeight: 600,

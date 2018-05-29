@@ -525,6 +525,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
         if ($this->isValid()) {
 
+            $vat = null;
+
             /** @var eZContentObjectAttribute[] $dataMap */
             $dataMap = $this->container->getContentObject()->attribute('data_map');
             if ($dataMap['range_user']->hasContent()) {
@@ -537,6 +539,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                     foreach ((array)$priceRangeMatrix->Matrix['rows']['sequential'] as $row) {
                         if ($row['columns'][0] == $identifier) {
                             $price = floatval($row['columns'][2]);
+                            if(isset($row['columns'][3]) && isset($row['columns'][4])){                                
+                                $vatIncluded = $row['columns'][3] == '1';
+                                $vat = '|' . $row['columns'][4] . '|' . $vatIncluded;
+                            }
                         }
                     }
                 }
@@ -546,7 +552,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         if ($count = $this->subRequestCount()){
             $price = $price + ($price * $count);
         }
-        return $price;
+        return $price . $vat;
     }
 
     public function setCalculatedPrice()
@@ -575,9 +581,13 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         if ($this->isValid()) {
             /** @var eZContentObjectAttribute[] $dataMap */
             $dataMap = $this->container->getContentObject()->attribute('data_map');
-            $parts = explode('|', $dataMap['price']->toString());
-            $parts[0] = $price;
-            $dataMap['price']->fromString(implode('|', $parts));
+            $priceData = explode('|', $price);
+            if (count($priceData) != 3) {
+                $parts = explode('|', $dataMap['price']->toString());
+                $parts[0] = $price;
+                $price = implode('|', $parts);
+            }
+            $dataMap['price']->fromString($price);
             $dataMap['price']->store();
 
             $this->container->getContentObject()->setAttribute('modified', time());
