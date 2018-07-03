@@ -24,7 +24,9 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
             ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_PENDING)->attribute('id'),
             //ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED )->attribute( 'id' ),
             ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT)->attribute('id'),
-            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT)->attribute('id')
+            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT)->attribute('id'),
+            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_OK)->attribute('id'),
+            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_KO)->attribute('id'),
         );
     }
 

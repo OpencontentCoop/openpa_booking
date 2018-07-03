@@ -8,6 +8,7 @@
             <p>
                 {'Name'|i18n('design/standard/shop')}: {$order.account_information.first_name|wash} {$order.account_information.last_name|wash}<br />
                 {'Email'|i18n('design/standard/shop')}: {$order.account_information.email|wash}<br />
+                Codice fiscale/Partita IVA: {if is_set($order.account_information.vat_code)}{$order.account_information.vat_code|wash}{/if}<br />
             </p>
 
         </td>

@@ -12,6 +12,7 @@ if ($module->isCurrentAction('Cancel')) {
     return;
 }
 
+$settings = OpenPABookingUserShopAccountHandler::getAccountDataSettings();
 $data = OpenPABookingUserShopAccountHandler::getAccountData();
 
 $tpl->setVariable("input_error", false);
@@ -26,14 +27,14 @@ if ($module->isCurrentAction('Store')) {
         OpenPABookingUserShopAccountHandler::createOrder($data);
 
         $module->redirectTo('/shop/confirmorder/');
-
         return;
 
-    } catch (Exception $e) {
+    } catch (Exception $e) {        
         $tpl->setVariable("input_error", true);
     }
 }
 
+$tpl->setVariable('settings', $settings);
 foreach ($data as $name => $value) {
     $tpl->setVariable($name, $value);
 }

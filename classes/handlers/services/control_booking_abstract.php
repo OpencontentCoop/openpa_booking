@@ -20,6 +20,8 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
         self::STATUS_EXPIRED                => 'scaduto'
     );
 
+    protected static $states;
+
     function run()
     {
         $this->fnData['is_valid'] = 'isValid';
@@ -34,6 +36,7 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
         $this->fnData['end'] = 'getEndDateTime';
         $this->fnData['end_timestamp'] = 'getEndMoment';
         $this->fnData['end_moment'] = 'getEndTimestamp';
+        $this->data['states'] = static::getStates();
     }
 
     public static function getStateColors()
@@ -91,7 +94,11 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
 
     public static function getStates()
     {
-        return OpenPABase::initStateGroup(static::$stateGroupIdentifier, static::$stateIdentifiers);
+        if (self::$states === null){
+            self::$states = OpenPABase::initStateGroup(static::$stateGroupIdentifier, static::$stateIdentifiers);
+        }
+
+        return self::$states;
     }
 
     public static function getStateObject($stateCode)

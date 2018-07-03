@@ -101,8 +101,14 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
      */
     function accountInformation($order)
     {
-        $accountInformation = array_fill_keys(array_keys(self::$accountKeys), false);
         $xmlString = $order->attribute('data_text_1');
+
+        return self::getAccountInformationFromXml($xmlString);
+    }
+
+    private static function getAccountInformationFromXml($xmlString)
+    {
+        $accountInformation = array_fill_keys(array_keys(self::$accountKeys), false);
         if ($xmlString != null) {
             $dom = new DOMDocument('1.0', 'utf-8');
             if ($dom->loadXML($xmlString)) {
@@ -119,16 +125,31 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
         return $accountInformation;
     }
 
+    private static function storeAccountInformationToXml($accountInformation)
+    {
+        $doc = new DOMDocument('1.0', 'utf-8');
+        $root = $doc->createElement("shop_account");
+        $doc->appendChild($root);
+
+        foreach ($accountInformation as $key => $value) {
+            $tagName = str_replace('_', '-', $key);
+            $node = $doc->createElement($tagName, $value);
+            $root->appendChild($node);
+        }
+
+        return $doc->saveXML();
+    }
+
     public static function fetchInput()
     {
         $http = eZHTTPTool::instance();
         $data = array();
         foreach (self::$accountKeys as $key => $settings) {
-            $postValue = $http->postVariable($settings['input_name'], false);
-            if (trim($postValue) == "") {
+            $postValue = trim($http->postVariable($settings['input_name'], ''));
+            if ($postValue == "") {
                 $postValue = false;
             }
-            $data[$key] = trim($postValue);
+            $data[$key] = $postValue;
         }
 
         return $data;
@@ -140,7 +161,7 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
     public static function validateData($data)
     {
         foreach (self::$accountKeys as $key => $settings) {
-            if ($settings['is_required'] && !isset($data[$key])) {
+            if ($settings['is_required'] && $data[$key] == false) {
                 throw new Exception("Field $key is required");
             }
         }
@@ -155,17 +176,7 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
         $db->begin();
         $order = $basket->createOrder();
 
-        $doc = new DOMDocument('1.0', 'utf-8');
-        $root = $doc->createElement("shop_account");
-        $doc->appendChild($root);
-
-        foreach ($accountInformation as $key => $value) {
-            $tagName = str_replace('_', '-', $key);
-            $node = $doc->createElement($tagName, $value);
-            $root->appendChild($node);
-        }
-
-        $xmlString = $doc->saveXML();
+        $xmlString = self::storeAccountInformationToXml($accountInformation);
         $order->setAttribute('data_text_1', $xmlString);
         $order->setAttribute('account_identifier', "ez");
         $order->setAttribute('ignore_vat', 0);
@@ -196,9 +207,26 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
         return $accountInformation;
     }
 
+    public static function getAccountDataSettings()
+    {
+        return self::$accountKeys;
+    }
+
     private static function getAccountInformationFromUser(eZUser $user)
     {
         $accountInformation = array_fill_keys(array_keys(self::$accountKeys), false);
+
+        $userObject = $user->attribute( 'contentobject' );
+        
+        $userMap = $userObject->dataMap();
+        if (isset($userMap['first_name'])){
+            $accountInformation['first_name'] = $userMap['first_name']->content();    
+        }
+        if (isset($userMap['last_name'])){
+            $accountInformation['last_name'] = $userMap['last_name']->content();    
+        }
+                
+        $accountInformation['email'] = $user->attribute( 'email' );
 
         return $accountInformation;
     }

@@ -1,3 +1,6 @@
+{def $sort_by = ezpreference( 'admin_orderlist_sortfield' )}
+{def $order_by = ezpreference( 'admin_orderlist_sortorder' )}
+
 <section class="shop-orderlist">
 
     <form name="orderlist" method="post" action={concat( '/shop/orderlist', $view_parameters.offset|gt(0)|choose( '', concat( '/(offset)/', $view_parameters.offset ) ) )|ezurl}>
@@ -8,15 +11,32 @@
         {section show=$order_list}
         <table class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
             <tr>
-                <th width="1">&nbsp;
-                </th>
+                <th width="1">&nbsp;</th>
                 <th>
                     {"ID"|i18n("design/ezwebin/shop/orderlist")}
                 </th>
                 <th>
-                    {"Date"|i18n("design/ezwebin/shop/orderlist")}
+                    {if $sort_by|eq('time')}
+                        {if $order_by|eq('desc')}
+                            <a class="pull-right" href={'/user/preferences/set/admin_orderlist_sortorder/asc/shop/orderlist/'|ezurl}><i class="fa fa-sort-desc"></i></a>
+                        {else}
+                            <a class="pull-right" href={'/user/preferences/set/admin_orderlist_sortorder/desc/shop/orderlist/'|ezurl}><i class="fa fa-sort-asc"></i></a>
+                        {/if}
+                    {else}
+                        <a class="pull-right text-muted" href={'/user/preferences/set/admin_orderlist_sortfield/time/shop/orderlist/'|ezurl}><i class="fa fa-sort"></i></a>
+                    {/if}
+                    {"Date"|i18n("design/ezwebin/shop/orderlist")}                    
                 </th>
                 <th>
+                    {if $sort_by|eq('user_name')}
+                        {if $order_by|eq('desc')}
+                            <a class="pull-right" href={'/user/preferences/set/admin_orderlist_sortorder/asc/shop/orderlist/'|ezurl}><i class="fa fa-sort-desc"></i></a>
+                        {else}
+                            <a class="pull-right" href={'/user/preferences/set/admin_orderlist_sortorder/desc/shop/orderlist/'|ezurl}><i class="fa fa-sort-asc"></i></a>
+                        {/if}
+                    {else}
+                        <a class="pull-right text-muted" href={'/user/preferences/set/admin_orderlist_sortfield/user_name/shop/orderlist/'|ezurl}><i class="fa fa-sort"></i></a>
+                    {/if}
                     {"Customer"|i18n("design/ezwebin/shop/orderlist")}
                 </th>
                 <th>

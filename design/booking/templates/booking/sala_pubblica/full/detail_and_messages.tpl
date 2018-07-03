@@ -42,7 +42,18 @@
 
                             {/switch}
                         </th>
-                        <td>{foreach $item.items as $partecipant}{$partecipant.participant.contentobject.name|wash()}{delimiter}, {/delimiter}{/foreach}</td>
+                        <td>
+                            <ul class="list-inline">
+                            {foreach $item.items as $partecipant}
+                                {if is_set($partecipant.participant.contentobject_id)}
+                                    <li>
+                                        {$partecipant.participant.contentobject.name|wash()}
+                                        (<a href="mailto:{$partecipant.participant.email|wash()}">{$partecipant.participant.email|wash()}</a>)
+                                    </li>
+                                {/if}                                
+                            {/foreach}
+                            </ul>
+                        </td>
                     </tr>
                 {/foreach}
 

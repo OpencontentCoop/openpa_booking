@@ -9,73 +9,72 @@
         </small>
     </section>
 
-    {section show=$input_error}
+    {if $input_error}
         <div class="alert alert-warning">
             <p>
                 {"Input did not validate. All fields marked with * must be filled in."|i18n("design/ocbootstrap/shop/userregister")}
             </p>
         </div>
-    {/section}
+    {/if}
 
-    <form class="form" method="post" action={"/shop/userregister/"|ezurl}>
+    <form class="form" method="post" action={"openpa_booking/shop_register"|ezurl}>
 
         <div class="row">
             <div class="col-md-4 form-group">
                 <label>
-                    {"First name"|i18n("design/ocbootstrap/shop/userregister")}:*
+                    {"First name"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['first_name']['is_required']}*{/if}
                 </label>
-                <input class="form-control" type="text" name="FirstName" size="20" value="{$first_name|wash}"/>
+                <input class="form-control" type="text" name="{$settings['first_name']['input_name']}" size="20" value="{$first_name|wash}"/>
             </div>
             <div class="col-md-4 form-group">
                 <label>
-                    {"Last name"|i18n("design/ocbootstrap/shop/userregister")}:*
+                    {"Last name"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['last_name']['is_required']}*{/if}
                 </label>
-                <input class="form-control" type="text" name="LastName" size="20" value="{$last_name|wash}"/>
+                <input class="form-control" type="text" name="{$settings['last_name']['input_name']}" size="20" value="{$last_name|wash}"/>
             </div>
             <div class="col-md-4 form-group">
                 <label>
-                    {"Email"|i18n("design/ocbootstrap/shop/userregister")}:*
+                    {"Email"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['email']['is_required']}*{/if}
                 </label>
-                <input class="form-control" type="text" name="EMail" size="20" value="{$email|wash}"/>
+                <input class="form-control" type="text" name="{$settings['email']['input_name']}" size="20" value="{$email|wash}"/>
             </div>
         </div>
 
 
         <div class="row">
-            <div class="col-md-6 form-group">
+            <div class="col-md-4 form-group">
                 <label>
-                    {"Street"|i18n("design/ocbootstrap/shop/userregister")}:*
+                    {"Street"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['street2']['is_required']}*{/if}
                 </label>
-                <input class="form-control" type="text" name="Street2" size="20" value="{$street2|wash}"/>
+                <input class="form-control" type="text" name="{$settings['street2']['input_name']}" size="20" value="{$street2|wash}"/>
             </div>
-            <div class="col-md-6 form-group">
+            <div class="col-md-4 form-group">
                 <label>
-                    {"Zip"|i18n("design/ocbootstrap/shop/userregister")}:*
+                    {"Zip"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['zip']['is_required']}*{/if}
                 </label>
-                <input class="form-control" type="text" name="Zip" size="20" value="{$zip|wash}"/>
+                <input class="form-control" type="text" name="{$settings['zip']['input_name']}" size="20" value="{$zip|wash}"/>
+            </div>
+            <div class="col-md-4 form-group">
+                 <label>
+                    Codice fiscale/Partita IVA {if $settings['vat_code']['is_required']}*{/if}
+                </label>
+                <input class="form-control" type="text" name="{$settings['vat_code']['input_name']}" size="20" value="{$vat_code|wash}"/>
             </div>
         </div>
 
         <div class="row">
-
             <div class="col-md-6 form-group">
                 <label>
-                    {"Place"|i18n("design/ocbootstrap/shop/userregister")}:*
+                    {"Place"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['place']['is_required']}*{/if}
                 </label>
-                <input class="form-control" type="text" name="Place" size="20" value="{$place|wash}"/>
+                <input class="form-control" type="text" name="{$settings['place']['input_name']}" size="20" value="{$place|wash}"/>
             </div>
-            {*<div class="col-md-4 form-group">*}
-            {*<label>*}
-            {*{"State"|i18n("design/ocbootstrap/shop/userregister")}:*}
-            {*</label>*}
-            {*<input class="form-control" type="text" name="State" size="20" value="{$state|wash}"/>*}
-            {*</div>*}
             <div class="col-md-6 form-group">
                 <label>
-                    {"Country"|i18n("design/ocbootstrap/shop/userregister")}:*
+                    {"Country"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['country']['is_required']}*{/if}
                 </label>
                 {def $countries = fetch( 'content', 'country_list' )}
-                <select name="Country" class="form-control">
+                <select name="{$settings['country']['input_name']}" class="form-control">
                     {foreach $countries as $_country}
                         <option {if eq( $_country['Name'], $country )} selected="selected" {/if}
                                 value="{$_country['Name']}">
@@ -83,19 +82,16 @@
                         </option>
                     {/foreach}
                 </select>
-
-
             </div>
-
         </div>
-
 
         <div class="form-group">
             <label>
-                {"Comment"|i18n("design/ocbootstrap/shop/userregister")}:
+                {"Comment"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['comment']['is_required']}*{/if}
             </label>
-            <textarea name="Comment" class="form-control" cols="80" rows="5">{$comment|wash}</textarea>
+            <textarea name="{$settings['comment']['input_name']}" class="form-control" cols="80" rows="2">{$comment|wash}</textarea>
         </div>
+
 
 
         <div class="buttonblock">
