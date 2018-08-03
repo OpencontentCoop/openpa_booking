@@ -92,6 +92,8 @@
         $.opendataTools.settings('accessPath', "{''|ezurl(no,full)}");
         $.opendataTools.settings('language', "{$current_language}");
         $.opendataTools.settings('locale', "{$moment_language}");
+
+        var PreventNextBookingHours = {if $node|has_attribute('prevent_next_booking_hours')}{$node|has_attribute('prevent_next_booking_hours').data_int}{else}24{/if};
         {literal}
 
         $(document).ready(function () {
@@ -240,8 +242,20 @@
                 selectable: true,
                 selectLongPressDelay: 1,
                 select: function(s, e, jsEvent, view){
-                    var notBefore = moment();
-                    if (!s.isBefore(notBefore) && s.isSame(e.clone().subtract(1, 'seconds'), 'day')){
+                    var notBefore = moment().startOf('day');                                        
+                    if (PreventNextBookingHours > 0){
+                        notBefore.add(PreventNextBookingHours, 'h');
+                    }
+                    
+                    // workaround timezone
+                    var test = moment();
+                    test.year(s.year());
+                    test.month(s.month());
+                    test.date(s.date());
+                    test.hours(s.hours());
+                    test.minutes(s.minutes());
+
+                    if (!test.isBefore(notBefore) && s.isSame(e.clone().subtract(1, 'seconds'), 'day')){
                         if (s.hasTime()){
                             findAvailability(s,e);
                         }else{

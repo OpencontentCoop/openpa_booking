@@ -82,7 +82,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $this->fnData['concurrent_requests'] = 'getConcurrentRequests';
         $this->fnData['all_concurrent_requests'] = 'getAllConcurrentRequests';
         $this->fnData['is_stuff_approved'] = 'isStuffApproved';
-        $this->fnData['is_stuff_not_pending'] = 'isStuffNotPending';
+        $this->fnData['is_stuff_not_pending'] = 'isStuffNotPending';        
 
         parent::run();
     }
@@ -802,14 +802,41 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             throw new Exception("Giorno o orario non disponibile: $dayString");
         }
 
-        $now = time();
-        if ($startDateTime->format('U') < $now) {
+        if (!self::isValidStartDateTime($startDateTime, $sala)){
             throw new Exception("Giorno o orario non prenotabile: $dayString");
         }
 
         if (!self::isValidDay($startDateTime, $endDateTime, $sala)) {
             throw new Exception("Giorno o orario non disponibile per la sala selezionata: $dayString");
         }
+    }
+
+    public static function isValidStartDateTime(DateTime $startDateTime, eZContentObject $sala)
+    {
+        $now = new DateTime('now', new DateTimeZone('Europe/Rome'));
+        $now->setTime(0,0);
+
+        /** @var eZContentObjectAttribute[] $dataMap */
+        $dataMap = $sala->attribute('data_map');
+
+        $hours = 24; //default
+        $attributeIdentifier = 'prevent_next_booking_hours';
+
+        if (isset( $dataMap[$attributeIdentifier] )
+            && $dataMap[$attributeIdentifier] instanceof eZContentObjectAttribute
+            && $dataMap[$attributeIdentifier]->attribute('has_content')
+        ) {
+            $hours = (int)$dataMap[$attributeIdentifier]->toString();
+        }
+
+        if ($hours > 0)
+        	$now->add(new DateInterval('PT'. $hours. 'H'));
+
+        if ($startDateTime > $now) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -90,8 +90,6 @@ class OpenPABookingSalaPubblicaCalendar
             $endDate = new DateTime($end, new DateTimeZone('UTC'));
             if ($startDate instanceof DateTime && $endDate instanceof DateTime) {
 
-                $diff = $startDate->diff($endDate);
-                $now = new DateTime();
                 $openingHours = ObjectHandlerServiceControlBookingSalaPubblica::getOpeningHours($this->location);
                 $closingDays = ObjectHandlerServiceControlBookingSalaPubblica::getClosingDays($this->location);
 
@@ -99,18 +97,22 @@ class OpenPABookingSalaPubblicaCalendar
                 $byDayPeriod = new DatePeriod($startDate, $byDayInterval, $endDate);
                 /** @var DateTime[] $byDayPeriod */
                 foreach ($byDayPeriod as $date) {
-                    $do = $date > $now;
-                    if (!empty( $openingHours )) {
-                        foreach ($closingDays as $closingDay) {
-                            if (ObjectHandlerServiceControlBookingSalaPubblica::isInClosingDay($closingDay, $date,
-                                $date)
-                            ) {
-                                $do = false;
+
+                    $do = ObjectHandlerServiceControlBookingSalaPubblica::isValidStartDateTime($date, $this->location);
+
+                    if ($do) {
+                        if (!empty($closingDay)) {
+                            foreach ($closingDays as $closingDay) {
+                                if (ObjectHandlerServiceControlBookingSalaPubblica::isInClosingDay($closingDay, $date,
+                                    $date)
+                                ) {
+                                    $do = false;
+                                }
                             }
                         }
                     }
-                    if ($do) {
 
+                    if ($do) {
                         if (!empty( $openingHours )) {
                             $weekDayNumber = $date->format('w');
                             if (isset( $openingHours[$weekDayNumber] )) {
