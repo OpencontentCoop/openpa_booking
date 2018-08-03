@@ -20,18 +20,12 @@
     <form class="form" method="post" action={"openpa_booking/shop_register"|ezurl}>
 
         <div class="row">
-            <div class="col-md-4 form-group">
+            <div class="col-md-8 form-group">
                 <label>
-                    {"First name"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['first_name']['is_required']}*{/if}
+                    Cognome Nome oppure Ragione sociale {if $settings['first_name']['is_required']}*{/if}
                 </label>
-                <input class="form-control" type="text" name="{$settings['first_name']['input_name']}" size="20" value="{$first_name|wash}"/>
-            </div>
-            <div class="col-md-4 form-group">
-                <label>
-                    {"Last name"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['last_name']['is_required']}*{/if}
-                </label>
-                <input class="form-control" type="text" name="{$settings['last_name']['input_name']}" size="20" value="{$last_name|wash}"/>
-            </div>
+                <input class="form-control" type="text" name="{$settings['first_name']['input_name']}" size="20" value="{$first_name|wash} {$last_name|wash}"/>
+            </div>            
             <div class="col-md-4 form-group">
                 <label>
                     {"Email"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['email']['is_required']}*{/if}

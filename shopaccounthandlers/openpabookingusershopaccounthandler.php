@@ -8,7 +8,7 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
             'input_name' => 'FirstName'
         ),
         'last_name' => array(
-            'is_required' => true,
+            'is_required' => false,
             'input_name' => 'LastName'
         ),
         'email' => array(
@@ -223,7 +223,7 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
             $accountInformation['first_name'] = $userMap['first_name']->content();    
         }
         if (isset($userMap['last_name'])){
-            $accountInformation['last_name'] = $userMap['last_name']->content();    
+            $accountInformation['first_name'] += ' ' . $userMap['last_name']->content();    
         }
                 
         $accountInformation['email'] = $user->attribute( 'email' );
