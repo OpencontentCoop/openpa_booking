@@ -17,7 +17,8 @@ class BookingEnvironmentSettings extends DefaultEnvironmentSettings
 
     protected function flatData(Content $content)
     {
-        $flatContent = parent::flatData($content);
+        $clonedContent = clone $content;
+        $flatContent = parent::flatData($clonedContent);
 
         $data = $flatContent->data->jsonSerialize();
         $language = eZLocale::currentLocaleCode();
