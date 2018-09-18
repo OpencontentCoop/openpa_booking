@@ -372,6 +372,9 @@ abstract class ObjectHandlerServiceControlBooking extends ObjectHandlerServiceBa
 
                     $ini = eZINI::instance();
                     $sender = $ini->variable("MailSettings", "EmailSender");
+                    if (!$mail->validate($sender)) {
+                        $sender = $ini->variable("MailSettings", "AdminEmail");
+                    }
                     $mail->setSender($sender, $ini->variable("SiteSettings", "SiteName"));
 
                     if (!$mail->validate($replyTo)) {

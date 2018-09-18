@@ -7,7 +7,7 @@
         </li>
         <li>
             <span class="btn btn-{if $selected|eq(2)}primary{else}default{/if}">
-                2. {"Account information"|i18n("design/ocbootstrap/shop/basket")}
+                2. {"Dati per la fatturazione"|i18n("design/ocbootstrap/shop/basket")}
             </span>
         </li>
         <li>

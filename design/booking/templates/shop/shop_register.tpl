@@ -3,7 +3,7 @@
 <section class="shop-userregister">
 
     <section class="hgroup">
-        <h1 class="long">{"Your account information"|i18n("design/ocbootstrap/shop/userregister")}</h1>
+        <h1 class="long">{"Dati per la fatturazione"|i18n("design/ocbootstrap/shop/userregister")}</h1>
         <small>
             {"All fields marked with * must be filled in."|i18n("design/ocbootstrap/shop/userregister")}
         </small>
