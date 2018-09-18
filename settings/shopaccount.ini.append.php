@@ -6,5 +6,7 @@ ExtensionRepositories[]=openpa_booking
 Handler=ezuser
 Alias[ezuser]=openpabookinguser
 
+[ConfirmOrderSettings]
+Alias[ezdefault]=openpabooking
 
 */ ?>
