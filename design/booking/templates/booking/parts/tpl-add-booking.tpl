@@ -16,10 +16,10 @@
                     <b>{{:~i18n(metadata.name)}}</b>
                 </a>
             </h2>
-            <ul class="list list-unstyled">
             {{if ~i18n(data,'abstract')}}
               {{:~i18n(data,'abstract')}}
             {{/if}}
+            <ul class="list list-unstyled">            
             {{if ~i18n(data,'telefono')}}
               <li><small><i class="fa fa-phone-square"></i> <span>{{:~i18n(data,'telefono')}}</span></small></li>
             {{/if}}

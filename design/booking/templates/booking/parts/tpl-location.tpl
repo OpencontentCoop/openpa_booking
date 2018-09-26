@@ -15,11 +15,11 @@
                 <a class="btn btn-xs btn-default" href="{{:~settings('accessPath')}}/openpa_booking/locations/{{:metadata.mainNodeId}}">
                     <i class="fa fa-calendar"></i> Vai al calendario
                 </a>
-            </p>-->
-            <ul class="list list-unstyled">
+            </p>-->            
             {{if ~i18n(data,'abstract')}}
               {{:~i18n(data,'abstract')}}
             {{/if}}
+            <ul class="list list-unstyled">
             {{if ~i18n(data,'telefono')}}
               <li><small><i class="fa fa-phone-square"></i> <span>{{:~i18n(data,'telefono')}}</span></small></li>
             {{/if}}
