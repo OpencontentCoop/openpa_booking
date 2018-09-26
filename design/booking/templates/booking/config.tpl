@@ -52,10 +52,19 @@ $(document).ready(function(){
               </div>
               {/if}
 
-
+            {def $booking_classes = location_class_identifiers()|merge(stuff_class_identifiers())}
 			{if $data|count()|gt(0)}
 			  {foreach $data as $item}
 				{if $current_part|eq(concat('data-',$item.contentobject_id))}
+				{def $class_identifier = false()
+					 $class_name = false()}
+				{if is_set($item.children[0])}
+					{set $class_identifier = $item.children[0].class_identifier
+				   		 $class_name = $item.children[0].class_name}
+				{elseif $item|has_attribute('tags')}
+					{set $class_identifier = $item|attribute('tags').content.keyword_string|explode(', ')[0]
+				   		 $class_name = $class_identifier}
+				{/if}
 				<div class="tab-pane active" id="{$item.name|slugize()}">
 				  {if $item.children_count|gt(0)}
 				  <form action="#">
@@ -67,7 +76,28 @@ $(document).ready(function(){
 					{foreach $item.children as $child}
 					<tr>
 					  <td>
-                        {$child.name|wash()}
+                        {if $booking_classes|contains($class_identifier)}                        	
+                        	<h4>{$child.name|wash()}</h4>
+                        	<ul class="list-inline">
+                        		<li><em><small>Referenti:</small></em></li>
+	                        	{foreach $child.data_map.reservation_manager.content.relation_list as $manager}
+		                        	{def $obj = fetch(content,node,hash('node_id', $manager.node_id))}
+		                        	<li><a href="{$obj.url_alias|ezurl(no)}"><small>{$obj.name|wash()}</small></a></li>
+		                        	{undef $obj}
+	                        	{/foreach}
+	                        </ul>
+	                        {def $prices = array('price_range','manual_price','price')}
+	                        {foreach $prices as $price}
+	                        {if $child|has_attribute($price)}
+	                        <ul class="list-inline">
+	                        	<li><em><small>{$child|attribute($price).contentclass_attribute_name}:</small></em></li>
+	                        	<li><small>{attribute_view_gui attribute=$child|attribute($price)}</small></li>
+	                        </ul>
+	                        {/if}
+	                        {undef $prices}
+                        {else}
+                        	{$child.name|wash()}
+                        {/if}
 					  </td>
 					  <td>              
 						{foreach $child.object.available_languages as $language}
@@ -83,23 +113,15 @@ $(document).ready(function(){
 					</tr>
 					{/foreach}
 				  </table>
-                  {/if}
-                  {def $class_identifier = false()
-                       $class_name = false()}
-                  {if is_set($item.children[0])}
-                      {set $class_identifier = $item.children[0].class_identifier
-                           $class_name = $item.children[0].class_name}
-                  {elseif $item|has_attribute('tags')}
-                      {set $class_identifier = $item|attribute('tags').content.keyword_string|explode(', ')[0]
-                           $class_name = $class_identifier}
-                  {/if}
+                  {/if}                  
 				  <div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/', $class_identifier, '/',$item.node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('booking/config')}</a></div>
 				  <div class="pull-right"><a class="btn btn-danger"<a href="{concat('add/new/', $class_identifier, '/?parent=',$item.node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi %classname'|i18n('booking/config',, hash( '%classname', $class_name ))}</a></div>
                   {undef $class_identifier $class_name}
 				</div>
 				{/if}
 			  {/foreach}
-			{/if}  
+			{/if} 
+			{undef $booking_classes} 
 
           </div>
 

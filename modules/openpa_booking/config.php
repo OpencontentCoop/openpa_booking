@@ -16,7 +16,8 @@ if ( $Http->hasVariable( 's' ) )
 
 if ( $Part == 'users' )
 {
-    $usersParentNode = eZContentObjectTreeNode::fetch( intval( eZINI::instance()->variable( "UserSettings", "DefaultUserPlacement" ) ) );
+    $usersParentNode = eZContentObjectTreeNode::fetch( intval( eZINI::instance()->variable( "UserSettings", "DefaultUserPlacement" ) ) );    
+	$tpl->setVariable( 'user_class_list', eZUser::fetchUserClassNames() );
     $tpl->setVariable( 'user_parent_node', $usersParentNode );
 }
 
