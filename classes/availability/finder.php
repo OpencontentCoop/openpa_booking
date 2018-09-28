@@ -52,15 +52,7 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
 
                 $content = new Content($item);
                 $booking = $this->filterContent->filterContent($content);
-
-                $status = array_reduce($booking['metadata']['stateIdentifiers'], function ($carry, $item) {
-                    $carry = '';
-                    if (strpos($item, 'booking') === 0) {
-                        $carry = str_replace('booking.', '', $item);
-                    }
-
-                    return $carry;
-                });
+                $status = str_replace('booking.', '', $booking['metadata']['bookingState']);
                 $status = ObjectHandlerServiceControlBookingSalaPubblica::getStateCodeFromIdentifier($status);
 
                 if (isset( $booking['data'][$this->language]['location'] ) && !empty( $booking['data'][$this->language]['location'] )) {
