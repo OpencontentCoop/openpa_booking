@@ -30,7 +30,7 @@ class BookingEnvironmentSettings extends DefaultEnvironmentSettings
                 $requests[] = (int)$item->attribute('contentobject_id');
             }
             $data[$language]['subRequests'] = $requests;
-        } elseif ($data[$language]['isSubRequest'] == 1) {
+        } elseif (isset($data[$language]['isSubRequest']) && $data[$language]['isSubRequest'] == 1) {
             $data[$language]['parentRequests'] = (int)$node->fetchParent()->attribute('contentobject_id');
         }
 
