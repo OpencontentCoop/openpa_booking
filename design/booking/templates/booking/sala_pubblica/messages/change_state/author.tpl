@@ -10,7 +10,8 @@
 {/case}
 
 {case match='in_attesa_di_pagamento'}
-    con la presente comunicazione confermiamo la disponibilità della sala <strong>in attesa di pagamento</strong>.<br/>
+    con la presente comunicazione confermiamo la disponibilità della sala <strong>in attesa di conferma dell'ordine attraverso il portale</strong>.<br/>
+    Puoi procedere con l'ordine visitando l'indirizzo <a href="{concat( 'openpa_booking/view/sala_pubblica/', $object.id )|ezurl(no, full)}">{concat( 'openpa_booking/view/sala_pubblica/', $object.id )|ezurl(no, full)}</a><br/>
 {/case}
 
 {case match='in_attesa_di_verifica_pagamento'}
