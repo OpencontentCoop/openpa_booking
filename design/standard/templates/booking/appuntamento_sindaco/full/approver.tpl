@@ -25,7 +25,7 @@
 
             {if ezhttp( 'error', 'get', true() )}
                 <div class="alert warning message-warning">
-                    {ezhttp( 'error', 'get' )|urldecode()}
+                    {ezhttp( 'error', 'get' )|urldecode()|wash()}
                 </div>
             {/if}
 
