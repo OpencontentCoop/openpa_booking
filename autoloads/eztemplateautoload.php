@@ -13,8 +13,9 @@ $eZTemplateOperatorArray[] = array(
         'stuff_class_identifiers',
         'stuff_sub_workflow_is_enabled',
         'openpa_agenda_link',
-        'booking_vat_type_list',
-        'booking_is_in_range',
-        'booking_calc_price',
+        'booking_vat_type_list', // deprecated
+        'booking_is_in_range', // deprecated
+        'booking_calc_price', // deprecated
+        'booking_range_list',
     )
 );

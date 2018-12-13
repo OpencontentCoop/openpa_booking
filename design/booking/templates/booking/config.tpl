@@ -78,23 +78,31 @@ $(document).ready(function(){
 					  <td>
                         {if $booking_classes|contains($class_identifier)}                        	
                         	<h4>{$child.name|wash()}</h4>
-                        	<ul class="list-inline">
-                        		<li><em><small>Referenti:</small></em></li>
+                        	<li class="list-group-item">
+                    			<h5 class="list-group-item-heading">Referenti:</h5>
+	                        	<p class="list-group-item-text">	                        	
 	                        	{foreach $child.data_map.reservation_manager.content.relation_list as $manager}
-		                        	{def $obj = fetch(content,node,hash('node_id', $manager.node_id))}
-		                        	<li><a href="{$obj.url_alias|ezurl(no)}"><small>{$obj.name|wash()}</small></a></li>
-		                        	{undef $obj}
+		                        	{def $obj = fetch(content,node,hash('node_id', $manager.node_id))}<a href="{$obj.url_alias|ezurl(no)}">{$obj.name|wash()}</a>{undef $obj}{delimiter}, {/delimiter}
 	                        	{/foreach}
-	                        </ul>
-	                        {def $prices = array('price_range','manual_price','price')}
-	                        {foreach $prices as $price}
-	                        {if $child|has_attribute($price)}
-	                        <ul class="list-inline">
-	                        	<li><em><small>{$child|attribute($price).contentclass_attribute_name}:</small></em></li>
-	                        	<li><small>{attribute_view_gui attribute=$child|attribute($price)}</small></li>
-	                        </ul>
+	                        	</p>
+	                        </li>
+	                        
+	                        {if and(is_set($child.data_map.manual_price), $child|attribute('manual_price').data_int|eq(1))}
+	                        	<li class="list-group-item">
+                        			<h5 class="list-group-item-heading">{$child|attribute('manual_price').contentclass_attribute_name}</h5>                        			
+	                        	</li>
+	                        {elseif $child|has_attribute('price_range')}
+	                        	<li class="list-group-item">
+                        			<h5 class="list-group-item-heading">{$child|attribute('price_range').contentclass_attribute_name}</h5>
+                        			<p class="list-group-item-text">{attribute_view_gui attribute=$child|attribute('price_range')}</p>	                        		
+	                        	</li>
+                        	{elseif $child|has_attribute('price')}
+	                        	<li class="list-group-item">
+                        			<h5 class="list-group-item-heading">{$child|attribute('price').contentclass_attribute_name}</h5>
+                        			<p class="list-group-item-text">{attribute_view_gui attribute=$child|attribute('price')}</p>	                        		
+	                        	</li>
 	                        {/if}
-	                        {undef $prices}
+	                        </ul>
                         {else}
                         	{$child.name|wash()}
                         {/if}

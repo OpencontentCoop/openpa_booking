@@ -190,6 +190,10 @@ class OpenPABookingSalaPubblicaCalendar
 
                 $participants = null;
                 $collaborationItem = $service->getCollaborationItem();
+                if (!$collaborationItem instanceof eZCollaborationItem && $service->isSubrequest()) {
+                    $collaborationItem = $service->getMainRequestCollaborationItem();
+                }
+
                 if ($collaborationItem instanceof eZCollaborationItem) {
                     $participants = OpenPABookingCollaborationParticipants::instanceFrom($collaborationItem);
                 }
