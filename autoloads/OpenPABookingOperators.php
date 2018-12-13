@@ -19,9 +19,11 @@ class OpenPABookingOperators
             'stuff_class_identifiers',
             'stuff_sub_workflow_is_enabled',
             'openpa_agenda_link',
-            'booking_vat_type_list',
-            'booking_is_in_range',
-            'booking_calc_price',
+            'booking_vat_type_list', // deprecated
+            'booking_is_in_range', // deprecated
+            'booking_calc_price', // deprecated,
+            'booking_range_list',
+            'booking_request_invoice',
         );
     }
 
@@ -50,7 +52,15 @@ class OpenPABookingOperators
             ),
             'booking_calc_price' => array(
                 'price_row' => array('type' => 'mixed', 'required' => true),
-            )
+            ),
+            'booking_range_list' => array(
+                'object' => array('type' => 'object', 'required' => true),
+                'from_time' => array('type' => 'integer', 'required' => false, 'default' => null),
+                'to_time' => array('type' => 'integer', 'required' => false, 'default' => null),
+            ),
+            'booking_request_invoice' => array(
+                'order' => array('type' => 'object', 'required' => true),
+            ),
         );
     }
 
@@ -71,6 +81,33 @@ class OpenPABookingOperators
     {        
         switch( $operatorName )
         {
+                        
+            case 'booking_request_invoice':
+                $operatorValue = null;
+                $order = $namedParameters['order'];
+                if ($order instanceof eZOrder){
+                    $productCollectionID = $order->attribute('productcollection_id');
+                    $productCollection = eZProductCollection::fetch($productCollectionID);          
+                    $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
+                    if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+                        return $operatorValue = $service->requestInvoice($order);
+                    }
+                }
+            break;
+
+            case 'booking_range_list':
+                $list = array();
+                if ($namedParameters['object'] instanceof eZContentObject){
+                    $rangeHandler = OpenPABookingPriceRange::instance($namedParameters['object']);                    
+                    if ($rangeHandler->hasPriceRangeDefinition()){                        
+                        $list = $rangeHandler->getRangeList((int)$namedParameters['from_time'], (int)$namedParameters['to_time']);
+                    }
+                }
+
+                $operatorValue = $list;
+            break;
+
+            // deprecated
             case 'booking_calc_price':
                 $row = $namedParameters['price_row'];
                 $priceValue = $row['columns'][2];
@@ -84,24 +121,16 @@ class OpenPABookingOperators
                 }
                 break;
 
+            // deprecated
             case 'booking_is_in_range':
-                    $startDateTime = new DateTime('now', new DateTimeZone('Europe/Rome'));
-                    $startDateTime->setTimestamp((int)$namedParameters['from_time']);
-                    $endDateTime = new DateTime('now', new DateTimeZone('Europe/Rome'));
-                    $endDateTime->setTimestamp((int)$namedParameters['to_time']);
-
-                    @list($checkStart, $checkEnd) = explode('-', $namedParameters['range_string']);
-                    @list($checkStartHours, $checkStartMinutes) = explode(':', $checkStart);
-                    $checkStartDateTime = clone $startDateTime;
-                    $checkStartDateTime->setTime($checkStartHours, $checkStartMinutes);
-                    
-                    @list($checkEndHours, $checkEndMinutes) = explode(':', $checkEnd);
-                    $checkEndDateTime = clone $endDateTime;
-                    $checkEndDateTime->setTime($checkEndHours, $checkEndMinutes);
-
-                    $operatorValue = $startDateTime >= $checkStartDateTime && $endDateTime <= $checkEndDateTime;
+                $operatorValue = OpenPABookingPriceRange::isBookingInRange(
+                    $namedParameters['from_time'],
+                    $namedParameters['to_time'],
+                    $namedParameters['range_string']
+                );
                 break;
 
+            // deprecated
             case 'booking_vat_type_list':
                 $operatorValue = eZVatType::fetchList( true, true );
                 break;

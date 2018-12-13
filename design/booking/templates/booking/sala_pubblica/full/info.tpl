@@ -111,8 +111,8 @@
 {include uri='design:booking/parts/status-style.tpl'}
 
 <div id="calendarModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="calendarModalLabel" aria-hidden="true">
-    <div class="modal-dialog" style="width: 90%">
-        <div class="modal-content">
+    <div class="modal-dialog" style="width: 90%;height: 90%">
+        <div class="modal-content" style="height: 100%">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <h3 id="calendarModalTitle"></h3>

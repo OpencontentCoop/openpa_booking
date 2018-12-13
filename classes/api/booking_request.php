@@ -99,24 +99,19 @@ class BookingApiBookingRequest implements JsonSerializable
             throw new Exception("Purpose description not found");
         }
 
+        $priceRangeHandler = OpenPABookingPriceRange::instance($location);
         $locationDataMap = $location->dataMap();
-        if (isset( $locationDataMap['price_range'] )
-            && $locationDataMap['price_range']->hasContent()
-        ) {
+        if ($priceRangeHandler->hasPriceRangeDefinition()){
             if (empty( $this->userType )) {
                 throw new Exception("User type not found");
             }
 
             $price = false;
-            /** @var eZMatrix $priceRangeMatrix */
-            $priceRangeMatrix = $locationDataMap['price_range']->content();
-            if (isset( $priceRangeMatrix->Matrix['rows'] )) {
-                foreach ((array)$priceRangeMatrix->Matrix['rows']['sequential'] as $row) {
-                    if ($row['columns'][0] == $this->userType) {
-                        $price = floatval($row['columns'][2]);
-                    }
-                }
+            $priceData = $priceRangeHandler->getPriceDataByRangeType($this->userType);
+            if ($priceData['is_valid']){
+                $price = $priceData['price'];
             }
+            
             if ($price === false){
                 throw new Exception("User type {$this->userType} not allowed");
             }

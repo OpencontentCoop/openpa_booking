@@ -1,30 +1,22 @@
-{let matrix=$attribute.content}
-{foreach $matrix.rows.sequential as $row}
+{def $booking_range_list = booking_range_list($attribute.object)}
+{foreach $booking_range_list as $booking_range}
     <p>
-        <b>{$row.columns[0]|wash()}: 
-        	{if $row.columns[2]|eq(0)}
-            	gratuito
-        	{else}                	
-            	{if and(is_set($row.columns[3]), is_set($row.columns[4]))}
-            		{foreach booking_vat_type_list() as $vat_type}
-            			{if eq( $vat_type.id, $row.columns[4] )}
-            				{if $row.columns[3]|ne('1')}
-            					{booking_calc_price($row)|l10n( currency )} ({$row.columns[2]|l10n( currency )} + IVA {$vat_type.percentage}%)                			
-            				{else}
-            					{$row.columns[2]|l10n( currency )} ({booking_calc_price($row)|l10n( currency )} + IVA {$vat_type.percentage}%)
-            				{/if}
-            			{/if}
-            		{/foreach}
-            	{else}
-            		{$row.columns[2]|l10n( currency )}
-            	{/if}
-        	{/if}
-        </b>
-        {if and(is_set($row.columns[5]), $row.columns[5]|ne(''))}
-    		<br /><small class="text-muted">Valido solo per prenotazioni negli orari compresi tra le {$row.columns[5]|explode('-')|implode(' e le ')}</small>
-    	{/if}
-        <br />
-        <small>{$row.columns[1]|wash()}</small>        
+            <strong>
+            {$booking_range.label|wash}:
+            
+            {if $booking_range.is_free}
+                gratuito
+            {elseif $booking_range.vat}                  
+                {$booking_range.price|l10n( currency )} ({$booking_range.price_without_vat|l10n( currency )} + IVA {$booking_range.vat_percentage}%)
+            {else}
+                {$booking_range.price|l10n( currency )}
+            {/if}
+            </strong>
+            {if count($booking_range.valid_hours)|gt(0)}
+                <br /><small class="text-muted">Valido solo per prenotazioni negli orari compresi tra le {$booking_range.valid_hours|implode(' e le ')}</small>
+            {/if}
+            <br />
+            <small>{$booking_range.description|wash( xhtml )|nl2br}</small>
     </p>
 {/foreach}
-{/let}
+{undef $booking_range_list}

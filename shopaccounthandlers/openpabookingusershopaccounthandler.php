@@ -49,6 +49,28 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
         ),
     );
 
+    private static $customAccountKeys;
+
+    /**
+     * var ObjectHandlerServiceControlBookingSalaPubblica
+     */
+    private static $bookingService;
+
+    private static function getBookingService()
+    {
+        if (self::$bookingService === null){
+            $basket = eZBasket::currentBasket();
+            $productCollectionID = $basket->attribute('productcollection_id');
+            $productCollection = eZProductCollection::fetch($productCollectionID);
+            $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
+            if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+                self::$bookingService = $service;
+            }
+        }
+
+        return self::$bookingService;
+    }
+
     function verifyAccountInformation()
     {
         return false;
@@ -100,19 +122,18 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
      * @return array
      */
     function accountInformation($order)
-    {
+    {        
         $xmlString = $order->attribute('data_text_1');
-
         return self::getAccountInformationFromXml($xmlString);
     }
 
     private static function getAccountInformationFromXml($xmlString)
     {
-        $accountInformation = array_fill_keys(array_keys(self::$accountKeys), false);
+        $accountInformation = array_fill_keys(array_keys(self::getAccountDataSettings()), false);
         if ($xmlString != null) {
             $dom = new DOMDocument('1.0', 'utf-8');
             if ($dom->loadXML($xmlString)) {
-                foreach (array_keys(self::$accountKeys) as $key) {
+                foreach (array_keys(self::getAccountDataSettings()) as $key) {
                     $tagName = str_replace('_', '-', $key);
                     $node = $dom->getElementsByTagName($tagName)->item(0);
                     if ($node) {
@@ -144,7 +165,7 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
     {
         $http = eZHTTPTool::instance();
         $data = array();
-        foreach (self::$accountKeys as $key => $settings) {
+        foreach (self::getAccountDataSettings() as $key => $settings) {
             $postValue = trim($http->postVariable($settings['input_name'], ''));
             if ($postValue == "") {
                 $postValue = false;
@@ -160,7 +181,7 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
      */
     public static function validateData($data)
     {
-        foreach (self::$accountKeys as $key => $settings) {
+        foreach (self::getAccountDataSettings() as $key => $settings) {
             if ($settings['is_required'] && $data[$key] == false) {
                 throw new Exception("Field $key is required");
             }
@@ -190,7 +211,7 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
 
     public static function getAccountData()
     {
-        $accountInformation = array_fill_keys(array_keys(self::$accountKeys), false);
+        $accountInformation = array_fill_keys(array_keys(self::getAccountDataSettings()), false);
 
         $user = eZUser::currentUser();
         if ($user->isRegistered()) {
@@ -208,13 +229,16 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
     }
 
     public static function getAccountDataSettings()
-    {
+    {                
+        if (self::getBookingService() instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+            return self::getBookingService()->getAccountDataSettings();    
+        }
         return self::$accountKeys;
     }
 
     private static function getAccountInformationFromUser(eZUser $user)
     {
-        $accountInformation = array_fill_keys(array_keys(self::$accountKeys), false);
+        $accountInformation = array_fill_keys(array_keys(self::getAccountDataSettings()), false);
 
         $userObject = $user->attribute( 'contentobject' );
         

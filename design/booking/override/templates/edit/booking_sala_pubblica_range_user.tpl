@@ -1,55 +1,34 @@
 {default attribute_base='ContentObjectAttribute' html_class='full'}
 
-{if $attribute.object.data_map.sala.content.data_map.price_range.has_content}
-    {def $range_user = $attribute.object.data_map.sala.content.data_map.price_range.content
-    	 $valid_time = true()}
-    {foreach $range_user.rows.sequential as $row}
-        {set $valid_time = true()}
-        {if and(is_set($row.columns[5]), $row.columns[5]|ne(''))}
-		   	{set $valid_time = booking_is_in_range(
-		   		$attribute.object.data_map.from_time.content.timestamp,
-		   		$attribute.object.data_map.to_time.content.timestamp,
-		   		$row.columns[5]
-	   		)}
-	   {/if}
-        <div class="radio {if $valid_time|not()}text-muted{/if}">
-            <input type="radio" 
-        		   value="{$row.columns[0]}" 
-        		   name="{$attribute_base}_ezstring_data_text_{$attribute.id}" 
-        		   {if $attribute.data_text|eq($row.columns[0])}checked="checked"{/if}
-        		   {if $valid_time|not()}disabled="disabled"{/if}
-        		   />
-                
-                {$row.columns[1]|wash( xhtml )|nl2br}
-                
-                <br />
-                <strong>Prezzo: 
-                {if $row.columns[2]|eq(0)}
-                	gratuito
-            	{else}                	
-                	{if and(is_set($row.columns[3]), is_set($row.columns[4]))}
-                		{foreach booking_vat_type_list() as $vat_type}
-                			{if eq( $vat_type.id, $row.columns[4] )}
-                				{if $row.columns[3]|ne('1')}
-                					{booking_calc_price($row)|l10n( currency )} ({$row.columns[2]|l10n( currency )} + IVA {$vat_type.percentage}%)                			
-                				{else}
-                					{$row.columns[2]|l10n( currency )} ({booking_calc_price($row)|l10n( currency )} + IVA {$vat_type.percentage}%)
-                				{/if}
-                			{/if}
-                		{/foreach}
-                	{else}
-                		{$row.columns[2]|l10n( currency )}
-                	{/if}
-            	{/if}
-            	</strong>
-            	{if and(is_set($row.columns[5]), $row.columns[5]|ne(''))}
-            		<p class="text-muted">Valido solo per prenotazioni negli orari compresi tra le {$row.columns[5]|explode('-')|implode(' e le ')}</p>
-            	{/if}
-        </div>
-    {/foreach}
-    {undef $range_user}
-{else}
-    <input type="hidden" value="nessuno" name="{$attribute_base}_ezstring_data_text_{$attribute.id}"/>
-{/if}
+{def $booking_range_list = booking_range_list(
+    $attribute.object.data_map.sala.content,
+    $attribute.object.data_map.from_time.content.timestamp,
+    $attribute.object.data_map.to_time.content.timestamp
+)}
+{foreach $booking_range_list as $booking_range}
+    <div class="radio {if $booking_range.is_valid|not()}text-muted{/if}">
+        <input type="radio" 
+               value="{$booking_range.identifier}" 
+               name="{$attribute_base}_ezstring_data_text_{$attribute.id}" 
+               {if $attribute.data_text|eq($booking_range.identifier)}checked="checked"{/if}
+               {if $booking_range.is_valid|not()}disabled="disabled"{/if}
+               />
+            {$booking_range.description|wash( xhtml )|nl2br}
+            <br />
+            <strong>Prezzo: 
+            {if $booking_range.is_free}
+                gratuito
+            {elseif $booking_range.vat}                  
+                {$booking_range.price|l10n( currency )} ({$booking_range.price_without_vat|l10n( currency )} + IVA {$booking_range.vat_percentage}%)
+            {else}
+                {$booking_range.price|l10n( currency )}
+            {/if}
+            </strong>
+            {if count($booking_range.valid_hours)|gt(0)}
+                <p class="text-muted">Valido solo per prenotazioni negli orari compresi tra le {$booking_range.valid_hours|implode(' e le ')}</p>
+            {/if}
+    </div>
+{/foreach}
+{undef $booking_range_list}
 
 {/default}

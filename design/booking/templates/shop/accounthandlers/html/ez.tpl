@@ -6,9 +6,18 @@
                 <b>{"Customer"|i18n("design/standard/shop")}</b>
             </p>
             <p>
-                {'Name'|i18n('design/standard/shop')}: {$order.account_information.first_name|wash} {$order.account_information.last_name|wash}<br />
-                {'Email'|i18n('design/standard/shop')}: {$order.account_information.email|wash}<br />
-                Codice fiscale/Partita IVA: {if is_set($order.account_information.vat_code)}{$order.account_information.vat_code|wash}{/if}<br />
+                {if $order.account_information.type|eq('persona_giuridica')}
+                    Nome: {$order.account_information.first_name|wash}<br />
+                    Email: {$order.account_information.email|wash}<br />
+                    Codice fiscale: {if is_set($order.account_information.vat_code)}{$order.account_information.vat_code|wash}{/if}<br />
+                    Partita IVA: {if is_set($order.account_information.vat_code2)}{$order.account_information.vat_code2|wash}{/if}<br />
+                    {if is_set($order.account_information.split_payment)}In regime di split payment{/if}<br />
+                    {if is_set($order.account_information.fattura_elettronica_pa)}Codice IPA: {$order.account_information.codice_ipa|wash}{/if}<br />
+                {else}
+                    Nome: {$order.account_information.first_name|wash} {$order.account_information.last_name|wash}<br />
+                    Email: {$order.account_information.email|wash}<br />
+                    Codice fiscale/Partita IVA: {if is_set($order.account_information.vat_code)}{$order.account_information.vat_code|wash}{/if}<br />
+                {/if}
             </p>
 
         </td>
@@ -17,12 +26,10 @@
             <p>
                 <b>{"Address"|i18n("design/standard/shop")}</b>
             </p>
-            <p>
-                {*{'Company'|i18n('design/standard/shop')}: {$order.account_information.street1|wash}<br />*}
+            <p>                
                 {'Street'|i18n('design/standard/shop')}: {$order.account_information.street2|wash}<br />
                 {'Zip'|i18n('design/standard/shop')}: {$order.account_information.zip|wash}<br />
-                {'Place'|i18n('design/standard/shop')}: {$order.account_information.place|wash}<br />
-                {*{'State'|i18n('design/standard/shop')}: {$order.account_information.state|wash}<br />*}
+                {'Place'|i18n('design/standard/shop')}: {$order.account_information.place|wash}<br />                
                 {'Country/region'|i18n('design/standard/shop')}: {$order.account_information.country|wash}<br />
             </p>
         </td>

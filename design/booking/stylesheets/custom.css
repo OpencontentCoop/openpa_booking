@@ -635,6 +635,7 @@ li.active{
 }
 
 /*Naconde i factbox nelle descrizioni delle sale*/
+.booking-location .panel-primary,
 .service_teaser .service_details .panel-primary{
     display: none;
 }

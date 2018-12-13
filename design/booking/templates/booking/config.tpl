@@ -33,7 +33,7 @@ $(document).ready(function(){
 				  <li role="presentation" {if $current_part|eq(concat('data-',$item.contentobject_id))}class="active"{/if}><a href="{concat('openpa_booking/config/data-',$item.contentobject_id)|ezurl(no)}">{$item.name|wash()}</a></li>
 				{/foreach}
 			  {/if}
-			  
+			  	<li><a href="{'shop/orderlist'|ezurl(no)}">{"Order list"|i18n("design/ezwebin/shop/orderlist")}</a></li>
               </ul>
             </div>
 
@@ -56,14 +56,13 @@ $(document).ready(function(){
 			{if $data|count()|gt(0)}
 			  {foreach $data as $item}
 				{if $current_part|eq(concat('data-',$item.contentobject_id))}
-				{def $class_identifier = false()
-					 $class_name = false()}
-				{if is_set($item.children[0])}
-					{set $class_identifier = $item.children[0].class_identifier
-				   		 $class_name = $item.children[0].class_name}
-				{elseif $item|has_attribute('tags')}
-					{set $class_identifier = $item|attribute('tags').content.keyword_string|explode(', ')[0]
-				   		 $class_name = $class_identifier}
+				{def $add_classes = array()}				
+				{if $item|has_attribute('tags')}
+					{foreach $item|attribute('tags').content.keyword_string|explode(', ') as $class}
+						{set $add_classes = $add_classes|merge(hash($class,$class))}
+					{/foreach}					
+				{elseif is_set($item.children[0])}
+					{set $add_classes = hash($item.children[0].class_identifier, $item.children[0].class_name)}
 				{/if}
 				<div class="tab-pane active" id="{$item.name|slugize()}">
 				  {if $item.children_count|gt(0)}
@@ -76,25 +75,33 @@ $(document).ready(function(){
 					{foreach $item.children as $child}
 					<tr>
 					  <td>
-                        {if $booking_classes|contains($class_identifier)}                        	
-                        	<h4>{$child.name|wash()}</h4>
-                        	<ul class="list-inline">
-                        		<li><em><small>Referenti:</small></em></li>
+                        {if $booking_classes|contains($child.class_identifier)}	
+                        	<h4>{$child.name|wash()} <small>{$child.class_name|wash()}</small></h4>
+                        	<li class="list-group-item">
+                    			<h5 class="list-group-item-heading">Referenti:</h5>
+	                        	<p class="list-group-item-text">	                        	
 	                        	{foreach $child.data_map.reservation_manager.content.relation_list as $manager}
-		                        	{def $obj = fetch(content,node,hash('node_id', $manager.node_id))}
-		                        	<li><a href="{$obj.url_alias|ezurl(no)}"><small>{$obj.name|wash()}</small></a></li>
-		                        	{undef $obj}
+		                        	{def $obj = fetch(content,node,hash('node_id', $manager.node_id))}<a href="{$obj.url_alias|ezurl(no)}">{$obj.name|wash()}</a>{undef $obj}{delimiter}, {/delimiter}
 	                        	{/foreach}
-	                        </ul>
-	                        {def $prices = array('price_range','manual_price','price')}
-	                        {foreach $prices as $price}
-	                        {if $child|has_attribute($price)}
-	                        <ul class="list-inline">
-	                        	<li><em><small>{$child|attribute($price).contentclass_attribute_name}:</small></em></li>
-	                        	<li><small>{attribute_view_gui attribute=$child|attribute($price)}</small></li>
-	                        </ul>
+	                        	</p>
+	                        </li>
+	                        
+	                        {if and(is_set($child.data_map.manual_price), $child.data_map.manual_price.data_int|eq(1))}
+	                        	<li class="list-group-item">
+                        			<h5 class="list-group-item-heading">{$child|attribute('manual_price').contentclass_attribute_name}</h5>                        			
+	                        	</li>
+	                        {elseif $child|has_attribute('price_range')}
+	                        	<li class="list-group-item">
+                        			<h5 class="list-group-item-heading">{$child|attribute('price_range').contentclass_attribute_name}</h5>
+                        			<p class="list-group-item-text">{attribute_view_gui attribute=$child|attribute('price_range')}</p>	                        		
+	                        	</li>
+                        	{elseif $child|has_attribute('price')}
+	                        	<li class="list-group-item">
+                        			<h5 class="list-group-item-heading">{$child|attribute('price').contentclass_attribute_name}</h5>
+                        			<p class="list-group-item-text">{attribute_view_gui attribute=$child|attribute('price')}</p>	                        		
+	                        	</li>
 	                        {/if}
-	                        {undef $prices}
+	                        </ul>
                         {else}
                         	{$child.name|wash()}
                         {/if}
@@ -113,10 +120,14 @@ $(document).ready(function(){
 					</tr>
 					{/foreach}
 				  </table>
-                  {/if}                  
-				  <div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/', $class_identifier, '/',$item.node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('booking/config')}</a></div>
-				  <div class="pull-right"><a class="btn btn-danger"<a href="{concat('add/new/', $class_identifier, '/?parent=',$item.node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi %classname'|i18n('booking/config',, hash( '%classname', $class_name ))}</a></div>
-                  {undef $class_identifier $class_name}
+                  {/if}   
+                  {foreach $add_classes as $class_identifier => $class_name}               
+					  	<div class="clearfix" style="margin-bottom: 10px">
+						  <div class="pull-left"><a class="btn btn-info" href="{concat('exportas/csv/', $class_identifier, '/',$item.node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('booking/config')} {$class_name|wash()}</a></div>
+						  <div class="pull-right"><a class="btn btn-danger"<a href="{concat('add/new/', $class_identifier, '/?parent=',$item.node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi %classname'|i18n('booking/config',, hash( '%classname', $class_name ))}</a></div>
+						</div>
+				  {/foreach}
+                  {undef $add_classes}
 				</div>
 				{/if}
 			  {/foreach}
