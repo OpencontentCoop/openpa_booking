@@ -332,7 +332,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 $sala = $serviceObject->attribute('sala');
                 if ($sala instanceof eZContentObject) {
 
-                    $productType = eZShopFunctions::productTypeByObject($sala);
+                    $productType = eZShopFunctions::productTypeByObject($prenotazione);
                     $price = $serviceObject->getPrice();
                     if ($productType && $price > 0) {
 
