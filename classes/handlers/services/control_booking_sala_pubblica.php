@@ -422,12 +422,12 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
     public function bookableClassIdentifiers()
     {
-        return array('sala_pubblica','attrezzatura_sala');
+        return array('sala_pubblica','sala_pubblica_fatturazione','attrezzatura_sala');
     }
 
     public function salaPubblicaClassIdentifiers()
     {
-        return array('sala_pubblica');
+        return array('sala_pubblica', 'sala_pubblica_fatturazione');
     }
 
     public function prenotazioneClassIdentifier()

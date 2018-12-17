@@ -81,8 +81,8 @@ class OpenPABookingOperators
             case 'booking_range_list':
                 $list = array();
                 if ($namedParameters['object'] instanceof eZContentObject){
-                    $rangeHandler = OpenPABookingPriceRange::instance($namedParameters['object']);
-                    if ($rangeHandler->hasPriceRangeDefinition()){
+                    $rangeHandler = OpenPABookingPriceRange::instance($namedParameters['object']);                    
+                    if ($rangeHandler->hasPriceRangeDefinition()){                        
                         $list = $rangeHandler->getRangeList((int)$namedParameters['from_time'], (int)$namedParameters['to_time']);
                     }
                 }

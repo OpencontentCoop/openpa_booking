@@ -17,7 +17,9 @@ if ( is_numeric( $id ))
         if(in_array($result['content_info']['class_identifier'], $booking->bookableClassIdentifiers())){
             return $result;
         }
-    }
+    }elseif (isset($result['errorCode'])) {
+        return $result;
+    }    
 
     return $module->redirectTo('/');
 }

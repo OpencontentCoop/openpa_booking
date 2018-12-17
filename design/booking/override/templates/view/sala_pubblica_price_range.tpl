@@ -2,7 +2,7 @@
 {foreach $booking_range_list as $booking_range}
     <p>
             <strong>
-            {$booking_range.identifier|wash}:
+            {$booking_range.label|wash}:
             
             {if $booking_range.is_free}
                 gratuito
