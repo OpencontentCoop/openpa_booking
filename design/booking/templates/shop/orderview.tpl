@@ -8,6 +8,17 @@
 
 {shop_account_view_gui view=html order=$order}
 
+{def $invoiceData = booking_request_invoice($order)}
+{if $invoiceData}
+    <h3>Fattura</h3>
+    {if $invoiceData._status|eq('pending')}
+        <p><em>La fattura è in elaborazione e sarà disponibile a breve</em></p>
+    {elseif $invoiceData._status|eq('ready')}
+        <a class="btn btn-xl btn-info" href="{concat('openpa_booking/invoice/',$order.id)|ezurl(no)}">Scarica il pdf della fattura</a>
+    {/if}
+{/if}
+
+
 {def $currency = fetch( 'shop', 'currency', hash( 'code', $order.productcollection.currency_code ) )
          $locale = false()
          $symbol = false()}

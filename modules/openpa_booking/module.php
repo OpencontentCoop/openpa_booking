@@ -67,6 +67,12 @@ $ViewList["shop_register"] = array(
     )
 );
 
+$ViewList["invoice"] = array(
+    "functions" => array('book'),
+    "script" => "invoice.php",
+    'params' => array('OrderID'),
+);
+
 $FunctionList['read'] = array();
 $FunctionList['book'] = array();
 $FunctionList['config'] = array();

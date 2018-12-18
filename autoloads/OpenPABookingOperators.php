@@ -23,6 +23,7 @@ class OpenPABookingOperators
             'booking_is_in_range', // deprecated
             'booking_calc_price', // deprecated,
             'booking_range_list',
+            'booking_request_invoice',
         );
     }
 
@@ -56,7 +57,10 @@ class OpenPABookingOperators
                 'object' => array('type' => 'object', 'required' => true),
                 'from_time' => array('type' => 'integer', 'required' => false, 'default' => null),
                 'to_time' => array('type' => 'integer', 'required' => false, 'default' => null),
-            )
+            ),
+            'booking_request_invoice' => array(
+                'order' => array('type' => 'object', 'required' => true),
+            ),
         );
     }
 
@@ -77,7 +81,20 @@ class OpenPABookingOperators
     {        
         switch( $operatorName )
         {
-            
+                        
+            case 'booking_request_invoice':
+                $operatorValue = null;
+                $order = $namedParameters['order'];
+                if ($order instanceof eZOrder){
+                    $productCollectionID = $order->attribute('productcollection_id');
+                    $productCollection = eZProductCollection::fetch($productCollectionID);          
+                    $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
+                    if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+                        return $operatorValue = $service->requestInvoice($order);
+                    }
+                }
+            break;
+
             case 'booking_range_list':
                 $list = array();
                 if ($namedParameters['object'] instanceof eZContentObject){

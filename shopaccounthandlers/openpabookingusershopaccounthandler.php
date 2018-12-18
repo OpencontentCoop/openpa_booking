@@ -49,6 +49,8 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
         ),
     );
 
+    private static $customAccountKeys;
+
     function verifyAccountInformation()
     {
         return false;
@@ -207,23 +209,25 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
         return $accountInformation;
     }
 
-    public static function getAccountDataSettings()
+    public static function getCustomAccountDataSettings()
     {
-        // $basket = eZBasket::currentBasket();
-        // $productCollectionID = $basket->attribute('productcollection_id');
-        // $productCollection = eZProductCollection::fetch($productCollectionID);
-        // if ($productCollection instanceof eZProductCollection){
-        //     foreach ($productCollection->itemList() as $item) {
-        //         $object = $item->contentobject();
-        //         if ($object instanceof eZContentObject){
-        //             $openpaObject = OpenPAObjectHandler::instanceFromContentObject($object);
-        //             $service = $openpaObject->attribute('control_booking_sala_pubblica');
-        //             $bookable = $service->attribute('sala'));
-        //         }
-        //     }
-        // }
-        
-        return self::$accountKeys;
+        if (self::$customAccountKeys === null){
+            self::$customAccountKeys = array();
+            $basket = eZBasket::currentBasket();
+            $productCollectionID = $basket->attribute('productcollection_id');
+            $productCollection = eZProductCollection::fetch($productCollectionID);
+            $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
+            if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+                self::$customAccountKeys = (array)$service->getAccountDataSettings($basket);
+            }
+        }
+
+        return self::$customAccountKeys;
+    }
+
+    public static function getAccountDataSettings()
+    {        
+        return array_merge(self::$accountKeys, self::getCustomAccountDataSettings());
     }
 
     private static function getAccountInformationFromUser(eZUser $user)

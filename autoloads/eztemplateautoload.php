@@ -17,5 +17,6 @@ $eZTemplateOperatorArray[] = array(
         'booking_is_in_range', // deprecated
         'booking_calc_price', // deprecated
         'booking_range_list',
+        'booking_request_invoice',
     )
 );

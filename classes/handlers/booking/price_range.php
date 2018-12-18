@@ -35,6 +35,7 @@ class OpenPABookingPriceRange
 		if ($this->hasPriceRangeDefinition){			
 			if ($this->bookableObjectDataMap['price_range']->dataType() instanceof OpenPABookingPriceRangeCapable){
 				$this->isDatatypePriceRangeCapable = true;
+				$this->datatypePriceRangeCapable = $this->bookableObjectDataMap['price_range']->dataType();
 			}			
 		}
 	}

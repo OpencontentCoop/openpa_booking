@@ -107,6 +107,20 @@
                         {/if}
 
                     </tr>
+
+                    {def $invoiceData = booking_request_invoice($order)}
+                    {if $invoiceData}
+                        <tr>
+                            <th>Fattura</th>
+                            <td>
+                                {if $invoiceData._status|eq('pending')}
+                                    <p><em>La fattura è in elaborazione e sarà disponibile a breve</em></p>
+                                {elseif $invoiceData._status|eq('ready')}
+                                    <a class="btn btn-xl btn-info" href="{concat('openpa_booking/invoice/',$order.id)|ezurl(no)}">Scarica il pdf della fattura</a>
+                                {/if}
+                            </td>
+                        </tr>
+                    {/if}
                 {/if}
             </table>
 

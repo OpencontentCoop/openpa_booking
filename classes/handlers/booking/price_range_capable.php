@@ -2,7 +2,7 @@
 
 interface OpenPABookingPriceRangeCapable
 {
-	public function getPriceDataByRangeType();
+	public function getPriceDataByRangeType($bookableAttribute, $identifier);
 
-	public function getRangeList();
+	public function getRangeList($bookableAttribute, $bookingStartTimestamp = null, $bookingEndTimestamp = null);
 }

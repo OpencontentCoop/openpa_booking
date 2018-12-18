@@ -1323,4 +1323,60 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
         return $this->isSubrequest;
     }
+
+    public static function instanceFromProductCollection($productCollection)
+    {
+        $service = null;
+        if ($productCollection instanceof eZProductCollection){
+            foreach ($productCollection->itemList() as $item) {
+                $object = $item->contentobject();
+                if ($object instanceof eZContentObject){
+                    $openpaObject = OpenPAObjectHandler::instanceFromContentObject($object);
+                    $service = $openpaObject->attribute('control_booking_sala_pubblica');                       
+                    break;
+                }
+            }
+        }
+
+        return $service;
+    }
+
+    public function handleConfirmOrder(eZOrder $order, $email)
+    {
+        $this->requestInvoice($order);
+    }
+
+    public function requestInvoice(eZOrder $order)
+    {
+        if ($this->isValid()) {            
+            /** @var eZContentObjectAttribute[] $dataMap */
+            $dataMap = $this->container->getContentObject()->attribute('data_map');            
+            if (isset($dataMap['invoice_data']) && $dataMap['invoice_data']->dataType() instanceof OpenPABookingInvoiceHandler){                
+                return $dataMap['invoice_data']->dataType()->requestInvoice(
+                    $dataMap['invoice_data'],
+                    $order
+                );
+            }
+        }
+
+        return null;
+    }
+
+    public function downloadInvoice()
+    {
+        if ($this->isValid()) {            
+            /** @var eZContentObjectAttribute[] $dataMap */
+            $dataMap = $this->container->getContentObject()->attribute('data_map');            
+            if (isset($dataMap['invoice_data']) && $dataMap['invoice_data']->dataType() instanceof OpenPABookingInvoiceHandler){                
+                $dataMap['invoice_data']->dataType()->downloadInvoice(
+                    $dataMap['invoice_data']
+                );
+            }
+        }
+    }
+
+    public function getAccountDataSettings(eZBasket $basket)
+    {
+        return array();
+    }
 }

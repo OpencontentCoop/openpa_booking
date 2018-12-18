@@ -13,6 +13,7 @@ if ($module->isCurrentAction('Cancel')) {
 }
 
 $settings = OpenPABookingUserShopAccountHandler::getAccountDataSettings();
+$customSettings = OpenPABookingUserShopAccountHandler::getCustomAccountDataSettings();
 $data = OpenPABookingUserShopAccountHandler::getAccountData();
 
 $tpl->setVariable("input_error", false);
@@ -35,6 +36,8 @@ if ($module->isCurrentAction('Store')) {
 }
 
 $tpl->setVariable('settings', $settings);
+$tpl->setVariable('custom_settings', $customSettings);
+$tpl->setVariable('data', $data);
 foreach ($data as $name => $value) {
     $tpl->setVariable($name, $value);
 }

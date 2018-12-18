@@ -2,11 +2,30 @@
 
 class OpenPABookingConfirmOrderHandler extends eZDefaultConfirmOrderHandler
 {
+    function execute( $params = array() )
+    {
+        $ini = eZINI::instance();
+        $sendOrderEmail = $ini->variable( 'ShopSettings', 'SendOrderEmail' );
+        if ( $sendOrderEmail == 'enabled' )
+        {
+            $this->sendOrderEmail( $params );
+        }
+        if (isset($params['order']) and isset($params['email'])) {	        
+	        $order = $params['order'];
+	        $email = $params['email'];
+	        $productCollectionID = $order->attribute('productcollection_id');
+	        $productCollection = eZProductCollection::fetch($productCollectionID);	        
+	        $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
+	        if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+	            $service->handleConfirmOrder($order, $email);
+	        }
+	    }
+    }
+
     function sendOrderEmail($params)
     {
         $ini = eZINI::instance();
-        if (isset($params['order']) and
-            isset($params['email'])) {
+        if (isset($params['order']) and isset($params['email'])) {
             $order = $params['order'];
             $email = $params['email'];
 

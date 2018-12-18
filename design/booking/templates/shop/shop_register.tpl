@@ -87,6 +87,14 @@
         </div>
 
 
+        {foreach $custom_settings as $settings}
+            <div class="form-group">
+                <label>
+                    {$settings['label']|wash()} {if $settings['is_required']}*{/if}
+                </label>
+                <input class="form-control" type="text" name="{$settings['input_name']}" size="20" value="{$data[$settings['input_name']|explode('_')|implode('-')]|wash}"/>
+            </div>
+        {/foreach}
 
         <div class="buttonblock">
             <input class="btn btn-default btn-lg pull-left" type="submit" name="CancelButton"
