@@ -173,6 +173,15 @@ class OpenPABookingPageDataHandler implements OCPageDataHandlerInterface
                 'has_children' => false
             );
         }
+        $hasAccess = eZUser::currentUser()->hasAccessTo( 'shop', 'basket' );
+        if ( $hasAccess['accessWord'] == 'yes' ) {
+            $userMenu[] = array(
+                'name' => ezpI18n::tr('kernel/shop', 'Basket'),
+                'url' => 'shop/basket',
+                'highlight' => false,
+                'has_children' => false
+            );
+        }
         $userMenu[] = array(
             'name' => ezpI18n::tr( 'booking/menu', 'Esci' ),
             'url' => 'user/logout',

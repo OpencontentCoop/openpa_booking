@@ -13,27 +13,16 @@
 {/if}
 
 {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(1)}
-    <div class="text-center lead">
-    {def $basket = fetch('shop', 'basket')
-         $go_to_chekout = cond($content_object.data_map.order_id.content|gt(0), true(), false())}
-    {foreach $basket.items as $item}
-        {if $item.node_id|eq($content_object.main_node_id)}
-            {set $go_to_chekout = true()}
-            {break}
-        {/if}
-    {/foreach}
-    {if $go_to_chekout}
-        <a class="btn btn-lg btn-success" href="{'shop/basket/'|ezurl(no)}">Procedi con il pagamento</a>
-    {else}
-        <form class="form-inline" method="post" action={"content/action"|ezurl}>
-            <button type="submit" class="btn btn-lg btn-success" name="ActionAddToBasket">
+    <div class="text-center lead">    
+        <form method="post" class="form-inline text-center" action="{"collaboration/action/"|ezurl(no)}">
+            <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[]" value="" />
+            <button class="btn btn-success btn-lg" type="submit" name="CollaborationAction_GoToCheckout">
                 Procedi con il pagamento di {attribute_view_gui attribute=$content_object.data_map.price}
             </button>
-            <input type="hidden" name="ContentNodeID" value="{$content_object.main_node_id}"/>
-            <input type="hidden" name="ContentObjectID" value="{$content_object.id}"/>
-            <input type="hidden" name="ViewMode" value="full"/>
+            <input type="hidden" name="CollaborationActionCustom" value="custom"/>
+            <input type="hidden" name="CollaborationTypeIdentifier" value="openpabooking"/>
+            <input type="hidden" name="CollaborationItemID" value="{$collab_item.id}"/>
         </form>
-    {/if}
     </div>
 {/if}
 

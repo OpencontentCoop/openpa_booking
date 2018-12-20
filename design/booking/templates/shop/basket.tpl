@@ -1,4 +1,7 @@
+{def $is_full = $basket.items}
+{if $is_full}
 {include uri='design:shop/parts/breadcrumb.tpl' selected=1}
+{/if}
 
 <div class="shop-basket">
 
@@ -47,12 +50,14 @@
 
         {include uri='design:shop/parts/order_table.tpl' productcollection=$basket.productcollection items=$basket.items total_ex_vat=$basket.total_ex_vat total_inc_vat=$basket.total_inc_vat}
 
+        {if $is_full}
         <div class="clearfix">
             {*<input class="button" type="submit" name="ContinueShoppingButton"*}
             {*value="{'Continue shopping'|i18n('design/ocbootstrap/shop/basket')}"/>*}
             <input class="btn btn-success btn-lg pull-right" type="submit" name="CheckoutButton"
                    value="{'Checkout'|i18n('design/ocbootstrap/shop/basket')}"/> &nbsp;
         </div>
+        {/if}
 
     </form>
 
