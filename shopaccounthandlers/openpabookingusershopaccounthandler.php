@@ -51,6 +51,26 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
 
     private static $customAccountKeys;
 
+    /**
+     * var ObjectHandlerServiceControlBookingSalaPubblica
+     */
+    private static $bookingService;
+
+    private static function getBookingService()
+    {
+        if (self::$bookingService === null){
+            $basket = eZBasket::currentBasket();
+            $productCollectionID = $basket->attribute('productcollection_id');
+            $productCollection = eZProductCollection::fetch($productCollectionID);
+            $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
+            if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+                self::$bookingService = $service;
+            }
+        }
+
+        return self::$bookingService;
+    }
+
     function verifyAccountInformation()
     {
         return false;
@@ -102,9 +122,8 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
      * @return array
      */
     function accountInformation($order)
-    {
+    {        
         $xmlString = $order->attribute('data_text_1');
-
         return self::getAccountInformationFromXml($xmlString);
     }
 
@@ -209,25 +228,12 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
         return $accountInformation;
     }
 
-    public static function getCustomAccountDataSettings()
-    {
-        if (self::$customAccountKeys === null){
-            self::$customAccountKeys = array();
-            $basket = eZBasket::currentBasket();
-            $productCollectionID = $basket->attribute('productcollection_id');
-            $productCollection = eZProductCollection::fetch($productCollectionID);
-            $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
-            if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
-                self::$customAccountKeys = (array)$service->getAccountDataSettings($basket);
-            }
-        }
-
-        return self::$customAccountKeys;
-    }
-
     public static function getAccountDataSettings()
-    {        
-        return array_merge(self::$accountKeys, self::getCustomAccountDataSettings());
+    {                
+        if (self::getBookingService() instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+            return self::getBookingService()->getAccountDataSettings();    
+        }
+        return self::$accountKeys;
     }
 
     private static function getAccountInformationFromUser(eZUser $user)

@@ -15,7 +15,7 @@
 {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(1)}
     <div class="text-center lead">
     {def $basket = fetch('shop', 'basket')
-    $go_to_chekout = cond($content_object.data_map.order_id.content|gt(0), true(), false())}
+         $go_to_chekout = cond($content_object.data_map.order_id.content|gt(0), true(), false())}
     {foreach $basket.items as $item}
         {if $item.node_id|eq($content_object.main_node_id)}
             {set $go_to_chekout = true()}

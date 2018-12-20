@@ -11,7 +11,7 @@
 {def $invoiceData = booking_request_invoice($order)}
 {if $invoiceData}
     <h3>Fattura</h3>
-    {if $invoiceData._status|eq('pending')}
+    {if $invoiceData._status|ne('ready')}
         <p><em>La fattura è in elaborazione e sarà disponibile a breve</em></p>
     {elseif $invoiceData._status|eq('ready')}
         <a class="btn btn-xl btn-info" href="{concat('openpa_booking/invoice/',$order.id)|ezurl(no)}">Scarica il pdf della fattura</a>
@@ -91,19 +91,19 @@
     <td style="vertical-align: middle;text-align: center;">
     {$product_item.item_count}
     </td>
-    <td style="vertical-align: middle;text-align: center;">
+    <td style="vertical-align: middle;text-align: center;white-space: nowrap;">
     {$product_item.vat_value} %
     </td>
-    <td style="vertical-align: middle;text-align: center;">
+    <td style="vertical-align: middle;text-align: center;white-space: nowrap;">
     {$product_item.price_inc_vat|l10n( 'currency', $locale, $symbol )}
     </td>
     {*<td style="vertical-align: middle;text-align: center;">*}
     {*{$product_item.discount_percent}%*}
     {*</td>*}
-    <td style="vertical-align: middle;text-align: center;">
+    <td style="vertical-align: middle;text-align: center;white-space: nowrap;">
     {$product_item.total_price_ex_vat|l10n( 'currency', $locale, $symbol )}
     </td>
-    <td style="vertical-align: middle;text-align: center;">
+    <td style="vertical-align: middle;text-align: center;white-space: nowrap;">
     {$product_item.total_price_inc_vat|l10n( 'currency', $locale, $symbol )}
     </td>
 </tr>

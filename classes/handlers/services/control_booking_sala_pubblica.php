@@ -1375,8 +1375,82 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
     }
 
-    public function getAccountDataSettings(eZBasket $basket)
+    public function getAccountDataSettings()
     {
-        return array();
+        return array(
+            'first_name' => array(
+                'is_required' => true,
+                'input_name' => 'FirstName',
+            ),
+            'last_name' => array(                
+                'is_required' => true,
+                'input_name' => 'LastName',
+            ),
+            'email' => array(
+                'is_required' => true,
+                'input_name' => 'EMail'
+            ),
+            'phone' => array(
+                'is_required' => false,
+                'input_name' => 'Phone'
+            ),
+            'street1' => array(
+                'is_required' => false,
+                'input_name' => 'Street1'
+            ),
+            'street2' => array(
+                'is_required' => true,
+                'input_name' => 'Street2'
+            ),
+            'zip' => array(
+                'is_required' => true,
+                'input_name' => 'Zip'
+            ),
+            'place' => array(
+                'is_required' => true,
+                'input_name' => 'Place'
+            ),
+            'country' => array(
+                'is_required' => true,
+                'input_name' => 'Country'
+            ),
+            'comment' => array(
+                'is_required' => false,
+                'input_name' => 'Comment'
+            ),
+            'state' => array(
+                'is_required' => false,
+                'input_name' => 'State'
+            ),
+            'vat_code' => array(
+                'is_required' => true,
+                'input_name' => 'VatCode'
+            ),
+            'vat_code2' => array(
+                'is_required' => true,
+                'input_name' => 'VatCode2'
+            ),
+            'split_payment' => array(
+                'is_required' => false,
+                'input_name' => 'SplitPayment'
+            ),
+            'fattura_elettronica_pa' => array(
+                'is_required' => false,
+                'input_name' => 'FatturaElettronicaPa'
+            ),
+            'codice_ipa' => array(
+                'is_required' => false,
+                'input_name' => 'CodiceIPA'
+            ),
+            'type' => array(
+                'is_required' => true,
+                'input_name' => 'type',
+                'type' => 'hidden',
+                'enum' => array(
+                    'persona_fisica' => 'Persona Fisica',
+                    'persona_giuridica' => 'Persona Giuridica',
+                )
+            )
+        );
     }
 }
