@@ -89,7 +89,7 @@ class OpenPABooking
     public function getBookingCacheDir()
     {
         $cacheFilePath = eZDir::path(
-            array( eZSys::cacheDirectory(), 'openpa_booking' )
+            array(eZSys::cacheDirectory(), 'openpa_booking')
         );
         return $cacheFilePath;
     }
@@ -108,19 +108,19 @@ class OpenPABooking
     {
         $db = eZDB::instance();
         $results = $db->arrayQuery("SELECT ezcotn.main_node_id, ezco.remote_id FROM ezcontentobject_tree as ezcotn, ezcontentobject as ezco WHERE ezco.id = ezcotn.contentobject_id AND ezco.remote_id = '{$remote}'");
-        foreach($results as $result){
+        foreach ($results as $result) {
             return $result['main_node_id'];
         }
-        if ($createIfNotExists){
+        if ($createIfNotExists) {
             $newObject = eZContentFunctions::createAndPublishObject(
                 array_merge(array(
                     'parent_node_id' => self::instance()->rootNode()->attribute('node_id'),
                     'remote_id' => $remote,
                     'class_identifier' => 'folder',
-                    'attributes' => array( 'name' => $remote )
-                ), $params )
+                    'attributes' => array('name' => $remote)
+                ), $params)
             );
-            if ($newObject instanceof eZContentObject){
+            if ($newObject instanceof eZContentObject) {
                 return $newObject->attribute('main_node_id');
             }
         }
@@ -168,7 +168,7 @@ class OpenPABooking
     }
 
     public static function classIdentifiers()
-    {        
+    {
         return array('booking_root');
     }
 
@@ -181,7 +181,7 @@ class OpenPABooking
     public function getAttributeString($identifier, $replaceBracket = true)
     {
         $data = '';
-        if (isset( $this->rootDataMap[$identifier] )) {
+        if (isset($this->rootDataMap[$identifier])) {
             if ($this->rootDataMap[$identifier] instanceof eZContentObjectAttribute) {
                 if ($replaceBracket)
                     $data = self::replaceBracket($this->rootDataMap[$identifier]->toString());
@@ -201,7 +201,7 @@ class OpenPABooking
     public function getAttribute($identifier)
     {
         $data = new eZContentObjectAttribute(array());
-        if (isset( $this->rootDataMap[$identifier] )) {
+        if (isset($this->rootDataMap[$identifier])) {
             $data = $this->rootDataMap[$identifier];
         }
 
@@ -212,39 +212,35 @@ class OpenPABooking
     {
         $currentSiteaccess = eZSiteAccess::current();
         $sitaccessIdentifier = $currentSiteaccess['name'];
-        if ( !self::isBookingSiteAccessName( $sitaccessIdentifier ) )
-        {
+        if (!self::isBookingSiteAccessName($sitaccessIdentifier)) {
             $sitaccessIdentifier = self::getBookingSiteAccessName();
         }
         $path = "settings/siteaccess/{$sitaccessIdentifier}/";
-        $ini = new eZINI( 'site.ini.append', $path, null, null, null, true, true );
-        return rtrim( $ini->variable( 'SiteSettings', 'SiteURL' ), '/' );
+        $ini = new eZINI('site.ini.append', $path, null, null, null, true, true);
+        return rtrim($ini->variable('SiteSettings', 'SiteURL'), '/');
     }
 
-    public static function isBookingSiteAccessName( $currentSiteAccessName )
+    public static function isBookingSiteAccessName($currentSiteAccessName)
     {
-        return OpenPABase::getCustomSiteaccessName( 'booking' ) == $currentSiteAccessName;
+        return OpenPABase::getCustomSiteaccessName('booking') == $currentSiteAccessName;
     }
 
     public static function getBookingSiteAccessName()
     {
-        return OpenPABase::getCustomSiteaccessName( 'booking' );
+        return OpenPABase::getCustomSiteaccessName('booking');
     }
 
     public function imagePath($identifier)
     {
         $data = false;
-        if (isset( $this->rootDataMap[$identifier] )) {
-            if ( $this->rootDataMap[$identifier] instanceof eZContentObjectAttribute
-                 && $this->rootDataMap[$identifier]->hasContent() )
-            {
+        if (isset($this->rootDataMap[$identifier])) {
+            if ($this->rootDataMap[$identifier] instanceof eZContentObjectAttribute
+                && $this->rootDataMap[$identifier]->hasContent()) {
                 /** @var eZImageAliasHandler $content */
                 $content = $this->rootDataMap[$identifier]->content();
-                $original = $content->attribute( 'original' );
+                $original = $content->attribute('original');
                 $data = $original['full_path'];
-            }
-            else
-            {
+            } else {
                 $data = '/extension/openpa_booking/design/standard/images/logo_default.png';
             }
         }
@@ -294,8 +290,8 @@ class OpenPABooking
 
     public function getViewList()
     {
-        $views = array('list','map');
-        if ($this->isStuffBookingEnabled()){
+        $views = array('list', 'map');
+        if ($this->isStuffBookingEnabled()) {
             $views[] = 'stuff';
         }
 
@@ -307,7 +303,7 @@ class OpenPABooking
         $default = 'list';
 
         $viewString = $this->getAttributeString('default_view', false);
-        switch ($viewString){
+        switch ($viewString) {
             case 'Mappa sale';
                 $view = 'map';
                 break;
@@ -323,10 +319,15 @@ class OpenPABooking
             default:
                 $view = false;
         }
-        if (!in_array($view, $this->getViewList())){
+        if (!in_array($view, $this->getViewList())) {
             $view = $default;
         }
 
         return $view;
+    }
+
+    public function isShopEnabled()
+    {
+        return OpenPAINI::variable('BookingSettings', 'EnableShop', 'enabled') == 'enabled';
     }
 }

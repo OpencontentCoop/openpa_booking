@@ -14,4 +14,7 @@ Handlers[sala_pubblica]=BookingHandlerSalaPubblica
 [DataHandlers]
 Handlers[booking_sala_pubblica]=DataHandlerBookingSalaPubblica
 
+[BookingSettings]
+EnableShop=enabled
+
 */ ?>

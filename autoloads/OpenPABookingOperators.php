@@ -27,6 +27,7 @@ class OpenPABookingOperators
             'booking_view_list',
             'booking_default_view',
             'booking_stuff_is_enabled',
+            'booking_is_shop_enabled',
         );
     }
 
@@ -96,6 +97,10 @@ class OpenPABookingOperators
                 $operatorValue = OpenPABooking::instance()->getViewList();
                 break;
 
+            case 'booking_is_shop_enabled':
+                $operatorValue = OpenPABooking::instance()->isShopEnabled();
+                break;
+
             case 'booking_request_invoice':
                 $operatorValue = null;
                 $order = $namedParameters['order'];
@@ -104,7 +109,7 @@ class OpenPABookingOperators
                     $productCollection = eZProductCollection::fetch($productCollectionID);          
                     $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
                     if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
-                        return $operatorValue = $service->requestInvoice($order);
+                        $operatorValue = $service->requestInvoice($order);
                     }
                 }
             break;

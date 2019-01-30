@@ -319,7 +319,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 }
             }
 
-            if ($participants->userIsApprover($prenotazione->attribute('owner_id'))) {
+            if ($participants->userIsApprover($prenotazione->attribute('owner_id')) || !OpenPABooking::instance()->isShopEnabled()) {
 
                 OpenPABookingCollaborationHandler::handler($item)->approve($item, array());
 
@@ -347,8 +347,8 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                             OpenPABookingCollaborationHandler::STATUS_ACCEPTED
                         );
                     }
+                    $this->denyConcurrentRequests($serviceObject);
                 }
-                $this->denyConcurrentRequests($serviceObject);
             }
         }
     }

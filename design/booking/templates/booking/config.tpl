@@ -33,8 +33,10 @@ $(document).ready(function(){
 				  <li role="presentation" {if $current_part|eq(concat('data-',$item.contentobject_id))}class="active"{/if}><a href="{concat('openpa_booking/config/data-',$item.contentobject_id)|ezurl(no)}">{$item.name|wash()}</a></li>
 				{/foreach}
 			  {/if}
+			  {if booking_is_shop_enabled()}
 			  	<li><a href="{'shop/orderlist'|ezurl(no)}">{"Order list"|i18n("design/ezwebin/shop/orderlist")}</a></li>
-              </ul>
+			  {/if}
+			  </ul>
             </div>
 
             <div class="col-md-9">

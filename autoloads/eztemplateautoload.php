@@ -21,5 +21,6 @@ $eZTemplateOperatorArray[] = array(
         'booking_view_list',
         'booking_default_view',
         'booking_stuff_is_enabled',
+        'booking_is_shop_enabled',
     )
 );

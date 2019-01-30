@@ -183,7 +183,7 @@ class OpenPABookingPageDataHandler implements OCPageDataHandlerInterface
             );
         }
         $hasAccess = eZUser::currentUser()->hasAccessTo( 'shop', 'basket' );
-        if ( $hasAccess['accessWord'] == 'yes' ) {
+        if ( $hasAccess['accessWord'] == 'yes' && OpenPABooking::instance()->isShopEnabled()) {
             $userMenu[] = array(
                 'name' => ezpI18n::tr('kernel/shop', 'Basket'),
                 'url' => 'shop/basket',

@@ -5,7 +5,11 @@
     {set $query = concat('(*',$view_parameters.query|downcase(),'*) OR ',$view_parameters.query|downcase())}
 {/if}
 
-{def $search = fetch( ezfind, search, hash( query, $query, subtree_array, array( $user_parent_node.node_id ), class_id, $user_class_list, limit, $item_limit, offset, $view_parameters.offset, sort_by, hash( 'name', 'asc' ) ) )}
+{def $search = fetch( ezfind, search, hash( query, $query,
+                                            subtree_array, array( $user_parent_node.node_id ),
+                                            limit, $item_limit, offset, $view_parameters.offset,
+                                            filter, array('-meta_class_identifier_ms:user_group'),
+                                            sort_by, hash( 'name', 'asc' ) ) )}
 
 {def $users_count = $search.SearchCount
      $users = $search.SearchResult}
