@@ -57,7 +57,14 @@ class OpenPABookingPageDataHandler implements OCPageDataHandlerInterface
 
     public function needLogin()
     {
-        // TODO: Implement needLogin() method.
+        $currentModuleParams = $GLOBALS['eZRequestedModuleParams'];
+        $request = array(
+            'module' => $currentModuleParams['module_name'],
+            'function' => $currentModuleParams['function_name'],
+            'parameters' => $currentModuleParams['parameters'],
+        );
+
+        return $request['module'] == 'social_user';
     }
 
     public function attributeContacts()
