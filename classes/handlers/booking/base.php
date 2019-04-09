@@ -165,13 +165,15 @@ abstract class BookingHandlerBase implements OpenPABookingHandlerInterface
 
     public function redirectToItem(eZModule $module, eZCollaborationItem $item, $parameters = array())
     {
-        $id = $item->attribute("data_int1");
-        $suffix = '';
-        if (isset( $parameters['error'] )) {
-            $suffix = '/?error=' . urlencode($parameters['error']);
-        }
+        if ($module->exitStatus() != eZModule::STATUS_REDIRECT){
+            $id = $item->attribute("data_int1");
+            $suffix = '';
+            if (isset( $parameters['error'] )) {
+                $suffix = '/?error=' . urlencode($parameters['error']);
+            }
 
-        return $module->redirectTo('openpa_booking/view/' . $item->contentAttribute('openpabooking_handler') . '/' . $id . $suffix);
+            return $module->redirectTo('openpa_booking/view/' . $item->contentAttribute('openpabooking_handler') . '/' . $id . $suffix);
+        }
     }
 
     public function redirectToSummary(eZModule $module, eZCollaborationItem $item, $parameters = array())

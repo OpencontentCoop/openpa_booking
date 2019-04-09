@@ -25,7 +25,7 @@
 
       {if ezhttp( 'error', 'get', true() )}
         <div class="alert warning message-warning">
-          {ezhttp( 'error', 'get' )|urldecode()}
+          {ezhttp( 'error', 'get' )|urldecode()|wash()}
         </div>
       {/if}
       <form method="post" action={"collaboration/action/"|ezurl} xmlns="http://www.w3.org/1999/html">

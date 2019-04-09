@@ -57,7 +57,14 @@ class OpenPABookingPageDataHandler implements OCPageDataHandlerInterface
 
     public function needLogin()
     {
-        // TODO: Implement needLogin() method.
+        $currentModuleParams = $GLOBALS['eZRequestedModuleParams'];
+        $request = array(
+            'module' => $currentModuleParams['module_name'],
+            'function' => $currentModuleParams['function_name'],
+            'parameters' => $currentModuleParams['parameters'],
+        );
+
+        return $request['module'] == 'social_user';
     }
 
     public function attributeContacts()
@@ -169,6 +176,15 @@ class OpenPABookingPageDataHandler implements OCPageDataHandlerInterface
             $userMenu[] = array(
                 'name' => ezpI18n::tr('booking/menu', 'Settings'),
                 'url' => 'openpa_booking/config',
+                'highlight' => false,
+                'has_children' => false
+            );
+        }
+        $hasAccess = eZUser::currentUser()->hasAccessTo( 'shop', 'basket' );
+        if ( $hasAccess['accessWord'] == 'yes' ) {
+            $userMenu[] = array(
+                'name' => ezpI18n::tr('kernel/shop', 'Basket'),
+                'url' => 'shop/basket',
                 'highlight' => false,
                 'has_children' => false
             );

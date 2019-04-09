@@ -18,7 +18,12 @@ class OpenPABookingOperators
             'stuff_node_id',
             'stuff_class_identifiers',
             'stuff_sub_workflow_is_enabled',
-            'openpa_agenda_link'
+            'openpa_agenda_link',
+            'booking_vat_type_list', // deprecated
+            'booking_is_in_range', // deprecated
+            'booking_calc_price', // deprecated,
+            'booking_range_list',
+            'booking_request_invoice',
         );
     }
 
@@ -40,7 +45,22 @@ class OpenPABookingOperators
     function namedParameterList()
     {
         return array(
-
+            'booking_is_in_range' => array(
+                'from_time' => array('type' => 'integer', 'required' => true),
+                'to_time' => array('type' => 'integer', 'required' => true),
+                'range_string' => array('type' => 'string', 'required' => true),
+            ),
+            'booking_calc_price' => array(
+                'price_row' => array('type' => 'mixed', 'required' => true),
+            ),
+            'booking_range_list' => array(
+                'object' => array('type' => 'object', 'required' => true),
+                'from_time' => array('type' => 'integer', 'required' => false, 'default' => null),
+                'to_time' => array('type' => 'integer', 'required' => false, 'default' => null),
+            ),
+            'booking_request_invoice' => array(
+                'order' => array('type' => 'object', 'required' => true),
+            ),
         );
     }
 
@@ -61,6 +81,59 @@ class OpenPABookingOperators
     {        
         switch( $operatorName )
         {
+                        
+            case 'booking_request_invoice':
+                $operatorValue = null;
+                $order = $namedParameters['order'];
+                if ($order instanceof eZOrder){
+                    $productCollectionID = $order->attribute('productcollection_id');
+                    $productCollection = eZProductCollection::fetch($productCollectionID);          
+                    $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
+                    if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+                        return $operatorValue = $service->requestInvoice($order);
+                    }
+                }
+            break;
+
+            case 'booking_range_list':
+                $list = array();
+                if ($namedParameters['object'] instanceof eZContentObject){
+                    $rangeHandler = OpenPABookingPriceRange::instance($namedParameters['object']);                    
+                    if ($rangeHandler->hasPriceRangeDefinition()){                        
+                        $list = $rangeHandler->getRangeList((int)$namedParameters['from_time'], (int)$namedParameters['to_time']);
+                    }
+                }
+
+                $operatorValue = $list;
+            break;
+
+            // deprecated
+            case 'booking_calc_price':
+                $row = $namedParameters['price_row'];
+                $priceValue = $row['columns'][2];
+                $vatIncluded = $row['columns'][3] == '1';
+                $vatType = eZVatType::fetch((int)$row['columns'][4]);
+                $VATPercent = $vatType instanceof eZVatType ? $vatType->attribute('percentage') : 0;
+                if ($vatIncluded){
+                    $operatorValue = $priceValue / ( $VATPercent + 100 ) * 100;                    
+                }else{
+                    $operatorValue = $priceValue * ( $VATPercent + 100 ) / 100;
+                }
+                break;
+
+            // deprecated
+            case 'booking_is_in_range':
+                $operatorValue = OpenPABookingPriceRange::isBookingInRange(
+                    $namedParameters['from_time'],
+                    $namedParameters['to_time'],
+                    $namedParameters['range_string']
+                );
+                break;
+
+            // deprecated
+            case 'booking_vat_type_list':
+                $operatorValue = eZVatType::fetchList( true, true );
+                break;
 
             case 'location_class_identifiers':
                 $service = new ObjectHandlerServiceControlBookingSalaPubblica();

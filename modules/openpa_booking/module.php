@@ -56,6 +56,23 @@ $ViewList['config'] = array(
     'functions' => array('config')
 );
 
+$ViewList["shop_register"] = array(
+    "functions" => array('book'),
+    "script" => "shop_register.php",
+    'ui_context' => 'edit',
+    "default_navigation_part" => 'ezshopnavigationpart',
+    'single_post_actions' => array(
+        'StoreButton' => 'Store',
+        'CancelButton' => 'Cancel'
+    )
+);
+
+$ViewList["invoice"] = array(
+    "functions" => array('book'),
+    "script" => "invoice.php",
+    'params' => array('OrderID'),
+);
+
 $FunctionList['read'] = array();
 $FunctionList['book'] = array();
 $FunctionList['config'] = array();

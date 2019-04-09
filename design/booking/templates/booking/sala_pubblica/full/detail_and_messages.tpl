@@ -42,7 +42,18 @@
 
                             {/switch}
                         </th>
-                        <td>{foreach $item.items as $partecipant}{$partecipant.participant.contentobject.name|wash()}{delimiter}, {/delimiter}{/foreach}</td>
+                        <td>
+                            <ul class="list-inline">
+                            {foreach $item.items as $partecipant}
+                                {if is_set($partecipant.participant.contentobject_id)}
+                                    <li>
+                                        {$partecipant.participant.contentobject.name|wash()}
+                                        (<a href="mailto:{$partecipant.participant.email|wash()}">{$partecipant.participant.email|wash()}</a>)
+                                    </li>
+                                {/if}                                
+                            {/foreach}
+                            </ul>
+                        </td>
                     </tr>
                 {/foreach}
 
@@ -96,6 +107,20 @@
                         {/if}
 
                     </tr>
+
+                    {def $invoiceData = booking_request_invoice($order)}
+                    {if $invoiceData}
+                        <tr>
+                            <th>Fattura</th>
+                            <td>
+                                {if $invoiceData._status|ne('ready')}
+                                    <p><em>La fattura è in elaborazione e sarà disponibile a breve</em></p>
+                                {elseif $invoiceData._status|eq('ready')}
+                                    <a class="btn btn-xl btn-info" href="{concat('openpa_booking/invoice/',$order.id)|ezurl(no)}">Scarica il pdf della fattura</a>
+                                {/if}
+                            </td>
+                        </tr>
+                    {/if}
                 {/if}
             </table>
 
@@ -104,7 +129,7 @@
         <div class="panel panel-default">
             <table class="table">
                 {foreach $content_object.data_map as $identifier => $attribute}
-                    {if array('from_time', 'to_time', 'sala', 'stuff', 'scheduler', 'subrequest', 'price', 'order_id')|contains($attribute.contentclass_attribute_identifier)|not()}
+                    {if array('from_time', 'to_time', 'sala', 'stuff', 'scheduler', 'subrequest', 'price', 'order_id', 'invoice_data')|contains($attribute.contentclass_attribute_identifier)|not()}
                         <tr>
                             <th>{$attribute.contentclass_attribute_name|wash()}</th>
                             <td>

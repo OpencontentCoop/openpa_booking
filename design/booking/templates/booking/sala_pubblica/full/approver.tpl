@@ -69,8 +69,8 @@
 
     {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(3)}
         <p class="text-center">
-            <input class="btn btn-success btn-lg" type="submit" name="CollaborationAction_ReturnOk" value="Conferma la restituzione della caparra" />
-            <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_ReturnKo" value="Nega la restituzione della caparra" />
+            <input class="btn btn-success btn-lg" type="submit" name="CollaborationAction_ReturnOk" value="{$openpa_object.control_booking_sala_pubblica.states['booking.restituzione_ok'].current_translation.name|wash()}" />
+            <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_ReturnKo" value="{$openpa_object.control_booking_sala_pubblica.states['booking.restituzione_ko'].current_translation.name|wash()}" />
         </p>
     {/if}
 

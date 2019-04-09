@@ -14,6 +14,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     const ROLE_ADMIN = 'Booking Admin';
     const ROLE_ANONYM = 'Booking Anonymous';
 
+    private $sala;
+
+    private $isSubrequest;
+
     protected static $stateIdentifiers = array(
         self::STATUS_PENDING                => 'in_attesa_di_approvazione',
         self::STATUS_WAITING_FOR_CHECKOUT   => 'in_attesa_di_pagamento',
@@ -82,7 +86,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $this->fnData['concurrent_requests'] = 'getConcurrentRequests';
         $this->fnData['all_concurrent_requests'] = 'getAllConcurrentRequests';
         $this->fnData['is_stuff_approved'] = 'isStuffApproved';
-        $this->fnData['is_stuff_not_pending'] = 'isStuffNotPending';
+        $this->fnData['is_stuff_not_pending'] = 'isStuffNotPending';        
 
         parent::run();
     }
@@ -293,8 +297,6 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return $date;
     }
 
-    private $sala;
-
     /**
      * @return eZContentObject
      */
@@ -420,7 +422,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
     public function bookableClassIdentifiers()
     {
-        return array('sala_pubblica','attrezzatura_sala');
+        return array('sala_pubblica', 'attrezzatura_sala');
     }
 
     public function salaPubblicaClassIdentifiers()
@@ -522,37 +524,45 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     public function getCalculatedPrice()
     {
         $price = $this->getPrice();
+        $vat = null;
 
         if ($this->isValid()) {
 
             /** @var eZContentObjectAttribute[] $dataMap */
             $dataMap = $this->container->getContentObject()->attribute('data_map');
-            if ($dataMap['range_user']->hasContent()) {
+            $sala = $this->getSala();
+            $priceRangeHandler = OpenPABookingPriceRange::instance($sala);
+
+            if ($priceRangeHandler->hasPriceRangeDefinition() && $dataMap['range_user']->hasContent()){
                 $identifier = $dataMap['range_user']->toString();
                 $sala = $this->getSala();
-                /** @var eZContentObjectAttribute[] $salaDataMap */
-                $salaDataMap = $sala->attribute('data_map');
-                $priceRangeMatrix = isset( $salaDataMap['price_range'] ) ? $salaDataMap['price_range']->content() : new eZMatrix('null');
-                if (isset( $priceRangeMatrix->Matrix['rows'] )) {
-                    foreach ((array)$priceRangeMatrix->Matrix['rows']['sequential'] as $row) {
-                        if ($row['columns'][0] == $identifier) {
-                            $price = floatval($row['columns'][2]);
-                        }
-                    }
+                $priceData = $priceRangeHandler->getPriceDataByRangeType($identifier);
+                if ($priceData['is_valid']){
+                    $price = $priceData['price'];
+                    $vat = '|' . $priceData['vat'] . '|' . $priceData['vat_included'];
+                }else{
+                    throw new Exception("User type not found");
                 }
-            }
+            }else{                
+                $seconds = $dataMap['to_time']->toString() - $dataMap['from_time']->toString();
+                $hours = $seconds / 3600;
+                $price = $price * $hours;
+                $vat = $this->getPriceVat();
+            } 
         }
 
         if ($count = $this->subRequestCount()){
             $price = $price + ($price * $count);
         }
-        return $price;
+
+        return $price . $vat;
     }
 
     public function setCalculatedPrice()
     {
         if ($this->isValid() && !$this->hasManualPrice()){
             $price = $this->getCalculatedPrice();
+
             return $this->setPrice($price);
         }
         return false;
@@ -570,14 +580,31 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return 0;
     }
 
-    public function setPrice($price)
+    public function getPriceVat()
     {
         if ($this->isValid()) {
             /** @var eZContentObjectAttribute[] $dataMap */
             $dataMap = $this->container->getContentObject()->attribute('data_map');
             $parts = explode('|', $dataMap['price']->toString());
-            $parts[0] = $price;
-            $dataMap['price']->fromString(implode('|', $parts));
+            array_shift($parts);
+            return '|' . implode('|', $parts);
+        }
+
+        return 0;
+    }
+
+    public function setPrice($price)
+    {
+        if ($this->isValid()) {
+            /** @var eZContentObjectAttribute[] $dataMap */
+            $dataMap = $this->container->getContentObject()->attribute('data_map');
+            $priceData = explode('|', $price);
+            if (count($priceData) != 3) {
+                $parts = explode('|', $dataMap['price']->toString());
+                $parts[0] = $price;
+                $price = implode('|', $parts);
+            }
+            $dataMap['price']->fromString($price);
             $dataMap['price']->store();
 
             $this->container->getContentObject()->setAttribute('modified', time());
@@ -792,14 +819,41 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             throw new Exception("Giorno o orario non disponibile: $dayString");
         }
 
-        $now = time();
-        if ($startDateTime->format('U') < $now) {
+        if (!self::isValidStartDateTime($startDateTime, $sala)){
             throw new Exception("Giorno o orario non prenotabile: $dayString");
         }
 
         if (!self::isValidDay($startDateTime, $endDateTime, $sala)) {
             throw new Exception("Giorno o orario non disponibile per la sala selezionata: $dayString");
         }
+    }
+
+    public static function isValidStartDateTime(DateTime $startDateTime, eZContentObject $sala)
+    {
+        $now = new DateTime('now', new DateTimeZone('Europe/Rome'));
+        $now->setTime(0,0);
+
+        /** @var eZContentObjectAttribute[] $dataMap */
+        $dataMap = $sala->attribute('data_map');
+
+        $hours = 24; //default
+        $attributeIdentifier = 'prevent_next_booking_hours';
+
+        if (isset( $dataMap[$attributeIdentifier] )
+            && $dataMap[$attributeIdentifier] instanceof eZContentObjectAttribute
+            && $dataMap[$attributeIdentifier]->attribute('has_content')
+        ) {
+            $hours = (int)$dataMap[$attributeIdentifier]->toString();
+        }
+
+        if ($hours > 0)
+        	$now->add(new DateInterval('PT'. $hours. 'H'));
+
+        if ($startDateTime > $now) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1232,5 +1286,171 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
 
         return $location->mainNode();
+    }
+
+    /**
+     * @return eZCollaborationItem|null
+     */
+    public function getMainRequestCollaborationItem()
+    {
+        $data = null;
+        if ($this->isValid() && $this->isSubrequest()) {
+            $mainParentNode = eZContentObjectTreeNode::fetch((int)$this->container->getContentObject()->attribute('main_parent_node_id'));
+            if ($mainParentNode instanceof eZContentObjectTreeNode){
+                $data = eZPersistentObject::fetchObject(
+                    eZCollaborationItem::definition(),
+                    null,
+                    array('data_int1' => $mainParentNode->attribute('contentobject_id')),
+                    true
+                );
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return eZContentObject
+     */
+    public function isSubrequest()
+    {
+        if ($this->isSubrequest === null) {
+            if ($this->isValid()) {
+                if (isset( $this->container->attributesHandlers['subrequest'] )) {
+                    $this->isSubrequest = $this->container->attributesHandlers['subrequest']->attribute('contentobject_attribute')->attribute('content') == 1;
+                }
+            }
+        }
+        return $this->isSubrequest;
+    }
+
+    public static function instanceFromProductCollection($productCollection)
+    {
+        $service = null;
+        if ($productCollection instanceof eZProductCollection){
+            foreach ($productCollection->itemList() as $item) {
+                $object = $item->contentobject();
+                if ($object instanceof eZContentObject){
+                    $openpaObject = OpenPAObjectHandler::instanceFromContentObject($object);
+                    $service = $openpaObject->attribute('control_booking_sala_pubblica');                       
+                    break;
+                }
+            }
+        }
+
+        return $service;
+    }
+
+    public function handleConfirmOrder(eZOrder $order, $email)
+    {
+        $this->requestInvoice($order);
+    }
+
+    public function requestInvoice(eZOrder $order)
+    {
+        if ($this->isValid()) {            
+            /** @var eZContentObjectAttribute[] $dataMap */
+            $dataMap = $this->container->getContentObject()->attribute('data_map');            
+            if (isset($dataMap['invoice_data']) && $dataMap['invoice_data']->dataType() instanceof OpenPABookingInvoiceHandler){                
+                return $dataMap['invoice_data']->dataType()->requestInvoice(
+                    $dataMap['invoice_data'],
+                    $order
+                );
+            }
+        }
+
+        return null;
+    }
+
+    public function downloadInvoice()
+    {
+        if ($this->isValid()) {            
+            /** @var eZContentObjectAttribute[] $dataMap */
+            $dataMap = $this->container->getContentObject()->attribute('data_map');            
+            if (isset($dataMap['invoice_data']) && $dataMap['invoice_data']->dataType() instanceof OpenPABookingInvoiceHandler){                
+                $dataMap['invoice_data']->dataType()->downloadInvoice(
+                    $dataMap['invoice_data']
+                );
+            }
+        }
+    }
+
+    public function getAccountDataSettings()
+    {
+        return array(
+            'first_name' => array(
+                'is_required' => true,
+                'input_name' => 'FirstName',
+            ),
+            'last_name' => array(                
+                'is_required' => true,
+                'input_name' => 'LastName',
+            ),
+            'email' => array(
+                'is_required' => true,
+                'input_name' => 'EMail'
+            ),
+            'phone' => array(
+                'is_required' => false,
+                'input_name' => 'Phone'
+            ),
+            'street1' => array(
+                'is_required' => false,
+                'input_name' => 'Street1'
+            ),
+            'street2' => array(
+                'is_required' => true,
+                'input_name' => 'Street2'
+            ),
+            'zip' => array(
+                'is_required' => true,
+                'input_name' => 'Zip'
+            ),
+            'place' => array(
+                'is_required' => true,
+                'input_name' => 'Place'
+            ),
+            'country' => array(
+                'is_required' => true,
+                'input_name' => 'Country'
+            ),
+            'comment' => array(
+                'is_required' => false,
+                'input_name' => 'Comment'
+            ),
+            'state' => array(
+                'is_required' => false,
+                'input_name' => 'State'
+            ),
+            'vat_code' => array(
+                'is_required' => true,
+                'input_name' => 'VatCode'
+            ),
+            'vat_code2' => array(
+                'is_required' => true,
+                'input_name' => 'VatCode2'
+            ),
+            'split_payment' => array(
+                'is_required' => false,
+                'input_name' => 'SplitPayment'
+            ),
+            'fattura_elettronica_pa' => array(
+                'is_required' => false,
+                'input_name' => 'FatturaElettronicaPa'
+            ),
+            'codice_ipa' => array(
+                'is_required' => false,
+                'input_name' => 'CodiceIPA'
+            ),
+            'type' => array(
+                'is_required' => true,
+                'input_name' => 'type',
+                'type' => 'hidden',
+                'enum' => array(
+                    'persona_fisica' => 'Persona Fisica',
+                    'persona_giuridica' => 'Persona Giuridica',
+                )
+            )
+        );
     }
 }

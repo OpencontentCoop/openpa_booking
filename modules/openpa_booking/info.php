@@ -3,7 +3,6 @@
 $Module = $Params['Module'];
 $identifier = $Params['Page'];
 
-
 $tpl = eZTemplate::factory();
 if (OpenPABooking::instance()->rootHasAttribute($identifier)) {
     $currentUser = eZUser::currentUser();

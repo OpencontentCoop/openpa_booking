@@ -53,7 +53,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
     }
 
     public function view()
-    {
+    {        
         $serviceClass = $this->serviceClass();
         if ($this->currentObject instanceof eZContentObject) {
             $serviceObject = $this->serviceObject($this->currentObject);
@@ -332,7 +332,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 $sala = $serviceObject->attribute('sala');
                 if ($sala instanceof eZContentObject) {
 
-                    $productType = eZShopFunctions::productTypeByObject($sala);
+                    $productType = eZShopFunctions::productTypeByObject($prenotazione);
                     $price = $serviceObject->getPrice();
                     if ($productType && $price > 0) {
 
@@ -450,28 +450,6 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
         self::createUpdateApproval($currentObject, $serviceObject);
     }
 
-    private function updateBasket(eZContentObject $prenotazione)
-    {
-        $serviceObject = $this->serviceObject($prenotazione);
-        if ($serviceObject
-            && $serviceObject->isValid()
-            && $prenotazione->attribute('can_read')
-        ) {
-            $quantity = 1;
-            if (!$serviceObject->attribute('has_manual_price')) {
-                $quantity = $serviceObject->attribute('timeslot_count');
-            }
-            if (!$this->module instanceof eZModule) {
-                throw new Exception("eZModule non trovato");
-            }
-            $this->module->redirectTo("/shop/add/" . $prenotazione->attribute('id') . "/" . $quantity);
-
-            return null;
-        } else {
-            throw new Exception("Prenotazione non accessibile");
-        }
-    }
-
     public function expire(eZCollaborationItem $item, $parameters = array())
     {
         $participants = OpenPABookingCollaborationParticipants::instanceFrom($item);
@@ -543,7 +521,55 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
             $this->returnKO($item);
         }
 
+        if ($this->isCustomAction('GoToCheckout')){
+            $this->gotToCheckout($item, $module);
+        }
+
         return false;
+    }
+
+    private function gotToCheckout(eZCollaborationItem $item, eZModule $module)
+    {
+        $object = OpenPABookingCollaborationHandler::contentObject($item);
+        $serviceObject = $this->serviceObject($item);
+        if ($serviceObject
+            && $serviceObject->isValid()
+            && $object->attribute('can_read')
+        ) {
+            $basket = eZBasket::currentBasket();            
+            if ($basket->isEmpty()){
+                $http = eZHTTPTool::instance();            
+                $objectID = $object->attribute('id');
+                $quantity = 1;
+                $optionList = array();
+                $fromPage = eZSys::serverVariable ( 'HTTP_REFERER', true );
+                $http->setSessionVariable( "FromPage", $fromPage );
+                $http->setSessionVariable( "AddToBasket_OptionList_" . $objectID, $optionList );
+
+                $module->redirectTo( "/shop/add/" . $objectID . "/" . $quantity );
+                return;
+            }else{
+                foreach ($basket->attribute('items') as $productItem){                
+                    if ($productItem['node_id'] == $object->attribute('main_node_id')){
+
+                        $module->redirectTo( "/shop/basket/" );
+                        return;
+                    }
+                }
+            }
+
+            SocialUser::addFlashAlert(
+                "Il carrello acquisti non è vuoto: è necessario concludere la transazione in corso prima di iniziarne una nuova",
+                'error'
+            );
+            $module = eZModule::exists("collaboration");
+            return $module->run('item', array('full', $item->attribute('id')));
+        }else{
+            SocialUser::addFlashAlert(
+                "Prenotazione non accessibile",
+                'error'
+            );
+        }
     }
 
     private function changeStuffApprovalState(eZCollaborationItem $item, $stuffId, $status)

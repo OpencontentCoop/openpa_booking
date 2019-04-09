@@ -1,4 +1,4 @@
-{set-block scope=root variable=email_subject}Vostra richiesta di prenotazione n. {$object.id} sala {$object.data_map.sala.content.name}{/set-block}
+{set-block scope=root variable=email_subject}Vostra richiesta di prenotazione n. {$object.id} {$object.data_map.sala.content.name}{/set-block}
 {set-block scope=root variable=content_type}text/html{/set-block}
 {set-block scope=root variable=email_body}
     La presente per comunicarti che la richiesta di prenotazione per la sala pubblica in oggetto è stata inoltrata al responsabile del servizio.<br/>

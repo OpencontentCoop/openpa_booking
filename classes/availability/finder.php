@@ -24,7 +24,9 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
             ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_PENDING)->attribute('id'),
             //ObjectHandlerServiceControlBookingSalaPubblica::getStateObject( ObjectHandlerServiceControlBookingSalaPubblica::STATUS_EXPIRED )->attribute( 'id' ),
             ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT)->attribute('id'),
-            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT)->attribute('id')
+            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_PAYMENT)->attribute('id'),
+            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_OK)->attribute('id'),
+            ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_RETURN_KO)->attribute('id'),
         );
     }
 
@@ -50,15 +52,7 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
 
                 $content = new Content($item);
                 $booking = $this->filterContent->filterContent($content);
-
-                $status = array_reduce($booking['metadata']['stateIdentifiers'], function ($carry, $item) {
-                    $carry = '';
-                    if (strpos($item, 'booking') === 0) {
-                        $carry = str_replace('booking.', '', $item);
-                    }
-
-                    return $carry;
-                });
+                $status = str_replace('booking.', '', $booking['metadata']['bookingState']);
                 $status = ObjectHandlerServiceControlBookingSalaPubblica::getStateCodeFromIdentifier($status);
 
                 if (isset( $booking['data'][$this->language]['location'] ) && !empty( $booking['data'][$this->language]['location'] )) {

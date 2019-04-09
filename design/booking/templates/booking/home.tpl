@@ -114,7 +114,7 @@
 
             {if $views|contains('list')}
                 <div id="list-panel" class="tab-pane{if $firstActive|not()} active{/if}">{set $firstActive = true()}
-                    <div id="sala_pubblica" class="booking-container row"></div>
+                    <div id="sala_pubblica" data-classes="{location_class_identifiers()|implode(',')}" class="booking-container row"></div>
                 </div>
             {/if}
 
@@ -126,7 +126,7 @@
 
             {if $views|contains('stuff')}
                 <div id="stuff-panel" class="tab-pane{if $firstActive|not()} active{/if}">{set $firstActive = true()}
-                    <div id="attrezzatura_sala" class="booking-container row"></div>
+                    <div id="attrezzatura_sala" data-classes="{stuff_class_identifiers()|implode(',')}" class="booking-container row"></div>
                 </div>
             {/if}
         </div>
@@ -148,6 +148,8 @@ $.opendataTools.settings('endpoint',{ldelim}
 $.opendataTools.settings('accessPath', "{''|ezurl(no,full)}");
 $.opendataTools.settings('language', "{$current_language}");
 $.opendataTools.settings('locale', "{$moment_language}");
+$.opendataTools.settings('location_class_identifiers', "{location_class_identifiers()|implode(',')}");
+$.opendataTools.settings('stuff_class_identifiers', "{stuff_class_identifiers()|implode(',')}");
 
 $.opendataTools.settings('onError', function(errorCode,errorMessage,jqXHR){ldelim}
     //console.log(errorMessage + ' (error: '+errorCode+')');

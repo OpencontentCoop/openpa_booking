@@ -179,11 +179,11 @@ $(document).ready(function () {
             $.views.helpers($.opendataTools.helpers);
             $('.booking-container').each(function(){
                 var container = $(this);
-                var classIdentifier = container.attr('id');
+                var classIdentifierList = container.data('classes').split(',');
                 var htmlOutput = [];
                 $.each(locations, function(){
                     var location = this;
-                    if (location.metadata.classIdentifier == classIdentifier){
+                    if ($.inArray(location.metadata.classIdentifier, classIdentifierList) > -1){
                         htmlOutput.push(template.render(location));
                     }
                 });
@@ -217,7 +217,7 @@ $(document).ready(function () {
         $bookingItems.opendataSearchView({
             query: '',
             onInit: function (view) {
-                var destinazioni = $.opendataTools.find('classes sala_pubblica and subtree ['+locationSubtree+'] facets [destinazione_uso] limit 1', function (data) {
+                var destinazioni = $.opendataTools.find('classes ['+ $.opendataTools.settings('location_class_identifiers') +'] and subtree ['+locationSubtree+'] facets [destinazione_uso] limit 1', function (data) {
                     if (data.facets.length > 0) {
                         $.each(data.facets[0].data, function (index, value) {
                             $('[name="destinazione_uso"]').append('<option value="' + index + '">' + index + '</option>');
