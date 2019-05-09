@@ -238,4 +238,127 @@ class OpenPABookingCollaborationParticipants
             )
         );
     }
+
+    /**
+     * @param int[] $idList
+     * @param eZCollaborationItem $collaborationItem
+     */
+    public static function removeUsersFrom($idList, eZCollaborationItem $collaborationItem)
+    {
+        if (!is_array($idList)) {
+            $idList = array($idList);
+        }
+
+        $db = eZDB::instance();
+        $db->begin();
+        foreach ($idList as $userId) {
+
+            $participant = eZCollaborationItemParticipantLink::fetch(
+                $collaborationItem->attribute('id'),
+                $userId
+            );
+            if ($participant instanceof eZCollaborationItemParticipantLink){
+                $participant->remove();
+            }
+
+            $groupLink = eZPersistentObject::fetchObject(
+                eZCollaborationItemGroupLink::definition(),
+                null,
+                array(
+                    'collaboration_id' => $collaborationItem->attribute('id'),
+                    'user_id' => $userId
+                )
+            );
+            if ( $groupLink instanceof eZCollaborationItemGroupLink ) {
+                $groupLink->remove();
+            }
+
+            $itemStatus = eZCollaborationItemStatus::fetch($collaborationItem->attribute('id'), $userId);
+            if ($itemStatus instanceof eZCollaborationItemStatus){
+                $itemStatus->remove();
+            }
+        }
+        $db->commit();
+    }
+
+    public static function refresh(eZContentObject $object, $dryRun = true)
+    {
+        $result = array();
+        if ($object->attribute('status') == eZContentObject::STATUS_PUBLISHED) {
+            $openpaObject = OpenPAObjectHandler::instanceFromContentObject($object);
+            /** @var ObjectHandlerServiceControlBookingSalaPubblica $service */
+            $service = $openpaObject->serviceByClassName('ObjectHandlerServiceControlBookingSalaPubblica');
+            if (!$service->isSubrequest()) {
+
+                $result['info'] = $object->attribute('id');
+
+                $collaborationItem = $service->getCollaborationItem();
+                if ($collaborationItem) {
+                    $ownerId = $object->attribute('owner_id');
+                    $participants = OpenPABookingCollaborationParticipants::instanceFrom($collaborationItem);
+                    $approverIds = $service->getApproverIds();
+
+                    $registeredApproverIds = $participants->getApprovers();
+                    $registeredAuthorsIds = $participants->getAuthors();
+
+                    $result['users'] = array(
+                        'approvers ' . implode('-', $approverIds),
+                        'authors (' . $ownerId . ') ' . implode('-', $registeredAuthorsIds),
+                        'observers ' . implode('-', $participants->getObservers())
+                    );
+
+                    $addList = array_diff($approverIds, $registeredApproverIds);
+                    $removeList = array_diff($registeredApproverIds, $approverIds);
+                    $fixAuthor = !in_array($ownerId, $registeredAuthorsIds) && !in_array($ownerId, $approverIds);
+
+                    if (!empty($addList) || !empty($removeList) || $fixAuthor) {
+
+                        if (!empty($removeList)) {
+                            $result['actions'][] = 'remove approvers' . implode('-', $removeList);
+                            if (!$dryRun) {
+                                OpenPABookingCollaborationParticipants::removeUsersFrom($removeList, $collaborationItem);
+                            }
+                        }
+
+                        if (!empty($addList) || $fixAuthor) {
+                            $addParticipants = new OpenPABookingCollaborationParticipants();
+                            if (!empty($addList)) {
+
+                                $result['actions'][] = 'add approvers ' . implode('-', $addList);
+                                if (!$dryRun) {
+                                    $addParticipants->addApprovers($addList);
+                                }
+
+                                if (!empty($removeList)) {
+                                    $result['actions'][] = 'add observers ' . implode('-', $removeList);
+                                    if (!$dryRun) {
+                                        $addParticipants->addObservers($addList);
+                                    }
+                                }
+                            }
+                            if ($fixAuthor) {
+                                $result['actions'][] = 'add author ' . $ownerId;
+                                if (!$dryRun) {
+                                    $addParticipants->addAuthor($ownerId);
+                                }
+                            }
+                            if (!$dryRun) {
+                                $addParticipants->subscribeTo($collaborationItem);
+                            }
+                        }
+
+                        if (!$dryRun) {
+                            eZSearch::addObject($object, true);
+                        }
+                    }
+                } else {
+                    $result['error'] = true;
+                }
+            }
+
+            $openpaObject->flush(false, false);
+        }
+
+        return $result;
+    }
 }

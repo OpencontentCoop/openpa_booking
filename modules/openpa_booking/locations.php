@@ -26,6 +26,9 @@ if ( is_numeric( $id ))
 else
 {
     if ($Params['FunctionName'] == 'stuff'){
+        if (!OpenPABooking::instance()->isStuffBookingEnabled()){
+            return $module->redirectTo('/');
+        }
         $nodeId = OpenPABooking::stuffNodeId();
     }else{
         $nodeId = OpenPABooking::locationsNodeId();

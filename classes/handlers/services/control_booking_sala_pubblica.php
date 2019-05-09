@@ -1310,7 +1310,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     }
 
     /**
-     * @return eZContentObject
+     * @return bool
      */
     public function isSubrequest()
     {
@@ -1365,12 +1365,16 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     public function downloadInvoice()
     {
         if ($this->isValid()) {            
-            /** @var eZContentObjectAttribute[] $dataMap */
-            $dataMap = $this->container->getContentObject()->attribute('data_map');            
-            if (isset($dataMap['invoice_data']) && $dataMap['invoice_data']->dataType() instanceof OpenPABookingInvoiceHandler){                
-                $dataMap['invoice_data']->dataType()->downloadInvoice(
-                    $dataMap['invoice_data']
-                );
+            if ($this->container->getContentObject()->attribute('can_read')) {
+                /** @var eZContentObjectAttribute[] $dataMap */
+                $dataMap = $this->container->getContentObject()->attribute('data_map');
+                if (isset($dataMap['invoice_data']) && $dataMap['invoice_data']->dataType() instanceof OpenPABookingInvoiceHandler) {
+                    $dataMap['invoice_data']->dataType()->downloadInvoice(
+                        $dataMap['invoice_data']
+                    );
+                }
+            }else{
+                throw new Exception("Current user can not read object");
             }
         }
     }
@@ -1450,7 +1454,11 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                     'persona_fisica' => 'Persona Fisica',
                     'persona_giuridica' => 'Persona Giuridica',
                 )
-            )
+            ),
+            'uso_matrimonio' => array(
+                'is_required' => false,
+                'input_name' => 'UsoMatrimonio'
+            ),
         );
     }
 }

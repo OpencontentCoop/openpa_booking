@@ -16,7 +16,7 @@
 
 {case match='in_attesa_di_verifica_pagamento'}
     con la presente comunicazione ti informiamo che la tua richiesta di prenotazione è <strong>in attesa di verifica pagamento</strong>.<br/>
-    La fattura e la modalità di pagamento saranno inviate all'indirizzo mail inserito in fase di registrazione al sito e indicato nella prenotazione. <br/>
+    Potrai procedere con il pagamento solo dopo aver ricevuto la fattura e le modalità di pagamento​, che ti saranno inviate all'indirizzo email indicato in fase di prenotazione.<br/>
 {/case}
 
 {case match='rifiutato'}

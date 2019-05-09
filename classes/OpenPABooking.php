@@ -174,15 +174,19 @@ class OpenPABooking
 
     /**
      * @param string $identifier
+     * @param bool $replaceBracket
      *
      * @return string
      */
-    public function getAttributeString($identifier)
+    public function getAttributeString($identifier, $replaceBracket = true)
     {
         $data = '';
         if (isset( $this->rootDataMap[$identifier] )) {
             if ($this->rootDataMap[$identifier] instanceof eZContentObjectAttribute) {
-                $data = self::replaceBracket($this->rootDataMap[$identifier]->toString());
+                if ($replaceBracket)
+                    $data = self::replaceBracket($this->rootDataMap[$identifier]->toString());
+                else
+                    $data = $this->rootDataMap[$identifier]->toString();
             }
         }
 
@@ -265,21 +269,64 @@ class OpenPABooking
 
     public function isCollaborationModeEnabled()
     {
-        return (bool)$this->getAttributeString('collaboration_mode') == 1;
+        return (bool)$this->getAttributeString('collaboration_mode', false) == 1;
     }
 
     public function isCommentEnabled()
     {
-        return (bool)$this->getAttributeString('enable_comment') == 1;
+        return (bool)$this->getAttributeString('enable_comment', false) == 1;
     }
 
     public function isHeaderOnlyLogoEnabled()
     {
-        return (bool)$this->getAttributeString('enable_header_only_logo') == 1;
+        return (bool)$this->getAttributeString('enable_header_only_logo', false) == 1;
     }
 
     public function isStuffSubWorkflowEnabled()
     {
         return false;
+    }
+
+    public function isStuffBookingEnabled()
+    {
+        return !(bool)$this->getAttributeString('disable_booking_stuff', false) == 1;
+    }
+
+    public function getViewList()
+    {
+        $views = array('list','map');
+        if ($this->isStuffBookingEnabled()){
+            $views[] = 'stuff';
+        }
+
+        return $views;
+    }
+
+    public function getDefaultView()
+    {
+        $default = 'list';
+
+        $viewString = $this->getAttributeString('default_view', false);
+        switch ($viewString){
+            case 'Mappa sale';
+                $view = 'map';
+                break;
+
+            case 'Elenco sale';
+                $view = 'list';
+                break;
+
+            case 'Elenco attrezzatura';
+                $view = 'stuff';
+                break;
+
+            default:
+                $view = false;
+        }
+        if (!in_array($view, $this->getViewList())){
+            $view = $default;
+        }
+
+        return $view;
     }
 }
