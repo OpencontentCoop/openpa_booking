@@ -16,6 +16,9 @@ class OpenPABookingPriceRange
 
 	protected $isDatatypePriceRangeCapable;
 
+    /**
+     * @var OpenPABookingPriceRangeCapable
+     */
 	protected $datatypePriceRangeCapable;
 
 	protected static $vatList;

@@ -24,6 +24,9 @@ class OpenPABookingOperators
             'booking_calc_price', // deprecated,
             'booking_range_list',
             'booking_request_invoice',
+            'booking_view_list',
+            'booking_default_view',
+            'booking_stuff_is_enabled',
         );
     }
 
@@ -81,7 +84,18 @@ class OpenPABookingOperators
     {        
         switch( $operatorName )
         {
-                        
+            case 'booking_stuff_is_enabled':
+                $operatorValue = OpenPABooking::instance()->isStuffBookingEnabled();
+                break;
+
+            case 'booking_default_view':
+                $operatorValue = OpenPABooking::instance()->getDefaultView();
+                break;
+
+            case 'booking_view_list':
+                $operatorValue = OpenPABooking::instance()->getViewList();
+                break;
+
             case 'booking_request_invoice':
                 $operatorValue = null;
                 $order = $namedParameters['order'];

@@ -27,7 +27,7 @@ $(document).ready(function(){
             <div class="col-md-3">
               <ul class="nav nav-pills nav-stacked">
                 <li role="presentation" {if $current_part|eq('users')}class="active"{/if}><a href="{'openpa_booking/config/users'|ezurl(no)}">{'Utenti'|i18n('booking/config')}</a></li>
-
+				<li role="presentation" {if $current_part|eq('moderators')}class="active"{/if}><a href="{'openpa_booking/config/moderators'|ezurl(no)}">{'Responsabili'|i18n('agenda/config')}</a></li>
 			  {if $data|count()|gt(0)}
 				{foreach $data as $item}
 				  <li role="presentation" {if $current_part|eq(concat('data-',$item.contentobject_id))}class="active"{/if}><a href="{concat('openpa_booking/config/data-',$item.contentobject_id)|ezurl(no)}">{$item.name|wash()}</a></li>
@@ -38,6 +38,23 @@ $(document).ready(function(){
             </div>
 
             <div class="col-md-9">
+
+			  {if $current_part|eq('moderators')}
+              <div class="tab-pane active" id="moderators">
+                <form class="form-inline" action="{'openpa_booking/config/moderators'|ezurl(no)}">
+                  <div class="form-group">
+                    <input type="text" class="form-control" name="s" placeholder="{'Cerca'|i18n('openpa_booking/config')}" value="{$view_parameters.query|wash()}" autofocus>
+                  </div>
+                  <button type="submit" class="btn btn-success"><i class="fa fa-search"></i></button>
+                </form>
+                {include name=users_table uri='design:booking/config/moderators_table.tpl' view_parameters=$view_parameters moderator_parent_node_id=$moderators_parent_node_id redirect='/openpa_booking/config/moderators'}
+                <div class="pull-right"><a class="btn btn-danger" href="{concat('add/new/user/?parent=',$moderators_parent_node_id)|ezurl(no)}"><i class="fa fa-plus"></i> {'Aggiungi moderatore'|i18n('openpa_booking/config')}</a>
+                  <form class="form-inline" style="display: inline" action="{'openpa_booking/config/moderators'|ezurl(no)}" method="post">
+                    <button class="btn btn-danger" name="AddModeratorLocation" type="submit"><i class="fa fa-plus"></i> {'Aggiungi utente esistente'|i18n('openpa_booking/config')}</button>
+                  </form>
+              </div>
+              </div>
+              {/if}
 
               {if $current_part|eq('users')}
               <div class="tab-pane active" id="users">

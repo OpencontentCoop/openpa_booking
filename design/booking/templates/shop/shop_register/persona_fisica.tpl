@@ -76,6 +76,14 @@
         </div>
     </div>
 
+    <div class="checkbox">
+        <label>
+            <input type="checkbox" name="{$settings['uso_matrimonio']['input_name']}" value="1" {if $settings['uso_matrimonio']['value']|eq(1)}checked="checked"{/if}/>
+            {"Utilizo della sala per matrmonio"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['uso_matrimonio']['is_required']}*{/if}
+        </label>
+    </div>
+
+
     <div class="form-group">
         <label>
             {"Comment"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['comment']['is_required']}*{/if}

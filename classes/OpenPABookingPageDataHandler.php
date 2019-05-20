@@ -123,12 +123,14 @@ class OpenPABookingPageDataHandler implements OCPageDataHandlerInterface
             'has_children' => false
         );
 
-        $menu[] = array(
-            'name' => ezpI18n::tr( 'booking/menu', 'Attrezzatura' ),
-            'url' => 'openpa_booking/stuff',
-            'highlight' => false,
-            'has_children' => false
-        );
+        if ($this->booking()->isStuffBookingEnabled()) {
+            $menu[] = array(
+                'name' => ezpI18n::tr('booking/menu', 'Attrezzatura'),
+                'url' => 'openpa_booking/stuff',
+                'highlight' => false,
+                'has_children' => false
+            );
+        }
 
         if (eZUser::currentUser()->isRegistered()){
             $menu[] = array(

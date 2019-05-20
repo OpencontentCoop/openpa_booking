@@ -56,11 +56,15 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
      */
     private static $bookingService;
 
-    private static function getBookingService()
+    private static function getBookingService(eZOrder $order = null)
     {
         if (self::$bookingService === null){
-            $basket = eZBasket::currentBasket();
-            $productCollectionID = $basket->attribute('productcollection_id');
+            if ($order instanceof eZOrder){
+                $productCollectionID = $order->attribute('productcollection_id');
+            }else {
+                $basket = eZBasket::currentBasket();
+                $productCollectionID = $basket->attribute('productcollection_id');
+            }
             $productCollection = eZProductCollection::fetch($productCollectionID);
             $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
             if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
@@ -124,20 +128,21 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
     function accountInformation($order)
     {        
         $xmlString = $order->attribute('data_text_1');
-        return self::getAccountInformationFromXml($xmlString);
+        return self::getAccountInformationFromXml($xmlString, $order);
     }
 
-    private static function getAccountInformationFromXml($xmlString)
+    private static function getAccountInformationFromXml($xmlString, eZOrder $order)
     {
-        $accountInformation = array_fill_keys(array_keys(self::getAccountDataSettings()), false);
+        $accountInformation = array_fill_keys(array_keys(self::getAccountDataSettings($order)), false);
         if ($xmlString != null) {
             $dom = new DOMDocument('1.0', 'utf-8');
             if ($dom->loadXML($xmlString)) {
-                foreach (array_keys(self::getAccountDataSettings()) as $key) {
+                foreach (array_keys(self::getAccountDataSettings($order)) as $key) {
                     $tagName = str_replace('_', '-', $key);
                     $node = $dom->getElementsByTagName($tagName)->item(0);
                     if ($node) {
-                        $accountInformation[$key] = $node->textContent;
+                        $textContent = $node->textContent;
+                        $accountInformation[$key] = $textContent !== 'null' ? $textContent : null;
                     }
                 }
             }
@@ -228,9 +233,9 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
         return $accountInformation;
     }
 
-    public static function getAccountDataSettings()
+    public static function getAccountDataSettings(eZOrder $order = null)
     {                
-        if (self::getBookingService() instanceof ObjectHandlerServiceControlBookingSalaPubblica){
+        if (self::getBookingService($order) instanceof ObjectHandlerServiceControlBookingSalaPubblica){
             return self::getBookingService()->getAccountDataSettings();    
         }
         return self::$accountKeys;
@@ -247,7 +252,7 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
             $accountInformation['first_name'] = $userMap['first_name']->content();    
         }
         if (isset($userMap['last_name'])){
-            $accountInformation['first_name'] += ' ' . $userMap['last_name']->content();    
+            $accountInformation['first_name'] .= ' ' . $userMap['last_name']->content();
         }
                 
         $accountInformation['email'] = $user->attribute( 'email' );
