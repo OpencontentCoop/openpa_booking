@@ -37,6 +37,10 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
      */
     private $location;
 
+    private $capienza;
+
+    private $circoscrizione;
+
     public static function getTimeZone()
     {
         return new \DateTimeZone('Europe/Rome'); 
@@ -67,16 +71,24 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
             }
         }
 
-        if (isset( $cleanRequest['numero_posti'] )) {
-            $availabilityRequest->setPlaces($cleanRequest['numero_posti']);
-        }
-
         if (isset( $cleanRequest['destinazione_uso'] ) && !empty( $cleanRequest['destinazione_uso'] )) {
             $availabilityRequest->setDestination($cleanRequest['destinazione_uso']);
         }
 
+        if (isset( $cleanRequest['numero_posti'] )) {
+            $availabilityRequest->setPlaces($cleanRequest['numero_posti']);
+        }
+
         if (isset( $cleanRequest['location'] )) {
             $availabilityRequest->setLocation($cleanRequest['location']);
+        }
+
+        if (isset( $cleanRequest['disponibilita_posti'] )) {
+            $availabilityRequest->setCapienza($cleanRequest['disponibilita_posti']);
+        }
+
+        if (isset( $cleanRequest['circoscrizione'] )) {
+            $availabilityRequest->setCircoscrizione($cleanRequest['circoscrizione']);
         }
 
         return $availabilityRequest;
@@ -197,6 +209,38 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
     /**
      * @return mixed
      */
+    public function getCapienza()
+    {
+        return $this->capienza;
+    }
+
+    /**
+     * @param mixed $capienza
+     */
+    public function setCapienza($capienza)
+    {
+        $this->capienza = $capienza;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCircoscrizione()
+    {
+        return $this->circoscrizione;
+    }
+
+    /**
+     * @param mixed $circoscrizione
+     */
+    public function setCircoscrizione($circoscrizione)
+    {
+        $this->circoscrizione = $circoscrizione;
+    }
+
+    /**
+     * @return mixed
+     */
     public function getDestination()
     {
         return $this->destination;
@@ -252,6 +296,14 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
             $filters[] = 'raw[attr_numero_posti_si] range ' . $this->getPlaces();
         }
 
+        if ($this->getCapienza()){
+            $filters[] = 'raw[attr_disponibilita_posti_s] = "' . $this->getCapienza() . '"';
+        }
+
+        if ($this->getCircoscrizione()){
+            $filters[] = 'raw[subattr_circoscrizione___name____s] = "' . $this->getCircoscrizione() . '"';
+        }
+
         if ($this->getDestination()){
             $filters[] = "destinazione_uso = '" . $this->getDestination() . "'";
         }
@@ -273,6 +325,9 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
             'show_unavailable' => $this->isShowUnavailable(),
             'places' => $this->getPlaces(),
             'destination' => $this->getDestination(),
+            'location' => $this->getLocation(),
+            'numero_posti' => $this->getPlaces(),
+            'disponibilita_posti' => $this->getCapienza(),
             'location' => $this->getLocation(),
         );
     }

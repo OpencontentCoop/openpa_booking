@@ -14,11 +14,50 @@ $root = OpenPABooking::instance()->rootNode();
 if ( $Http->hasVariable( 's' ) )
     $viewParameters['query'] = $Http->variable( 's' );
 
+if ( $Http->hasVariable( 's' ) )
+    $viewParameters['query'] = $Http->variable( 's' );
+
+if ( $Http->hasPostVariable( 'AddModeratorLocation' ) || $Http->hasPostVariable( 'AddExternalUsersLocation' )  )
+{
+    $action = $Http->hasPostVariable( 'AddModeratorLocation' ) ? 'AddModeratorLocation' : 'AddExternalUsersLocation';
+
+    eZContentBrowse::browse( array( 'action_name' => $action,
+        'return_type' => 'NodeID',
+        'class_array' => eZUser::fetchUserClassNames(),
+        'start_node' => eZINI::instance('content.ini')->variable('NodeSettings','UserRootNode'),
+        'cancel_page' => '/openpa_booking/config/moderators',
+        'from_page' => '/openpa_booking/config/moderators' ), $Module );
+    return;
+}
+
+if ( $Http->hasPostVariable('BrowseActionName') &&  $Http->postVariable('BrowseActionName') == 'AddModeratorLocation' )
+{
+    $nodeIdList = $Http->postVariable( 'SelectedNodeIDArray' );
+
+    $newLocation = OpenPABooking::moderatorGroupNodeId();
+
+    $redirect = 'moderators';
+
+    foreach( $nodeIdList as $nodeId )
+    {
+        $node = eZContentObjectTreeNode::fetch($nodeId);
+        if ($node instanceof eZContentObjectTreeNode){
+            eZContentOperationCollection::addAssignment($nodeId, $node->attribute( 'contentobject_id' ), array($newLocation));
+        }
+    }
+    $Module->redirectTo( '/openpa_booking/config/' . $redirect );
+    return;
+}
+
 if ( $Part == 'users' )
 {
     $usersParentNode = eZContentObjectTreeNode::fetch( intval( eZINI::instance()->variable( "UserSettings", "DefaultUserPlacement" ) ) );    
 	$tpl->setVariable( 'user_class_list', eZUser::fetchUserClassNames() );
     $tpl->setVariable( 'user_parent_node', $usersParentNode );
+}
+elseif ( $Part == 'moderators' )
+{
+    $tpl->setVariable( 'moderators_parent_node_id', OpenPABooking::moderatorGroupNodeId() );
 }
 
 $data = array();

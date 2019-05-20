@@ -27,7 +27,10 @@
 {/if}
 
 {if array(0,1,2,3)|contains($openpa_object.control_booking_sala_pubblica.current_state_code)}
+    {def $agenda_link = openpa_agenda_link()}
+    {if or($agenda_link, booking_stuff_is_enabled())}
     <div class="row">
+        {if booking_stuff_is_enabled()}
         <div class="col-md-6">
             <div class="service_teaser vertical">
                 <div class="service_details clearfix" style="min-height: auto">
@@ -36,7 +39,7 @@
                 </div>
             </div>
         </div>
-        {def $agenda_link = openpa_agenda_link()}
+        {/if}
         {if $agenda_link}
         <div class="col-md-6">
             <div class="service_teaser vertical">
@@ -48,6 +51,7 @@
         </div>
         {/if}
     </div>
+    {/if}
 {/if}
 
 {include uri='design:booking/sala_pubblica/full/info.tpl'}

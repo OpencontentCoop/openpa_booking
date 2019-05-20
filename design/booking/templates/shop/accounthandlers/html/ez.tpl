@@ -6,7 +6,7 @@
                 <b>{"Customer"|i18n("design/standard/shop")}</b>
             </p>
             <p>
-                {if $order.account_information.type|eq('persona_giuridica')}
+                {if and(is_set($order.account_information.type), $order.account_information.type|eq('persona_giuridica'))}
                     Nome: {$order.account_information.first_name|wash}<br />
                     Email: {$order.account_information.email|wash}<br />
                     Codice fiscale: {if is_set($order.account_information.vat_code)}{$order.account_information.vat_code|wash}{/if}<br />

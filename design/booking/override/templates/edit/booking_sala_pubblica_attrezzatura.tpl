@@ -130,7 +130,7 @@
         {include uri='design:content/datatype/edit/mugoobjectrelationlist_controls.tpl'}
 
         {* Extra fields (attribute-level) *}
-    {if $attribute.class_content.extra_fields_attribute_level}
+    {if is_set($attribute.class_content.extra_fields_attribute_level)}
         <table>
             {foreach $attribute.class_content.extra_fields_attribute_level as $field_identifier => $field}
                 <tr>

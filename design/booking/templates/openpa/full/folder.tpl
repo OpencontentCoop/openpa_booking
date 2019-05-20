@@ -33,6 +33,12 @@
 {if location_node_id()|eq($node.node_id)}
     {include name=edit uri='design:booking/home.tpl' views=array('list','map')}
 {elseif stuff_node_id()|eq($node.node_id)}
-    {include name=edit uri='design:booking/home.tpl' views=array('stuff') filters=array()}
+    {if booking_stuff_is_enabled()}
+        {include name=edit uri='design:booking/home.tpl' views=array('stuff') filters=array()}
+    {else}
+        <div class="alert alert-warning">
+            {"La prenotazione dell'attrezzatura non è attualmente disponibile"|i18n('booking')}
+        </div>
+    {/if}
 {/if}
 

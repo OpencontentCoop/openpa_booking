@@ -99,6 +99,15 @@ class BookingApiBookingRequest implements JsonSerializable
             throw new Exception("Purpose description not found");
         }
 
+        if (empty( $this->dates )) {
+            throw new Exception("Dates not found");
+        }
+
+        foreach ($this->dates as $date) {
+            $date->validate();
+            $serviceClass->isValidDate($date->getStartDateTime(), $date->getEndDateTime(), $location);
+        }
+
         $priceRangeHandler = OpenPABookingPriceRange::instance($location);
         $locationDataMap = $location->dataMap();
         if ($priceRangeHandler->hasPriceRangeDefinition()){
@@ -115,15 +124,6 @@ class BookingApiBookingRequest implements JsonSerializable
             if ($price === false){
                 throw new Exception("User type {$this->userType} not allowed");
             }
-        }
-
-        if (empty( $this->dates )) {
-            throw new Exception("Dates not found");
-        }
-
-        foreach ($this->dates as $date) {
-            $date->validate();
-            $serviceClass->isValidDate($date->getStartDateTime(), $date->getEndDateTime(), $location);
         }
     }
 

@@ -50,10 +50,12 @@ $(document).ready(function () {
             stuff: [],
             stuff_id_list: null,
             numero_posti: $('[name="numero_posti"]').val(),
-            destinazione_uso: $('[name="destinazione_uso"]').val()
+            destinazione_uso: $('[name="destinazione_uso"]').val(),
+            circoscrizione: $('[name="circoscrizione"]').val(),
+            disponibilita_posti: $('[name="disponibilita_posti"]').val()
         };
 
-        if (dateInput.val() != '') {
+        if (dateInput.val() !== '') {
             var currentMoment = moment(dateInput.val(), "DD-MM-YYYY");
             currentRequest.date = currentMoment;
             currentRequest.date_formatted = currentMoment.format("dddd D MMMM YYYY");
@@ -149,13 +151,13 @@ $(document).ready(function () {
 
 
         var fixupRequestAndDoSearch = function(view) {
-            if (dateInput.val() == ''){
+            if (dateInput.val() === ''){
                 var tomorrow = moment().add(1,'days').hours(16);
                 dateInput.val(tomorrow.format("DD-MM-YYYY"));
             }
             var date = moment(dateInput.val(), "DD-MM-YYYY");
-            if (fromHoursInput.val() == ''){
-                if (toHoursInput.val() == '') {
+            if (fromHoursInput.val() === ''){
+                if (toHoursInput.val() === '') {
                     date.hours(16);
                 }else{
                     var hours = toHoursInput.timepicker('getTime').getHours() - 2;
@@ -164,7 +166,7 @@ $(document).ready(function () {
                 fromHoursInput.val(date.format("HH") + ':00');
             }
             date.add(2,'hours');
-            if (toHoursInput.val() == '') {
+            if (toHoursInput.val() === '') {
                 toHoursInput.val(date.format("HH") + ':00');
             }
             view.doSearch();
@@ -192,7 +194,7 @@ $(document).ready(function () {
                     var itemPerColumn = Math.ceil(htmlOutput.length / 2);
                     var column;
                     for (i = 0; i < itemsCount; i++) {
-                        if (i == 0 || i == itemPerColumn) {
+                        if (i === 0 || i === itemPerColumn) {
                             column = $('<div class="col-sm-6"></div>');
                             container.append(column);
                         }
@@ -214,51 +216,70 @@ $(document).ready(function () {
 
         var $bookingItems = $('#booking_items');
         var locationSubtree = $bookingItems.data('subtree');
+
+        var selectDestinazione = $('[name="destinazione_uso"]');
+        var selectNumeroPosti = $('[name="numero_posti"]');
+        var selectCircoscrizione = $('[name="circoscrizione"]');
+        var selectDisponibilitaPosti = $('[name="disponibilita_posti"]');
+
         $bookingItems.opendataSearchView({
             query: '',
             onInit: function (view) {
-                var destinazioni = $.opendataTools.find('classes ['+ $.opendataTools.settings('location_class_identifiers') +'] and subtree ['+locationSubtree+'] facets [destinazione_uso] limit 1', function (data) {
+                var destinazioni = $.opendataTools.find('classes ['+ $.opendataTools.settings('location_class_identifiers') +'] and subtree ['+locationSubtree+'] facets [destinazione_uso, raw[attr_disponibilita_posti_s], raw[subattr_circoscrizione___name____s]] limit 1', function (data) {
                     if (data.facets.length > 0) {
                         $.each(data.facets[0].data, function (index, value) {
-                            $('[name="destinazione_uso"]').append('<option value="' + index + '">' + index + '</option>');
+                            if ($.trim(index) !== '') {
+                                selectDestinazione.append('<option value="' + index + '">' + index + '</option>');
+                            }
                         });
-                        $('[name="destinazione_uso"]').parents('.form-group').show();
+                        if(selectDestinazione.find('option').length > 1)
+                            selectDestinazione.parents('.form-group').show();
+
+                        $.each(data.facets[1].data, function (index, value) {
+                            selectDisponibilitaPosti.append('<option value="' + index + '">' + index + '</option>');
+                        });
+                        if(selectDisponibilitaPosti.find('option').length > 1)
+                            selectDisponibilitaPosti.parents('.form-group').show();
+
+                        $.each(data.facets[2].data, function (index, value) {
+                            selectCircoscrizione.append('<option value="' + index + '">' + index + '</option>');
+                        });
+                        if(selectCircoscrizione.find('option').length > 1)
+                            selectCircoscrizione.parents('.form-group').show();
                     }
                 });
                 $.opendataTools.settings('endpoint', {
                     'search': $.opendataTools.settings('endpoint').booking
                 });
-                $('[name="destinazione_uso"], [name="numero_posti"]').on('change', function (e) {
+                var onChangeSelect = function (e) {
                     view.doSearch();
                     $('[name="reset"]').show();
                     $('[name="find_availability"]').hide();
                     e.preventDefault();
-                });
-                $('[name="date"]').on('change', function (e) {
+                };
+                var onChangeDateTime = function (e) {
                     fixupRequestAndDoSearch(view);
                     $('[name="reset"]').show();
                     $('[name="find_availability"]').hide();
                     e.preventDefault();
-                });
-                $('.time').on('changeTime', function (e) {
-                    fixupRequestAndDoSearch(view);
-                    $('[name="reset"]').show();
-                    $('[name="find_availability"]').hide();
-                    e.preventDefault();
-                });
+                };
 
-                $('[name="find_availability"]').on('click', function (e) {
-                    fixupRequestAndDoSearch(view);
-                    $('[name="reset"]').show();
-                    $('[name="find_availability"]').hide();
-                    e.preventDefault();
-                });
+                selectDestinazione.on('change', function(e){onChangeSelect(e)});
+                selectNumeroPosti.on('change', function(e){onChangeSelect(e)});
+                selectCircoscrizione.on('change', function(e){onChangeSelect(e)});
+                selectDisponibilitaPosti.on('change', function(e){onChangeSelect(e)});
+                $('[name="date"]').on('change', function(e){onChangeDateTime(e)});
+                $('.time').on('changeTime', function(e){onChangeDateTime(e)});
+                $('[name="find_availability"]').on('click', function(e){onChangeDateTime(e)});
 
                 $('[name="reset"]').on('click', function (e) {
                     dateInput.val('');
                     fromHoursInput.val('');
                     toHoursInput.val('');
-                    $('[name="destinazione_uso"], [name="numero_posti"]').val('');
+                    selectDestinazione.val('');
+                    selectNumeroPosti.val('');
+                    selectCircoscrizione.val('');
+                    selectDisponibilitaPosti.val('');
                     view.doSearch();
                     $('[name="reset"]').hide();
                     $('[name="find_availability"]').show();
@@ -298,6 +319,12 @@ $(document).ready(function () {
                     requestVars.push({
                         'key': 'numero_posti',
                         'value': request.numero_posti
+                    });
+                }
+                if (request.circoscrizione){
+                    requestVars.push({
+                        'key': 'circoscrizione',
+                        'value': request.circoscrizione
                     });
                 }
                 $.each(requestVars, function(index, value){
