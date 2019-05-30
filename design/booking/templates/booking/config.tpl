@@ -93,7 +93,7 @@ $(document).ready(function(){
 					<tr>
 					  <td>
                         {if $booking_classes|contains($child.class_identifier)}	
-                        	<h4>{$child.name|wash()} <small>{$child.class_name|wash()}</small></h4>
+							<h4><a href="{$child.url_alias|ezurl(no)}">{$child.name|wash()} <small>{$child.class_name|wash()}</small></a></h4>
                         	<li class="list-group-item">
                     			<h5 class="list-group-item-heading">Referenti:</h5>
 	                        	<p class="list-group-item-text">	                        	
@@ -118,6 +118,12 @@ $(document).ready(function(){
                         			<p class="list-group-item-text">{attribute_view_gui attribute=$child|attribute('price')}</p>	                        		
 	                        	</li>
 	                        {/if}
+							{if $child|has_attribute('temp_price_range')}
+								<li class="list-group-item list-group-item-warning">
+									<h5 class="list-group-item-heading">{$child|attribute('temp_price_range').contentclass_attribute_name}</h5>
+									<p class="list-group-item-text">{attribute_view_gui attribute=$child|attribute('temp_price_range')}</p>
+								</li>
+							{/if}
 	                        </ul>
                         {else}
                         	{$child.name|wash()}

@@ -113,10 +113,10 @@
                     {/if}
                     <div class="form-group">
                         <button type="submit" class="btn btn-success" name="find_availability">
-                            <i class="fa fa-search"></i> Cerca disponibilità
+                            <i class="fa fa-search"></i> {"Cerca disponibilità"|i18n('booking')}
                         </button>
                         <button type="submit" class="btn btn-danger" name="reset" style="display: none">
-                            <i class="fa fa-times"></i> Annulla ricerca
+                            <i class="fa fa-times"></i> {"Annulla ricerca"|i18n('booking')}
                         </button>
                     </div>
         </form>

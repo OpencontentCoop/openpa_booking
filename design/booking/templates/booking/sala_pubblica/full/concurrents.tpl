@@ -8,19 +8,19 @@
     <div class="panel panel-danger">
         <div class="panel-heading">
             {if $collab_item.data_int3|eq(0)}
-                <strong>Attenzione:</strong> confermando la disponibilità della sala per questa prenotazione, automaticamente verranno rifiutate le seguenti richieste:
+                <strong>{'Attenzione:'|i18n('booking')}</strong> {'confermando la disponibilità della sala per questa prenotazione, automaticamente verranno rifiutate le seguenti richieste:'|i18n('booking')}
             {else}
-                <strong>Richieste concorrenti:</strong>
+                <strong>{'Richieste concorrenti:'|i18n('booking')}</strong>
             {/if}
         </div>
         <table class="table table-striped" width="100%" cellspacing="0" cellpadding="0" border="0">
             <tr>
-                <th>ID</th>
-                <th>Stato</th>
-                <th>Creata il</th>
-                <th>Autore</th>
-                <th>Periodo</th>
-                <th>Luogo</th>
+                <th>{'ID'|i18n('booking')}</th>
+                <th>{'Stato'|i18n('booking')}</th>
+                <th>{'Creata'|i18n('booking')} il</th>
+                <th>{'Autore'|i18n('booking')}</th>
+                <th>{'Periodo'|i18n('booking')}</th>
+                <th>{'Luogo'|i18n('booking')}</th>
                 <th></th>
             </tr>
             {foreach $concurrent_requests as $prenotazione sequence array( bglight,bgdark ) as $style}

@@ -12,11 +12,11 @@ if ($order instanceof eZOrder){
     $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
     if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
         try {
-            $service->downloadInvoice();
-            eZDisplayDebug();
-            eZExecution::cleanExit();
+            if (!$service->downloadInvoice()){
+                return $module->handleError( eZError::KERNEL_NOT_AVAILABLE, 'kernel' );
+            }
         }catch (Exception $e){
-            $module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
+            return $module->handleError( eZError::KERNEL_ACCESS_DENIED, 'kernel' );
         }
     }
 }

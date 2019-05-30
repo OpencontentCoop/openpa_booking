@@ -4,7 +4,7 @@
 {if $collab_item.data_int3|eq(0)}
     <form method="post" class="form-inline text-center" action="{"collaboration/action/"|ezurl(no)}">
         <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[]" value="" />
-        <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Expire" value="Cancella prenotazione" />
+        <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Expire" value="{'Cancella prenotazione'|i18n('booking')}" />
         <input type="hidden" name="CollaborationActionCustom" value="custom"/>
         <input type="hidden" name="CollaborationTypeIdentifier" value="openpabooking"/>
         <input type="hidden" name="CollaborationItemID" value="{$collab_item.id}"/>
@@ -17,7 +17,7 @@
         <form method="post" class="form-inline text-center" action="{"collaboration/action/"|ezurl(no)}">
             <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[]" value="" />
             <button class="btn btn-success btn-lg" type="submit" name="CollaborationAction_GoToCheckout">
-                Procedi con il pagamento di {attribute_view_gui attribute=$content_object.data_map.price}
+                {'Procedi con il pagamento di'|i18n('booking')} {attribute_view_gui attribute=$content_object.data_map.price}
             </button>
             <input type="hidden" name="CollaborationActionCustom" value="custom"/>
             <input type="hidden" name="CollaborationTypeIdentifier" value="openpabooking"/>
@@ -34,8 +34,8 @@
         <div class="col-md-6">
             <div class="service_teaser vertical">
                 <div class="service_details clearfix" style="min-height: auto">
-                    <h1 class="section_header skincolored">Ti serve <b>attrezzatura</b>?</h1>
-                    <a class="btn btn-primary btn-lg pull-right" href="{'openpa_booking/stuff'|ezurl(no)}">Guarda l'attrezzatura disponibile</a>
+                    <h1 class="section_header skincolored">{'Ti serve <b>attrezzatura</b>?'|i18n('booking')}</h1>
+                    <a class="btn btn-primary btn-lg pull-right" href="{'openpa_booking/stuff'|ezurl(no)}">{"Guarda l'attrezzatura disponibile"|i18n('booking')}</a>
                 </div>
             </div>
         </div>
@@ -44,8 +44,8 @@
         <div class="col-md-6">
             <div class="service_teaser vertical">
                 <div class="service_details clearfix" style="min-height: auto">
-                    <h1 class="section_header skincolored">Vuoi pubblicizzare il <b>tuo evento</b>?</h1>
-                    <a class="btn btn-primary btn-lg pull-right" href="{$agenda_link}">Aggiungi evento in agenda</a>
+                    <h1 class="section_header skincolored">{'Vuoi pubblicizzare il <b>tuo evento</b>?'|i18n('booking')}</h1>
+                    <a class="btn btn-primary btn-lg pull-right" href="{$agenda_link}">{'Aggiungi evento in agenda'|i18n('booking')}</a>
                 </div>
             </div>
         </div>
