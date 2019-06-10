@@ -25,15 +25,19 @@
                             {switch match=$item.name}
 
                             {case match="Autore"}
-                                Richiedente
+                                {'Richiedente'|i18n('booking')}
                             {/case}
 
                             {case match="Osservatore"}
-                                Responsabile dell'attrezzatura
+                                {if stuff_sub_workflow_is_enabled()}
+                                    {"Responsabile dell'attrezzatura"|i18n('booking')}
+                                {else}
+                                    {"Responsabile precedente"|i18n('booking')}
+                                {/if}
                             {/case}
 
                             {case match="Approvato da"}
-                                Responsabile
+                                {'Responsabile'|i18n('booking')}
                             {/case}
 
                             {case}
@@ -111,13 +115,9 @@
                     {def $invoiceData = booking_request_invoice($order)}
                     {if $invoiceData}
                         <tr>
-                            <th>Fattura</th>
+                            <th>{'Fattura'|i18n('booking')}</th>
                             <td>
-                                {if $invoiceData._status|ne('ready')}
-                                    <p><em>La fattura è in elaborazione e sarà disponibile a breve</em></p>
-                                {elseif $invoiceData._status|eq('ready')}
-                                    <a class="btn btn-xl btn-info" href="{concat('openpa_booking/invoice/',$order.id)|ezurl(no)}">Scarica il pdf della fattura</a>
-                                {/if}
+                                {include uri='design:booking/parts/invoice_info.tpl' invoice_info=$invoiceData}
                             </td>
                         </tr>
                     {/if}

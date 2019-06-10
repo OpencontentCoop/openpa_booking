@@ -1,3 +1,20 @@
+{ezscript_require( array(
+    'ezjsc::jquery',
+    'ezjsc::jqueryUI',
+    'ezjsc::jqueryio',
+    'leaflet/leaflet.0.7.2.js',
+    'leaflet/leaflet.markercluster.js',
+    'leaflet/Leaflet.MakiMarkers.js',
+    'leaflet/Control.Geocoder.js'
+))}
+
+{ezcss_require( array(
+    'leaflet/leaflet.0.7.2.css',
+    'leaflet/map.css',
+    'leaflet/MarkerCluster.css',
+    'leaflet/MarkerCluster.Default.css'
+))}
+
 <section class="hgroup">
     <h1>
         {$node.name|wash()}

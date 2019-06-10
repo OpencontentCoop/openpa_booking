@@ -8,7 +8,7 @@
 
 <section class="hgroup">
     <h1>
-        <span class="label label-default">{$content_object.id}</span> Richiesta di prenotazione "{$sala.name|wash()}"
+        <span class="label label-default">{$content_object.id}</span> {'Richiesta di prenotazione'|i18n('booking')} "{$sala.name|wash()}"
     </h1>
 
     {def $current_state_code = $openpa_object.control_booking_sala_pubblica.current_state_code

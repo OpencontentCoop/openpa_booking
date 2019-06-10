@@ -12,6 +12,8 @@ class OpenPABookingPriceRange
 	 */
 	protected $bookableObjectDataMap;
 
+    protected $priceRangeAttribute;
+
 	protected $hasPriceRangeDefinition;
 
 	protected $isDatatypePriceRangeCapable;
@@ -23,22 +25,32 @@ class OpenPABookingPriceRange
 
 	protected static $vatList;
 
-	public static function instance(eZContentObject $bookableObject)
+	public static function instance(eZContentObject $bookableObject, $attributeIdentifier = 'price_range')
 	{
-		$bookableObjectDataMap = $bookableObject->dataMap();
-		return new self($bookableObject, $bookableObjectDataMap);
+		if (!$attributeIdentifier){
+            $attributeIdentifier = 'price_range';
+        }
+	    $bookableObjectDataMap = $bookableObject->dataMap();
+		return new self($bookableObject, $bookableObjectDataMap, $attributeIdentifier);
 	}
 
-	protected function __construct(eZContentObject $bookableObject, $bookableObjectDataMap)
+	protected function __construct(eZContentObject $bookableObject, $bookableObjectDataMap, $attributeIdentifier = 'price_range')
 	{
 		$this->bookableObject = $bookableObject;
 		$this->bookableObjectDataMap = $bookableObjectDataMap;
-		$this->hasPriceRangeDefinition = isset($this->bookableObjectDataMap['price_range']) && $this->bookableObjectDataMap['price_range']->hasContent();
-		$this->isDatatypePriceRangeCapable = false;
-		if ($this->hasPriceRangeDefinition){			
-			if ($this->bookableObjectDataMap['price_range']->dataType() instanceof OpenPABookingPriceRangeCapable){
+
+		$this->priceRangeAttributeIdentifier = $attributeIdentifier;
+
+        $this->hasPriceRangeDefinition = isset($this->bookableObjectDataMap[$this->priceRangeAttributeIdentifier]) && $this->bookableObjectDataMap[$this->priceRangeAttributeIdentifier]->hasContent();
+		if ($this->hasPriceRangeDefinition){
+            $this->priceRangeAttribute = $this->bookableObjectDataMap[$this->priceRangeAttributeIdentifier];
+        }
+        $this->isDatatypePriceRangeCapable = false;
+
+        if ($this->hasPriceRangeDefinition){
+			if ($this->priceRangeAttribute->dataType() instanceof OpenPABookingPriceRangeCapable){
 				$this->isDatatypePriceRangeCapable = true;
-				$this->datatypePriceRangeCapable = $this->bookableObjectDataMap['price_range']->dataType();
+				$this->datatypePriceRangeCapable = $this->priceRangeAttribute->dataType();
 			}			
 		}
 	}
@@ -51,7 +63,7 @@ class OpenPABookingPriceRange
 	public function getPriceDataByRangeType($identifier)
 	{		
 		if ($this->isDatatypePriceRangeCapable){			
-			return $this->datatypePriceRangeCapable->getPriceDataByRangeType($this->bookableObjectDataMap['price_range'], $identifier);
+			return $this->datatypePriceRangeCapable->getPriceDataByRangeType($this->priceRangeAttribute, $identifier);
 		}
 
 		$data = array(
@@ -79,11 +91,11 @@ class OpenPABookingPriceRange
 	public function getRangeList($bookingStartTimestamp = null, $bookingEndTimestamp = null)
 	{
 		if ($this->isDatatypePriceRangeCapable){			
-			return $this->datatypePriceRangeCapable->getRangeList($this->bookableObjectDataMap['price_range'], $bookingStartTimestamp, $bookingEndTimestamp);
+			return $this->datatypePriceRangeCapable->getRangeList($this->priceRangeAttribute, $bookingStartTimestamp, $bookingEndTimestamp);
 		}
 
 		$rangeList = array();
-		$priceRangeMatrix = isset( $this->bookableObjectDataMap['price_range'] ) ? $this->bookableObjectDataMap['price_range']->content() : new eZMatrix('null');
+		$priceRangeMatrix = $this->priceRangeAttribute ? $this->priceRangeAttribute->content() : new eZMatrix('null');
 		if (isset( $priceRangeMatrix->Matrix['rows'] )) {
             foreach ((array)$priceRangeMatrix->Matrix['rows']['sequential'] as $row) {
                 $item = array(

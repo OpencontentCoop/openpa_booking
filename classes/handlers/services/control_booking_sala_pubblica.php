@@ -14,6 +14,8 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     const ROLE_ADMIN = 'Booking Admin';
     const ROLE_ANONYM = 'Booking Anonymous';
 
+    const PENDING_ACTION_REFETCH_INVOICE = 'booking_fetch_invoice';
+
     private $sala;
 
     private $isSubrequest;
@@ -1461,4 +1463,50 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             ),
         );
     }
+
+    /**
+     * @param int|eZOrder $order
+     * @return array|null
+     */
+    public static function fetchInvoiceData($order)
+    {
+        if (is_numeric($order)){
+            $order = eZOrder::fetch($order);
+        }
+        if ($order instanceof eZOrder) {
+            $productCollectionID = $order->attribute('productcollection_id');
+            $productCollection = eZProductCollection::fetch($productCollectionID);
+            $service = self::instanceFromProductCollection($productCollection);
+            if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica) {
+                return $service->requestInvoice($order);
+            }
+        }
+
+        return null;
+    }
+
+    public static function addPendingInvoiceRequest(eZOrder $order)
+    {
+        $alreadyPending = eZPendingActions::count(
+            eZPendingActions::definition(),
+            array( 'action' => self::PENDING_ACTION_REFETCH_INVOICE, 'param' => $order->attribute('id'))
+        );
+        if ($alreadyPending == 0) {
+            $pendingAction = new eZPendingActions(
+                array(
+                    'action' => self::PENDING_ACTION_REFETCH_INVOICE,
+                    'created' => time(),
+                    'param' => $order->attribute('id')
+                )
+            );
+            $pendingAction->store();
+        }
+    }
+
+    public static function removePendingInvoiceRequest(eZOrder $order)
+    {
+        eZPendingActions::removeByAction(self::PENDING_ACTION_REFETCH_INVOICE, ['param' => $order->attribute('id')]);
+    }
+
+
 }

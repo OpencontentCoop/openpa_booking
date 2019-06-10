@@ -10,21 +10,8 @@
 
 {def $invoiceData = booking_request_invoice($order)}
 {if $invoiceData}
-    <h3>Fattura</h3>
-    {if $invoiceData._status|ne('ready')}
-        {if is_set($invoiceData._lastError)}
-            <p class="text-danger">
-                Ci sono stati dei problemi nell'elaborazione della fattura (Errore: {$invoiceData._lastError|wash()})<br />
-                Il sistema proverà a rielaborare la fattura in seguito.
-            </p>
-        {else}
-            <p class="text-success">
-                <em>La fattura è in elaborazione {if is_set($invoiceData._remoteStatus)}({$invoiceData._remoteStatus|wash()}){/if} e sarà disponibile a breve</em>
-            </p>
-        {/if}
-    {elseif $invoiceData._status|eq('ready')}
-        <a class="btn btn-xl btn-info" href="{concat('openpa_booking/invoice/',$order.id)|ezurl(no)}">Scarica il pdf della fattura</a>
-    {/if}
+    <h3>{'Fattura'|i18n('booking')}</h3>
+    {include uri='design:booking/parts/invoice_info.tpl' invoice_info=$invoiceData}
 {/if}
 
 {def $currency = fetch( 'shop', 'currency', hash( 'code', $order.productcollection.currency_code ) )

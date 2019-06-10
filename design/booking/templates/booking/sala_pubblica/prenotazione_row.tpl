@@ -55,7 +55,7 @@
     <td>{$openpa_prenotazione.sala.contentobject_attribute.content.name|wash()}</td>
 <td>
     <a class="btn btn-default btn-xs" href="{concat( "/openpa_booking/view/sala_pubblica/", $prenotazione.contentobject_id )|ezurl(no)}">
-        Entra
+        {'Entra'|i18n('booking')}
     </a>
 </td>
 

@@ -33,6 +33,12 @@ MatchFile=view/sala_pubblica_price_range.tpl
 Subdir=templates
 Match[attribute_identifier]=price_range
 
+[view_sala_pubblica_temp_price_range]
+Source=content/datatype/view/ezmatrix.tpl
+MatchFile=view/sala_pubblica_price_range.tpl
+Subdir=templates
+Match[attribute_identifier]=temp_price_range
+
 [edit_booking_appuntamento_sindaco]
 Source=content/edit.tpl
 MatchFile=edit/booking_appuntamento_sindaco.tpl
@@ -44,6 +50,12 @@ Source=content/datatype/edit/ezmatrix.tpl
 MatchFile=edit/booking_sala_pubblica_price_range.tpl
 Subdir=templates
 Match[attribute_identifier]=price_range
+
+[edit_booking_sala_pubblica_temp_price_range]
+Source=content/datatype/edit/ezmatrix.tpl
+MatchFile=edit/booking_sala_pubblica_price_range.tpl
+Subdir=templates
+Match[attribute_identifier]=temp_price_range
 
 
 */ ?>

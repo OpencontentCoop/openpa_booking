@@ -22,22 +22,22 @@
             {if $openpa_object.control_booking_sala_pubblica.has_manual_price}
             <div class="input-group input-group-lg" style="max-width: 500px;margin: 0 auto 20px;">
                 <span class="input-group-addon">€</span>
-                <input type="text" class="form-control" name="Collaboration_OpenpaBookingActionParameters[manual_price]" value="" placeholder="Inserisci il costo">
+                <input type="text" class="form-control" name="Collaboration_OpenpaBookingActionParameters[manual_price]" value="" placeholder="{'Inserisci il costo'|i18n('booking')}">
                 <span class="input-group-addon">.00</span>
             </div>
             {/if}
 
             <p class="text-center">
-                {def $text = 'Conferma la disponibilità della sala'
+                {def $text = 'Conferma la disponibilità della sala'|i18n('booking')
                      $level = 'success'}
                 {if $openpa_object.control_booking_sala_pubblica.is_stuff_approved|not()}
-                    {set $text = "L'attrezzatura non è disponibile: conferma comuque la disponibilità della sala"
+                    {set $text = "L'attrezzatura non è disponibile: conferma comuque la disponibilità della sala"|i18n('booking')
                          $level = 'info'}
                 {/if}
                 <input class="btn btn-{$level} btn-lg" type="submit" name="CollaborationAction_Defer" value="{$text|wash()}" />
                 {undef $text $level}
 
-                <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Deny" value="Rifiuta la richiesta" />
+                <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Deny" value="{'Rifiuta la richiesta'|i18n('booking')}" />
             </p>
 
         {else}
@@ -47,7 +47,7 @@
             </p>
 
             <p class="text-center">
-                <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Deny" value="Rifiuta la richiesta" />
+                <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Deny" value="{'Rifiuta la richiesta'|i18n('booking')}" />
             </p>
 
         {/if}
@@ -55,15 +55,15 @@
 
     {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(1)}
         <p class="text-center">
-            <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Deny" value="Rifiuta la richiesta" />
+            <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Deny" value="{'Rifiuta la richiesta'|i18n('booking')}" />
         </p>
     {/if}
 
     {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(2)}
         <p class="text-center">
-            <a class="btn btn-info btn-lg" href={concat( "/shop/orderview/", $content_object.data_map.order_id.content)|ezurl}>Vedi i dettagli del pagamento</a>
-            <input class="btn btn-success btn-lg" type="submit" name="CollaborationAction_Accept" value="Approva la prenotazione" />
-            <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Deny" value="Rifiuta la richiesta" />
+            <a class="btn btn-info btn-lg" href={concat( "/shop/orderview/", $content_object.data_map.order_id.content)|ezurl}>{'Vedi i dettagli del pagamento'|i18n('booking')}</a>
+            <input class="btn btn-success btn-lg" type="submit" name="CollaborationAction_Accept" value="{'Approva la prenotazione'|i18n('booking')}" />
+            <input class="btn btn-danger btn-lg" type="submit" name="CollaborationAction_Deny" value="{'Rifiuta la richiesta'|i18n('booking')}" />
         </p>
     {/if}
 

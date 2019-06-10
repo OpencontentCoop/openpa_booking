@@ -60,6 +60,7 @@ class OpenPABookingOperators
                 'object' => array('type' => 'object', 'required' => true),
                 'from_time' => array('type' => 'integer', 'required' => false, 'default' => null),
                 'to_time' => array('type' => 'integer', 'required' => false, 'default' => null),
+                'identifier' => array('type' => 'integer', 'required' => false, 'default' => null),
             ),
             'booking_request_invoice' => array(
                 'order' => array('type' => 'object', 'required' => true),
@@ -97,22 +98,14 @@ class OpenPABookingOperators
                 break;
 
             case 'booking_request_invoice':
-                $operatorValue = null;
                 $order = $namedParameters['order'];
-                if ($order instanceof eZOrder){
-                    $productCollectionID = $order->attribute('productcollection_id');
-                    $productCollection = eZProductCollection::fetch($productCollectionID);          
-                    $service = ObjectHandlerServiceControlBookingSalaPubblica::instanceFromProductCollection($productCollection);
-                    if ($service instanceof ObjectHandlerServiceControlBookingSalaPubblica){
-                        return $operatorValue = $service->requestInvoice($order);
-                    }
-                }
+                $operatorValue = ObjectHandlerServiceControlBookingSalaPubblica::fetchInvoiceData($order);
             break;
 
             case 'booking_range_list':
                 $list = array();
                 if ($namedParameters['object'] instanceof eZContentObject){
-                    $rangeHandler = OpenPABookingPriceRange::instance($namedParameters['object']);                    
+                    $rangeHandler = OpenPABookingPriceRange::instance($namedParameters['object'], $namedParameters['identifier']);
                     if ($rangeHandler->hasPriceRangeDefinition()){                        
                         $list = $rangeHandler->getRangeList((int)$namedParameters['from_time'], (int)$namedParameters['to_time']);
                     }
