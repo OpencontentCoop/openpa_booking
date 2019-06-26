@@ -101,7 +101,7 @@ class OpenPABookingSalaPubblicaCalendar
                     $do = ObjectHandlerServiceControlBookingSalaPubblica::isValidStartDateTime($date, $this->location);
 
                     if ($do) {
-                        if (!empty($closingDay)) {
+                        if (!empty($closingDays)) {
                             foreach ($closingDays as $closingDay) {
                                 if (ObjectHandlerServiceControlBookingSalaPubblica::isInClosingDay($closingDay, $date,
                                     $date)
