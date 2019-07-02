@@ -1244,7 +1244,22 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 foreach ($column['rows'] as $row) {
                     if (!empty( $row )) {
                         $closingDayString = str_replace('/', '-', $row);
-                        if (strpos($closingDayString, 'festivi') !== false) {
+
+                        if (strpos($closingDayString, '->') !== false) {
+                            $periodStringList = explode('->', $closingDayString);
+                            if (count($periodStringList) == 2){
+                                $startDate = new DateTime($periodStringList[0]);
+                                $endDate = new DateTime($periodStringList[1]);
+                                if ($startDate instanceof DateTime && $endDate instanceof DateTime) {
+                                    $endDate->setTime(23,59);
+                                    $byDayInterval = new DateInterval('P1D');
+                                    $byDayPeriod = new DatePeriod($startDate, $byDayInterval, $endDate);
+                                    foreach ($byDayPeriod as $date){
+                                        $closingDays[] = $date;
+                                    }
+                                }
+                            }
+                        } elseif (strpos($closingDayString, 'festivi') !== false) {
                             // @todo
                             eZDebug::writeError("@todo implementare soluzione per closing_day 'festivi'");
 
