@@ -343,16 +343,18 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $stuffList = array();
             if ($this->isValid()) {
                 if (isset( $this->container->attributesHandlers['stuff'] )) {
-                    $stuffRelationList = $this->container->attributesHandlers['stuff']->attribute('contentobject_attribute')->attribute('content');
-                    foreach ($stuffRelationList['relation_list'] as $item) {
-                        if (isset($item['contentobject_id'])) {
-                            $object = eZContentObject::fetch((int)$item['contentobject_id']);
-                            if ($object instanceof eZContentObject) {
-                                $stuffList[$item['contentobject_id']]['object'] = $object;
-                                if (isset($item['extra_fields']['booking_status']['identifier'])) {
-                                    $stuffList[$item['contentobject_id']]['status'] = $item['extra_fields']['booking_status']['identifier'];
-                                }else{
-                                    $stuffList[$item['contentobject_id']]['status'] = null;
+                    $stuffRelationList = (array)$this->container->attributesHandlers['stuff']->attribute('contentobject_attribute')->attribute('content');
+                    if (isset($stuffRelationList['relation_list'])){
+                        foreach ($stuffRelationList['relation_list'] as $item) {
+                            if (isset($item['contentobject_id'])) {
+                                $object = eZContentObject::fetch((int)$item['contentobject_id']);
+                                if ($object instanceof eZContentObject) {
+                                    $stuffList[$item['contentobject_id']]['object'] = $object;
+                                    if (isset($item['extra_fields']['booking_status']['identifier'])) {
+                                        $stuffList[$item['contentobject_id']]['status'] = $item['extra_fields']['booking_status']['identifier'];
+                                    }else{
+                                        $stuffList[$item['contentobject_id']]['status'] = null;
+                                    }
                                 }
                             }
                         }

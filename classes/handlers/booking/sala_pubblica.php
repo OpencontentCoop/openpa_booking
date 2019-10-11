@@ -275,16 +275,21 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
             if ($concurrentRequest instanceof eZContentObjectTreeNode) {
                 $concurrentRequestService = $this->serviceObject($concurrentRequest->attribute('object'));
                 if ($concurrentRequestService) {
-                    $concurrentRequestCollaborationItem = $concurrentRequestService->getCollaborationItem();
-                    if ($concurrentRequestCollaborationItem instanceof eZCollaborationItem) {
-                        $concurrentRequestService->changeState(
-                            ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED,
-                            false
-                        );
-                        OpenPABookingCollaborationHandler::changeApprovalStatus(
-                            $concurrentRequestCollaborationItem,
-                            OpenPABookingCollaborationHandler::STATUS_DENIED
-                        );
+                    if ($concurrentRequestService->isSubrequest()){
+                        $concurrentRequestService = OpenPAObjectHandler::instanceFromObject($concurrentRequest->fetchParent())->attribute('control_booking_sala_pubblica');
+                    }
+                    if ($concurrentRequestService) {
+                        $concurrentRequestCollaborationItem = $concurrentRequestService->getCollaborationItem();
+                        if ($concurrentRequestCollaborationItem instanceof eZCollaborationItem) {
+                            $concurrentRequestService->changeState(
+                                ObjectHandlerServiceControlBookingSalaPubblica::STATUS_DENIED,
+                                false
+                            );
+                            OpenPABookingCollaborationHandler::changeApprovalStatus(
+                                $concurrentRequestCollaborationItem,
+                                OpenPABookingCollaborationHandler::STATUS_DENIED
+                            );
+                        }
                     }
                 }
             }
