@@ -30,11 +30,9 @@
                             <td>{$child.data_map.from_time.content.timestamp|l10n(shorttime)}</td>
                             <td>
                                 {$child.data_map.to_time.content.timestamp|l10n(shorttime)}
-                                {if fetch('user', 'current_user').contentobject_id|eq(14)}
-                                    <a class="pull-right" href="{$child.url_alias|ezurl(no)}">
-                                        <span class="label label-default"><i class="fa fa-link"></i> {$child.contentobject_id}</span>
-                                    </a>
-                                {/if}
+                                <a class="pull-right" href="{$child.url_alias|ezurl(no)}">
+                                    <span class="label label-default"><i class="fa fa-link"></i> {$child.contentobject_id}</span>
+                                </a>
                             </td>
                         </tr>
                     {/foreach}
