@@ -88,7 +88,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $this->fnData['concurrent_requests'] = 'getConcurrentRequests';
         $this->fnData['all_concurrent_requests'] = 'getAllConcurrentRequests';
         $this->fnData['is_stuff_approved'] = 'isStuffApproved';
-        $this->fnData['is_stuff_not_pending'] = 'isStuffNotPending';        
+        $this->fnData['is_stuff_not_pending'] = 'isStuffNotPending';
 
         parent::run();
     }
@@ -183,6 +183,15 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 $sala,
                 $this->container->getContentObject()->attribute('id')
             );
+
+            if ($this->subRequestCount()){
+                foreach ($this->container->getContentMainNode()->children() as $child) {
+                    $data = array_merge(
+                        $data,
+                        OpenPAObjectHandler::instanceFromObject($child->object())->attribute('control_booking_sala_pubblica')->attribute('concurrent_requests')
+                    );
+                }
+            }
         }
 
         return $data;
@@ -203,6 +212,15 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 $sala,
                 $this->container->getContentObject()->attribute('id')
             );
+
+            if ($this->subRequestCount()){
+                foreach ($this->container->getContentMainNode()->children() as $child) {
+                    $data = array_merge(
+                        $data,
+                        OpenPAObjectHandler::instanceFromObject($child->object())->attribute('control_booking_sala_pubblica')->attribute('all_concurrent_requests')
+                    );
+                }
+            }
         }
 
         return $data;
@@ -350,7 +368,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     public function hasStuff()
     {
         return (isset( $this->container->attributesHandlers['stuff'] )
-                && $this->container->attributesHandlers['stuff']->attribute('has_content'));
+            && $this->container->attributesHandlers['stuff']->attribute('has_content'));
     }
 
 
@@ -545,12 +563,12 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 }else{
                     throw new Exception("User type not found");
                 }
-            }else{                
+            }else{
                 $seconds = $dataMap['to_time']->toString() - $dataMap['from_time']->toString();
                 $hours = $seconds / 3600;
                 $price = $price * $hours;
                 $vat = $this->getPriceVat();
-            } 
+            }
         }
 
         if ($count = $this->subRequestCount()){
@@ -849,7 +867,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
 
         if ($hours > 0)
-        	$now->add(new DateInterval('PT'. $hours. 'H'));
+            $now->add(new DateInterval('PT'. $hours. 'H'));
 
         if ($startDateTime > $now) {
             return true;
@@ -872,9 +890,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         }
 
         $isInValidOpeningHours = true;
-        $openingHours = self::getOpeningHours($sala);        
+        $openingHours = self::getOpeningHours($sala);
         if (!empty( $openingHours )) {
-            $weekDayNumber = $startDateTime->format('w');            
+            $weekDayNumber = $startDateTime->format('w');
             if (isset( $openingHours[$weekDayNumber] )) {
                 $isInValidOpeningHours = false;
                 foreach ($openingHours[$weekDayNumber] as $dayValues) {
@@ -882,21 +900,21 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                     $testStart->setTime($dayValues['from_time']['hour'], $dayValues['from_time']['minute']);
                     $testEnd = clone $endDateTime;
                     $testEnd->setTime($dayValues['to_time']['hour'], $dayValues['to_time']['minute']);
-                    $isInRange = $startDateTime >= $testStart && $endDateTime <= $testEnd;                    
-                    if ($isInRange) {                        
+                    $isInRange = $startDateTime >= $testStart && $endDateTime <= $testEnd;
+                    if ($isInRange) {
                         $isInValidOpeningHours = true;
                     }
                 }
             } else {
                 $isInValidOpeningHours = false;
             }
-        }   
+        }
 
         if (!$isInValidOpeningHours){
             return false;
         }
 
-        $closingDays = self::getClosingDays($sala);        
+        $closingDays = self::getClosingDays($sala);
         foreach ($closingDays as $closingDay) {
             if (self::isInClosingDay($closingDay, $startDateTime, $endDateTime)) {
                 return false;
@@ -1349,7 +1367,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 $object = $item->contentobject();
                 if ($object instanceof eZContentObject){
                     $openpaObject = OpenPAObjectHandler::instanceFromContentObject($object);
-                    $service = $openpaObject->attribute('control_booking_sala_pubblica');                       
+                    $service = $openpaObject->attribute('control_booking_sala_pubblica');
                     break;
                 }
             }
@@ -1365,10 +1383,10 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
     public function requestInvoice(eZOrder $order)
     {
-        if ($this->isValid()) {            
+        if ($this->isValid()) {
             /** @var eZContentObjectAttribute[] $dataMap */
-            $dataMap = $this->container->getContentObject()->attribute('data_map');            
-            if (isset($dataMap['invoice_data']) && $dataMap['invoice_data']->dataType() instanceof OpenPABookingInvoiceHandler){                
+            $dataMap = $this->container->getContentObject()->attribute('data_map');
+            if (isset($dataMap['invoice_data']) && $dataMap['invoice_data']->dataType() instanceof OpenPABookingInvoiceHandler){
                 return $dataMap['invoice_data']->dataType()->requestInvoice(
                     $dataMap['invoice_data'],
                     $order
@@ -1381,7 +1399,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
     public function downloadInvoice()
     {
-        if ($this->isValid()) {            
+        if ($this->isValid()) {
             if ($this->container->getContentObject()->attribute('can_read')) {
                 /** @var eZContentObjectAttribute[] $dataMap */
                 $dataMap = $this->container->getContentObject()->attribute('data_map');
@@ -1403,7 +1421,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 'is_required' => true,
                 'input_name' => 'FirstName',
             ),
-            'last_name' => array(                
+            'last_name' => array(
                 'is_required' => true,
                 'input_name' => 'LastName',
             ),
@@ -1522,6 +1540,5 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     {
         eZPendingActions::removeByAction(self::PENDING_ACTION_REFETCH_INVOICE, ['param' => $order->attribute('id')]);
     }
-
 
 }
