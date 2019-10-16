@@ -97,7 +97,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         DateTime $start,
         DateTime $end,
         $states = array(),
-        $sala = array(),
+        $sala = null,
         $id = null,
         $count = false
     ) {
@@ -154,11 +154,19 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 $toField => '[ * TO ' . $toValue . ' ]'
             )
         );
+
+        $subTreeArray = [];
+        if ($sala instanceof eZContentObject) {
+            foreach ($sala->assignedNodes() as $node){
+                $subTreeArray[] = $node->attribute('node_id');
+            }
+        }
+
         $filters[] = $dateFilter;
         $sortBy = array($fromField => 'desc', 'published' => 'asc');
         $solrSearch = new eZSolr();
         $search = $solrSearch->search('', array(
-            'SearchSubTreeArray' => $sala,
+            'SearchSubTreeArray' => $subTreeArray,
             'SearchLimit' => $count ? 1 : 1000,
             'SortBy' => $sortBy,
             'Limitation' => array(),
@@ -172,15 +180,11 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     {
         $data = array();
         if ($this->isValid()) {
-            $sala = array();
-            if ($this->getSala() instanceof eZContentObject) {
-                $sala[] = $this->getSala()->attribute('main_node_id');
-            }
             $data = self::fetchConcurrentItems(
                 $this->getStartDateTime(),
                 $this->getEndDateTime(),
                 array(self::STATUS_PENDING, self::STATUS_WAITING_FOR_CHECKOUT, self::STATUS_WAITING_FOR_PAYMENT),
-                $sala,
+                $this->getSala(),
                 $this->container->getContentObject()->attribute('id')
             );
 
@@ -201,15 +205,11 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
     {
         $data = array();
         if ($this->isValid()) {
-            $sala = array();
-            if ($this->getSala() instanceof eZContentObject) {
-                $sala[] = $this->getSala()->attribute('main_node_id');
-            }
             $data = self::fetchConcurrentItems(
                 $this->getStartDateTime(),
                 $this->getEndDateTime(),
                 array(),
-                $sala,
+                $this->getSala(),
                 $this->container->getContentObject()->attribute('id')
             );
 
@@ -819,16 +819,11 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             $endDateTime->setTimestamp($end);
         }
 
-        $salaSubtree = array();
-        if ($sala instanceof eZContentObject) {
-            $salaSubtree[] = $sala->attribute('main_node_id');
-        }
-
         $data = self::fetchConcurrentItems(
             $startDateTime,
             $endDateTime,
             array(self::STATUS_APPROVED),
-            $salaSubtree,
+            $sala,
             null,
             true
         );
