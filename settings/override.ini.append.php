@@ -57,5 +57,4 @@ MatchFile=edit/booking_sala_pubblica_price_range.tpl
 Subdir=templates
 Match[attribute_identifier]=temp_price_range
 
-
 */ ?>

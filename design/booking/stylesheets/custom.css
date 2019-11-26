@@ -639,3 +639,13 @@ li.active{
 .service_teaser .service_details .panel-primary{
     display: none;
 }
+
+.booking-datatable .chosen-container-multi .chosen-choices{
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.hgroup h1 {
+    line-height: 1.4em;
+}

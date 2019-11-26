@@ -60,7 +60,7 @@
                                 <span class="required" title="{'required'|i18n( 'design/admin/content/edit_attribute' )}">*</span>
                             {/if}
                             {if $contentclass_attribute.description}
-                                <small class="attribute-description">{first_set( $contentclass_attribute.descriptionList[$content_language], $contentclass_attribute.description)|wash}</small>
+                                <small class="attribute-description">{first_set( $contentclass_attribute.descriptionList[$content_language], $contentclass_attribute.description)|wash|autolink}</small>
                             {/if}
                         </b>
                     </p>
@@ -75,6 +75,7 @@
     {if or( $attribute_group|eq('hidden'), and($no_stuff, $attribute_group|eq('booking_stuff')))|not()}{set $count = $count|inc()}{/if}
 {/foreach}
 
+{if booking_subrequest_is_disabled()|not()}
 <div class="row edit-group-row" id="repeat">
     <div class="col-md-4">
         <div class="edit-group-label">
@@ -83,7 +84,7 @@
                 {'Aggiungi date'|i18n('booking')}
             </span>
         </div>
-    </div>
+    </div>    
     <div class="col-md-8 service_teaser vertical">
         <div class="edit-row">
             <p>
@@ -93,8 +94,9 @@
             </p>
             {include uri='design:booking/parts/scheduler.tpl'}
         </div>
-    </div>
+    </div>    
 </div>
+{/if}
 
 <div class="row">
     <div class="col-md-8 col-md-offset-4">
@@ -107,3 +109,18 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
+{literal}
+    $(document).ready(function () {
+        $('input[name="PublishButton"]').on('click', function(e){            
+            if($('.user-range-select').length > 0){
+                if($('.user-range-select:checked').length === 0){
+                    alert('Seleziona la Tipologia di utilizzatore'); //@todo
+                    e.preventDefault();
+                }                
+            }
+        });
+    });
+
+{/literal}
+</script>

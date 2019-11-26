@@ -252,7 +252,12 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
             $accountInformation['first_name'] = $userMap['first_name']->content();    
         }
         if (isset($userMap['last_name'])){
-            $accountInformation['first_name'] .= ' ' . $userMap['last_name']->content();
+            $accountInformation['last_name'] = $userMap['last_name']->content();
+        }
+        if (isset($userMap['codice_fiscale'])){
+            $accountInformation['vat_code'] = $userMap['codice_fiscale']->content();
+        }elseif (isset($userMap['vat_code'])){
+            $accountInformation['vat_code'] = $userMap['vat_code']->content();
         }
                 
         $accountInformation['email'] = $user->attribute( 'email' );

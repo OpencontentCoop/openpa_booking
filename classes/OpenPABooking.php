@@ -269,17 +269,17 @@ class OpenPABooking
 
     public function isCollaborationModeEnabled()
     {
-        return (bool)$this->getAttributeString('collaboration_mode', false) == 1;
+        return (bool)$this->getAttributeString('collaboration_mode', false) == true;
     }
 
     public function isCommentEnabled()
     {
-        return (bool)$this->getAttributeString('enable_comment', false) == 1;
+        return (bool)$this->getAttributeString('enable_comment', false) == true;
     }
 
     public function isHeaderOnlyLogoEnabled()
     {
-        return (bool)$this->getAttributeString('enable_header_only_logo', false) == 1;
+        return (bool)$this->getAttributeString('enable_header_only_logo', false) == true;
     }
 
     public function isStuffSubWorkflowEnabled()
@@ -289,7 +289,7 @@ class OpenPABooking
 
     public function isStuffBookingEnabled()
     {
-        return !(bool)$this->getAttributeString('disable_booking_stuff', false) == 1;
+        return !(bool)$this->getAttributeString('disable_booking_stuff', false) == true;
     }
 
     public function getViewList()
@@ -328,5 +328,15 @@ class OpenPABooking
         }
 
         return $view;
+    }
+
+    public function freeBookingNeedsCheckout()
+    {
+        return (bool)$this->getAttributeString('go_to_checkout_in_free_booking', false) == true;
+    }
+
+    public function isSubrequestDisabled()
+    {
+        return (bool)$this->getAttributeString('disable_subrequest', false) == true;
     }
 }

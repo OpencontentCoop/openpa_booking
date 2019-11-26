@@ -37,7 +37,7 @@
         {$openpa_prenotazione.control_booking_sala_pubblica.start_timestamp|l10n(shorttime)}
         {$openpa_prenotazione.control_booking_sala_pubblica.end_timestamp|l10n(shorttime)}
         </p>
-        {if $prenotazione.object.main_node.children_count}
+        {*if $prenotazione.object.main_node.children_count}
             {foreach $prenotazione.object.main_node.children as $child}
                 <p>
                 {$child.data_map.from_time.content.timestamp|l10n(date)}
@@ -50,7 +50,7 @@
                 {/if}
                 </p>
             {/foreach}
-        {/if}
+        {/if*}
     </td>
     <td>{$openpa_prenotazione.sala.contentobject_attribute.content.name|wash()}</td>
 <td>

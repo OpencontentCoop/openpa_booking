@@ -51,8 +51,9 @@ if ( $Http->hasPostVariable('BrowseActionName') &&  $Http->postVariable('BrowseA
 
 if ( $Part == 'users' )
 {
-    $usersParentNode = eZContentObjectTreeNode::fetch( intval( eZINI::instance()->variable( "UserSettings", "DefaultUserPlacement" ) ) );    
-	$tpl->setVariable( 'user_class_list', eZUser::fetchUserClassNames() );
+    $usersParentNode = eZContentObjectTreeNode::fetch( intval( eZINI::instance()->variable( "UserSettings", "DefaultUserPlacement" ) ) );
+    $userClass = eZContentClass::fetch(intval( eZINI::instance()->variable( "UserSettings", "UserClassID" ) ));
+	$tpl->setVariable( 'user_class', $userClass );
     $tpl->setVariable( 'user_parent_node', $usersParentNode );
 }
 elseif ( $Part == 'moderators' )

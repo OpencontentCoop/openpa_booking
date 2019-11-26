@@ -13,11 +13,15 @@
 {/if}
 
 {if $openpa_object.control_booking_sala_pubblica.current_state_code|eq(1)}
-    <div class="text-center lead">    
+    <div class="text-center lead">
         <form method="post" class="form-inline text-center" action="{"collaboration/action/"|ezurl(no)}">
             <input type="hidden" name="Collaboration_OpenpaBookingActionParameters[]" value="" />
             <button class="btn btn-success btn-lg" type="submit" name="CollaborationAction_GoToCheckout">
-                {'Procedi con il pagamento di'|i18n('booking')} {attribute_view_gui attribute=$content_object.data_map.price}
+                {if $content_object.data_map.price.data_float|int()|eq(0)}
+                    {'Inserisci le informazioni di fatturazione (non sarà richiesto nessun pagamento)'|i18n('booking')}
+                {else}
+                    {'Procedi con il pagamento di'|i18n('booking')} {attribute_view_gui attribute=$content_object.data_map.price}
+                {/if}
             </button>
             <input type="hidden" name="CollaborationActionCustom" value="custom"/>
             <input type="hidden" name="CollaborationTypeIdentifier" value="openpabooking"/>

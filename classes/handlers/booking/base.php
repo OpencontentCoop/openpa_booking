@@ -52,6 +52,11 @@ abstract class BookingHandlerBase implements OpenPABookingHandlerInterface
         }
     }
 
+    function getCurrentObject()
+    {
+        return $this->currentObject;
+    }
+
     public function add()
     {
         $serviceClass = $this->serviceClass();

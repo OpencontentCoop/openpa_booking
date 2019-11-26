@@ -163,6 +163,9 @@ class OpenPABookingSalaPubblicaCalendar
 
     private function convertToCalendarItem($hit)
     {
+        if ($hit['metadata']['classIdentifier'] == '') { //@todo @workaround
+            $hit['metadata']['classIdentifier'] = 'prenotazione_sala';
+        }
         $content = new Content($hit);
         $object = $content->getContentObject($this->language);
 

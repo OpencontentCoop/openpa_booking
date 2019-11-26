@@ -30,7 +30,7 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
             if ($stuffId) {
                 $this->currentStuffObject = eZContentObject::fetch(intval($stuffId));
                 if (!$this->currentStuffObject instanceof eZContentObject) {
-                    throw new Exception("Attrezzatura $salaId non trovata");
+                    throw new Exception("Attrezzatura $stuffId non trovata");
                 }
             }
 
