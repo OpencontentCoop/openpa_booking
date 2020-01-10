@@ -36,15 +36,6 @@
             </td>
             <td width="1">{include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$moderator redirect_if_discarded=$redirect redirect_after_publish=$redirect}</td>
             <td width="1">{include name=trash uri='design:parts/toolbar/node_trash.tpl' current_node=$moderator redirect_if_cancel=$redirect redirect_after_remove=$redirect}</td>
-            {*<td width="1">
-              {if fetch( 'user', 'has_access_to', hash( 'module', 'user', 'function', 'setting' ))}
-                <form name="Setting" method="post" action={concat( 'user/setting/', $moderator.contentobject_id )|ezurl}>
-                  <input type="hidden" name="is_enabled" value={if $userSetting.is_enabled|not()}"1"{else}""{/if} />
-                  <button class="btn-link btn-xs" type="submit" name="UpdateSettingButton" title="{if $userSetting.is_enabled}{'Blocca'|i18n('agenda/config')}{else}{'Sblocca'|i18n('agenda/config')}{/if}">{if $userSetting.is_enabled}<i class="fa fa-ban"></i>{else}<i class="fa fa-check-circle"></i>{/if}</button>
-
-                </form>
-              {/if}
-            </td>*}
         </tr>
         {/if}
         {undef $userSetting}
@@ -53,7 +44,7 @@
 
 {include name=navigator
         uri='design:navigator/google.tpl'
-        page_uri='agenda/config/moderators'
+        page_uri='openpa_booking/config/moderators'
         item_count=$moderators_count
         view_parameters=$view_parameters
         item_limit=$item_limit}

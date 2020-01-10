@@ -73,6 +73,30 @@ $ViewList["invoice"] = array(
     'params' => array('OrderID'),
 );
 
+$ViewList['export'] = array(
+    'script' => 'export.php',
+    'params' => array('Query'),
+    'unordered_params' => array(),
+    'functions' => array('export')
+);
+
+$ViewList['edit'] = array(
+    'script' => 'edit.php',
+    'params' => array('HandlerIdentifier'),
+    'unordered_params' => array(),
+    'functions' => array('edit')
+);
+
+$ViewList['trash'] = array(
+    'script' => 'trash.php',
+    'params' => array('HandlerIdentifier'),
+    'unordered_params' => array(),
+    'functions' => array('edit')
+);
+
+
 $FunctionList['read'] = array();
 $FunctionList['book'] = array();
 $FunctionList['config'] = array();
+$FunctionList['export'] = array();
+$FunctionList['edit'] = array();

@@ -225,7 +225,7 @@ $(document).ready(function () {
         $bookingItems.opendataSearchView({
             query: '',
             onInit: function (view) {
-                var destinazioni = $.opendataTools.find('classes ['+ $.opendataTools.settings('location_class_identifiers') +'] and subtree ['+locationSubtree+'] facets [destinazione_uso, raw[attr_disponibilita_posti_s], raw[subattr_circoscrizione___name____s]] limit 1', function (data) {
+                var destinazioni = $.opendataTools.find('classes ['+ $.opendataTools.settings('location_class_identifiers') +'] and subtree ['+locationSubtree+'] facets [destinazione_uso|alpha, raw[attr_disponibilita_posti_s]|alpha, raw[subattr_circoscrizione___name____s]|alpha] limit 1', function (data) {
                     if (data.facets.length > 0) {
                         $.each(data.facets[0].data, function (index, value) {
                             if ($.trim(index) !== '') {

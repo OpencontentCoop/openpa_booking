@@ -23,9 +23,11 @@ class BookingEnvironmentSettings extends DefaultEnvironmentSettings
         $data = $flatContent->data->jsonSerialize();
         $language = eZLocale::currentLocaleCode();
         $object = $content->getContentObject($language);
+        /** @var eZContentObjectTreeNode $node */
         $node = $object->mainNode();
         if ($node->childrenCount() > 0) {
             $requests = array();
+            /** @var eZContentObjectTreeNode $item */
             foreach ($node->children() as $item) {
                 $requests[] = (int)$item->attribute('contentobject_id');
             }

@@ -30,6 +30,11 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
         );
     }
 
+    /**
+     * @param OpenPABookingSalaPubblicaAvailabilityRequest $request
+     * @return array
+     * @throws \Opencontent\Opendata\Api\Exception\OutOfRangeException
+     */
     public function request(OpenPABookingSalaPubblicaAvailabilityRequest $request)
     {
         $bookingQuery = null;
@@ -50,6 +55,9 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
 
             foreach ($bookings as $item) {
 
+                if ($item['metadata']['classIdentifier'] == '') { //@todo @workaround
+                    $item['metadata']['classIdentifier'] = 'prenotazione_sala';
+                }
                 $content = new Content($item);
                 $booking = $this->filterContent->filterContent($content);
                 $status = str_replace('booking.', '', $booking['metadata']['bookingState']);
@@ -141,9 +149,9 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
 
     /**
      * @param $query
-     * @param array $limitation
-     *
-     * @return array()
+     * @param array|null $limitation
+     * @return array
+     * @throws \Opencontent\Opendata\Api\Exception\OutOfRangeException
      */
     public static function findAll($query, array $limitation = null)
     {
@@ -163,8 +171,8 @@ class OpenPABookingSalaPubblicaAvailabilityFinder
     private static function find($query, array $limitation = null)
     {
         $contentSearch = new ContentSearch();
-        $contentSearch->setCurrentEnvironmentSettings(new FullEnvironmentSettings());
         try {
+            $contentSearch->setCurrentEnvironmentSettings(new FullEnvironmentSettings());
             return $contentSearch->search($query, $limitation);
         } catch (Exception $e) {
             eZDebug::writeError($query . "\n" . $e->getMessage() . "\n" . $e->getTraceAsString(), __METHOD__);

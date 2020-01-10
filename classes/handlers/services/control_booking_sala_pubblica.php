@@ -189,7 +189,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             );
 
             if ($this->subRequestCount()){
-                foreach ($this->container->getContentMainNode()->children() as $child) {
+                foreach ($this->subRequestList() as $child) {
                     $data = array_merge(
                         $data,
                         OpenPAObjectHandler::instanceFromObject($child->object())->attribute('control_booking_sala_pubblica')->attribute('concurrent_requests')
@@ -214,7 +214,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             );
 
             if ($this->subRequestCount()){
-                foreach ($this->container->getContentMainNode()->children() as $child) {
+                foreach ($this->subRequestList() as $child) {
                     $data = array_merge(
                         $data,
                         OpenPAObjectHandler::instanceFromObject($child->object())->attribute('control_booking_sala_pubblica')->attribute('all_concurrent_requests')
@@ -535,11 +535,36 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         return $object;
     }
 
-    public function subRequestCount()
+    public function subRequestCount($stateCodes = [])
+    {
+        return $this->subRequestList($stateCodes, true);
+    }
+
+    public function subRequestList($stateCodes = [], $asCount = false)
     {
         if ($this->isValid()) {
-            return $this->container->getContentMainNode()->childrenCount();
+
+            $parameters = [
+                'Depth' => 1,
+                'DepthOperator' => 'eq'
+            ];
+            $stateFilters = [];
+            foreach ($stateCodes as $stateCode) {
+                $state = self::getStateObject($stateCode);
+                if ($state instanceof eZContentObjectState) {
+                    $stateFilters[] = (int)$state->attribute('id');
+                }
+            }
+            if (!empty($stateFilters)) {
+                $parameters['AttributeFilter'] = [['state', 'in', $stateFilters]];
+            }
+
+            if ($asCount)
+                return $this->container->getContentMainNode()->subTreeCount($parameters);
+
+            return $this->container->getContentMainNode()->subTree($parameters);
         }
+
         return false;
     }
 
@@ -573,7 +598,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
             }
         }
 
-        if ($count = $this->subRequestCount()){
+        if ($count = $this->subRequestCount([self::STATUS_PENDING])){
             $price = $price + ($price * $count);
         }
 
@@ -724,16 +749,20 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
                 eZDebug::writeNotice("Create sub request " . var_export($item, 1), __METHOD__);
 
+                $attributes = array(
+                    'from_time' => $item['from'] / 1000,
+                    'to_time' => $item['to'] / 1000,
+                    'sala' => $dataMap['sala']->toString(),
+                    'subrequest' => 1
+                );
+                if (isset($dataMap['stuff'])){
+                    $attributes['stuff'] = $dataMap['stuff']->toString();
+                }
+
                 $params = array(
                     'class_identifier' => $object->attribute('class_identifier'),
                     'parent_node_id' => $object->attribute('main_node_id'),
-                    'attributes' => array(
-                        'from_time' => $item['from'] / 1000,
-                        'to_time' => $item['to'] / 1000,
-                        'stuff' => $dataMap['stuff']->toString(),
-                        'sala' => $dataMap['sala']->toString(),
-                        'subrequest' => 1
-                    )
+                    'attributes' => $attributes
                 );
                 $subRequest = eZContentFunctions::createAndPublishObject($params);
                 if (!$subRequest instanceof eZContentObject){
@@ -754,9 +783,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
 
                 if ($result = self::setExtraFieldRelationAttribute($stuffAttribute, $stuff, 'booking_status', $status)){
 
-                    if ($this->container->getContentMainNode()->childrenCount()) {
+                    if ($this->subRequestCount()) {
                         /** @var eZContentObjectTreeNode[] $children */
-                        $children = $this->container->getContentMainNode()->children();
+                        $children = $this->subRequestList();
                         foreach($children as $child){
                             $dataMap = $child->dataMap();
                             if( isset($dataMap['stuff'])){
@@ -800,10 +829,11 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
      * @param int|DateTime $start unixtimestamp
      * @param int|DateTime $end unixtimestamp
      * @param eZContentObject $sala
-     *
+     * @param int|null $currentId escludi id dalla ricerca di prenotazioni concorrenti
+     * @param integer[] $states considera solo gli stati nella ricerca di prenotazioni concorrenti (vuoto = tutti)
      * @throws Exception
      */
-    public function isValidDate($start, $end, eZContentObject $sala)
+    public function isValidDate($start, $end, eZContentObject $sala, $currentId = null, $states = [self::STATUS_APPROVED])
     {
         if ($start instanceof DateTime) {
             $startDateTime = $start;
@@ -822,9 +852,9 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         $data = self::fetchConcurrentItems(
             $startDateTime,
             $endDateTime,
-            array(self::STATUS_APPROVED),
+            $states,
             $sala,
-            null,
+            $currentId,
             true
         );
 
