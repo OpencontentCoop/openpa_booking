@@ -28,4 +28,9 @@ interface OpenPABookingHandlerInterface
 
     function handleCustomAction(eZModule $module, eZCollaborationItem $item);
 
+    /**
+     * @return eZContentObject
+     */
+    function getCurrentObject();
+
 }

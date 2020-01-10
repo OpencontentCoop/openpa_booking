@@ -46,6 +46,11 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
         return new \DateTimeZone('Europe/Rome'); 
     }
 
+    /**
+     * @param $request
+     * @return OpenPABookingSalaPubblicaAvailabilityRequest
+     * @throws Exception
+     */
     public static function fromString($request)
     {
         $availabilityRequest = new OpenPABookingSalaPubblicaAvailabilityRequest();
@@ -328,7 +333,6 @@ class OpenPABookingSalaPubblicaAvailabilityRequest implements JsonSerializable
             'location' => $this->getLocation(),
             'numero_posti' => $this->getPlaces(),
             'disponibilita_posti' => $this->getCapienza(),
-            'location' => $this->getLocation(),
         );
     }
 

@@ -52,7 +52,7 @@
                   class="form-control ezcc-{$attribute.object.content_class.identifier}"
                   name="{$attribute_base}_ezmatrix_cell_{$attribute.id}[]" 
                   cols="70" 
-                  rows="2">{$column|wash( xhtml )|nl2br}</textarea>
+                  rows="2">{$column|wash( xhtml )}</textarea>
     {elseif $view|eq('vat')}
         <select id="ezcoa-{if ne( $attribute_base, 'ContentObjectAttribute' )}{$attribute_base}-{/if}{$attribute.contentclassattribute_id}_{$attribute.contentclass_attribute_identifier}_matrix_cell_{$row_index}_{$column_index}" 
                class="form-control ezcc-{$attribute.object.content_class.identifier} ezcca-{$attribute.object.content_class.identifier}_{$attribute.contentclass_attribute_identifier}" 

@@ -7,8 +7,9 @@
 )}
 {foreach $booking_range_list as $booking_range}
     <div class="radio {if $booking_range.is_valid|not()}text-muted{/if}">
-        <input type="radio" 
-               value="{$booking_range.identifier}" 
+        <input type="radio"
+               class="user-range-select"
+               value="{$booking_range.identifier}"
                name="{$attribute_base}_ezstring_data_text_{$attribute.id}" 
                {if $attribute.data_text|eq($booking_range.identifier)}checked="checked"{/if}
                {if $booking_range.is_valid|not()}disabled="disabled"{/if}

@@ -20,6 +20,20 @@ class OpenPABookingIndexPlugin implements ezfIndexPlugin
         if ($service && $service->isValid()) {
 
             $collaborationItem = $service->getCollaborationItem();
+            if (!$collaborationItem instanceof eZCollaborationItem) {
+                /** @var eZContentObjectTreeNode $mainNode */
+                $mainNode = $contentObject->mainNode();
+                if ($mainNode) {
+                    $parentNode = $mainNode->fetchParent();
+                    if ($parentNode) {
+                        $parentObject = $parentNode->object();
+                        $openpaParentObject = OpenPAObjectHandler::instanceFromContentObject($parentObject);
+                        /** @var ObjectHandlerServiceControlBookingSalaPubblica $serviceObject */
+                        $serviceObject = $openpaParentObject->serviceByClassName('ObjectHandlerServiceControlBookingSalaPubblica');
+                        $collaborationItem = $serviceObject->getCollaborationItem();
+                    }
+                }
+            }
             if ($collaborationItem instanceof eZCollaborationItem) {
 
                 $participants = OpenPABookingCollaborationParticipants::instanceFrom($collaborationItem);

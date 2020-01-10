@@ -20,21 +20,41 @@
                 <tr>
                     <td>{$content_object.data_map.from_time.content.timestamp|l10n(date)}</td>
                     <td>{$content_object.data_map.from_time.content.timestamp|l10n(shorttime)}</td>
-                    <td>{$content_object.data_map.to_time.content.timestamp|l10n(shorttime)}</td>
+                    <td>
+                        {$content_object.data_map.to_time.content.timestamp|l10n(shorttime)}
+                        {if and($collab_item.content.is_approver, $content_object.data_map.from_time.content.timestamp|gt(currentdate()), $openpa_object.control_booking_sala_pubblica.current_state_code|le(3))}
+                            <a class="pull-right" style="margin-right: 5px" href="{concat('openpa_booking/edit/sala_pubblica/',$content_object.id)|ezurl(no,full)}"><span class="label label-warning"><i class="fa fa-pencil"></i></span></a>
+                        {/if}
+                    </td>
                 </tr>
                 {if $content_object.main_node.children_count}
                     {foreach $content_object.main_node.children as $child}
                         {set $current = $current|append($child.contentobject_id)}
-                        <tr {if and( is_set($node), $child.node_id|eq($node.node_id))}class="warning"{/if}>
-                            <td>{$child.data_map.from_time.content.timestamp|l10n(date)}</td>
+                        {def $openpa_child = object_handler($child)}
+                        <tr {if $openpa_child.control_booking_sala_pubblica.current_state_code|eq(5)}class="active"{elseif and( is_set($original_booking_id), $original_booking_id|eq($child.contentobject_id))}class="warning"{/if}>
+                            <td>
+                                {if $openpa_child.control_booking_sala_pubblica.current_state_code|eq(5)}
+                                    <span style="margin-right: 5px" class="label label-{$openpa_child.control_booking_sala_pubblica.current_state.identifier}">
+                                        {$openpa_child.control_booking_sala_pubblica.current_state.current_translation.name}
+                                    </span>
+                                {/if}
+                                {$child.data_map.from_time.content.timestamp|l10n(date)}
+                            </td>
                             <td>{$child.data_map.from_time.content.timestamp|l10n(shorttime)}</td>
                             <td>
                                 {$child.data_map.to_time.content.timestamp|l10n(shorttime)}
-                                <a class="pull-right" href="{$child.url_alias|ezurl(no)}">
+                                <a class="pull-right" href="{concat('openpa_booking/view/sala_pubblica/', $child.contentobject_id)|ezurl(no)}">
                                     <span class="label label-default"><i class="fa fa-link"></i> {$child.contentobject_id}</span>
                                 </a>
+                                {if and($collab_item.content.is_approver, $child.object.data_map.from_time.content.timestamp|gt(currentdate()), $openpa_child.control_booking_sala_pubblica.current_state_code|lt(3), $openpa_object.control_booking_sala_pubblica.current_state_code|lt(3))}
+                                    <a class="pull-right" style="margin-right: 5px" href="{concat('openpa_booking/trash/sala_pubblica/',$child.contentobject_id)|ezurl(no,full)}"><span class="label label-danger"><i class="fa fa-trash"></i></span></a>
+                                {/if}
+                                {if and($collab_item.content.is_approver, $child.object.data_map.from_time.content.timestamp|gt(currentdate()), $openpa_child.control_booking_sala_pubblica.current_state_code|le(3), $openpa_object.control_booking_sala_pubblica.current_state_code|le(3))}
+                                    <a class="pull-right" style="margin-right: 5px" href="{concat('openpa_booking/edit/sala_pubblica/',$child.contentobject_id)|ezurl(no,full)}"><span class="label label-warning"><i class="fa fa-pencil"></i></span></a>
+                                {/if}
                             </td>
                         </tr>
+                        {undef $openpa_child}
                     {/foreach}
                 {/if}
             </table>
@@ -162,7 +182,7 @@
                 right: 'month,agendaWeek,agendaDay'
             },
             loading: function (isLoading) {
-                if (isLoading == true) {
+                if (isLoading === true) {
                     calendarModalTitle.html('<i class="fa fa-circle-o-notch fa-spin fa-2x fa-fw"></i>');
                 }else {
                     calendarModalTitle.html(calendarModalTitle.data('name'));

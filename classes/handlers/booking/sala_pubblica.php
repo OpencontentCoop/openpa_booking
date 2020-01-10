@@ -61,6 +61,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 && $this->currentObject->mainNode() instanceof eZContentObjectTreeNode) {
                 $parent = $this->currentObject->mainNode()->fetchParent();
                 if ($parent->attribute('class_identifier') == $serviceClass->prenotazioneClassIdentifier()) {
+                    eZTemplate::factory()->setVariable('original_booking_id', $this->currentObject->attribute('id'));
                     $this->currentObject = $parent->object();
                 }
             }
@@ -174,6 +175,10 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
 //                    eZSearch::addObject( $currentObject, true );
 //                }
             }
+
+            if ($currentObject->attribute('remote_id') == OpenPABooking::rootRemoteId()){
+                eZCache::clearByTag('template');
+            }
         }
         if ($trigger == 'post_checkout') {
             /** @var eZOrder $order */
@@ -189,6 +194,9 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                         && $service->isValid()
                         && $prenotazione->attribute('can_read')
                     ) {
+                        if ($order->totalIncVAT() == round(0, 2) && OpenPABooking::instance()->freeBookingNeedsCheckout()) {
+                            $order->modifyStatus(eZOrderStatus::DELIVERED);
+                        }
                         $service->addOrder($order);
                     }
                 }
@@ -339,7 +347,7 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
 
                     $productType = eZShopFunctions::productTypeByObject($prenotazione);
                     $price = $serviceObject->getPrice();
-                    if ($productType && $price > 0) {
+                    if (($productType && $price > 0) || OpenPABooking::instance()->freeBookingNeedsCheckout()) {
 
                         $serviceObject->changeState(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_WAITING_FOR_CHECKOUT);
 
