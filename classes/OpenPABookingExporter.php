@@ -60,6 +60,11 @@ class OpenPABookingExporter extends SearchQueryCSVExporter
             'Costo' => ['data' => 'prenotazione_sala/price/ezprice'],
             'Ordine' => ['data' => 'prenotazione_sala/order_id/ezinteger'],
             'Materiale' => ['data' => 'prenotazione_sala/materiale_informativo/ezbinaryfile'],
+            'Sottorichiesta' => ['custom' => function($item){
+                $language = eZLocale::currentLocaleCode();
+                $data = $item['data'][$language]; 
+                return $data['subrequest']['content'] ? 'X' : '';
+            }],
         ];
         
         parent::__construct($parentNodeId, $queryString);
