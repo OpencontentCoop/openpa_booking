@@ -83,9 +83,11 @@
                             <button type="submit" class="btn btn-success"><i class="fa fa-search"></i></button>
                         </form>
                         {include name=users_table uri='design:booking/config/users_table.tpl' view_parameters=$view_parameters user_parent_node=$user_parent_node user_class=$user_class}
+                        {if fetch( 'user', 'has_access_to', hash( 'module', 'exportas', 'function', 'csv' ) )}
                         <div class="pull-left">
                             <a class="btn btn-info" href="{concat('exportas/csv/', $user_class.identifier, '/',ezini("UserSettings", "DefaultUserPlacement"))|ezurl(no)}">{'Esporta in CSV'|i18n('booking/config')}</a>
                         </div>
+                        {/if}
                     </div>
                 {/if}
 
@@ -94,12 +96,14 @@
                     {foreach $data as $item}
                         {if $current_part|eq(concat('data-',$item.contentobject_id))}
                             {def $add_classes = array()}
+                            {def $can_create_class_list = $item.object.can_create_class_list}
                             {if $item|has_attribute('tags')}
                                 {foreach $item|attribute('tags').content.keyword_string|explode(', ') as $class}
                                     {set $add_classes = $add_classes|merge(hash($class,$class))}
                                 {/foreach}
-                            {elseif is_set($item.children[0])}
-                                {set $add_classes = hash($item.children[0].class_identifier, $item.children[0].class_name)}
+                            {/if}
+                            {if count($add_classes)|gt(0)}
+                                {set $add_classes = fetch( class, list, hash( class_filter, $add_classes ) )}
                             {/if}
                             <div class="tab-pane active" id="{$item.name|slugize()}">
 
@@ -192,16 +196,27 @@
                                              item_limit=$item_limit}
                                     {undef $children_count $item_limit}
                                 {/if}
-                                {foreach $add_classes as $class_identifier => $class_name}
+                                {foreach $add_classes as $class}
                                     <div class="clearfix" style="margin-bottom: 10px">
+                                        {if fetch( 'user', 'has_access_to', hash( 'module', 'exportas', 'function', 'csv' ) )}
                                         <div class="pull-left">
                                             <a class="btn btn-info" href="{concat('exportas/csv/', $class_identifier, '/',$item.node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('booking/config')} {$class_name|wash()}</a>
                                         </div>
+                                        {/if}
+                                        {def $can_create = false()}
+                                        {foreach $can_create_class_list as $class_name}
+                                            {if $class_name.name|eq($class.name)}
+                                                {set $can_create = true()}
+                                            {/if}
+                                        {/foreach}
+                                        {if $can_create}
                                         <div class="pull-right">
-                                            <a class="btn btn-danger" href="{concat('add/new/', $class_identifier, '/?parent=',$item.node_id)|ezurl(no)}">
-                                                <i class="fa fa-plus"></i> {'Aggiungi %classname'|i18n('booking/config',, hash( '%classname', $class_name ))}
+                                            <a class="btn btn-danger" href="{concat('add/new/', $class.identifier, '/?parent=',$item.node_id)|ezurl(no)}">
+                                                <i class="fa fa-plus"></i> {'Aggiungi %classname'|i18n('booking/config',, hash( '%classname', $class.name|wash() ))}
                                             </a>
                                         </div>
+                                        {/if}
+                                        {undef $can_create}
                                     </div>
                                 {/foreach}
                                 {undef $add_classes}

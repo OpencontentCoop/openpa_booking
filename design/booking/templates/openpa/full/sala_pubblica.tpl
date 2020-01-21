@@ -27,7 +27,7 @@
     <div class="col-md-4">
 
         {if $openpa.content_contacts.has_content}
-            <div class="panel panel-info">
+            <div class="panel panel-info" style="overflow: hidden">
                 {if $openpa.content_contacts.show_label}
                     <div class="panel-heading">
                         <h4 class="panel-title"><strong>{$openpa.content_contacts.label}</strong></h4>
@@ -96,14 +96,9 @@
             <div class="panel-body">
                 {foreach $openpa.content_detail.attributes as $openpa_attribute}
                     <div class="row">
-                        {if and( $openpa_attribute.full.show_label, $openpa_attribute.full.collapse_label|not() )}
-                            <div class="col-md-3">
-                                <strong>{$openpa_attribute.label}</strong>
-                            </div>
-                        {/if}
-                        <div class="col-md-{if and( $openpa_attribute.full.show_label, $openpa_attribute.full.collapse_label|not() )}9{else}12{/if}">
-                            {if and( $openpa_attribute.full.show_label, $openpa_attribute.full.collapse_label )}
-                                <strong>{$openpa_attribute.label}</strong>
+                        <div class="col-md-12">
+                            {if $openpa_attribute.full.show_label}
+                                <strong>{$openpa_attribute.label}</strong><br />
                             {/if}
                             {attribute_view_gui attribute=$openpa_attribute.contentobject_attribute href='no-link'}
                         </div>

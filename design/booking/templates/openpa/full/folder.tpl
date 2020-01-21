@@ -1,5 +1,6 @@
 {ezscript_require( array(
     'ezjsc::jquery',
+    'ezjsc::jqueryio',
     'ezjsc::jqueryUI',
     'leaflet.js',
     'leaflet.markercluster.js',
