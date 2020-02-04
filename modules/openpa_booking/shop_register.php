@@ -24,7 +24,6 @@ $tpl->setVariable("input_error", false);
 
 if ($module->isCurrentAction('Store')) {
 
-
     $data = OpenPABookingUserShopAccountHandler::fetchInput();
     foreach ($settings as $key => $value) {
         if (isset($data[$key])){
@@ -40,6 +39,12 @@ if ($module->isCurrentAction('Store')) {
         return;
 
     } catch (Exception $e) {        
+        
+        foreach ($settings as $key => $value) {
+            if ($value['value'] == 'null'){                
+                $settings[$key]['value'] = '';
+            }
+        }
         $tpl->setVariable("input_error", true);
     }
 }

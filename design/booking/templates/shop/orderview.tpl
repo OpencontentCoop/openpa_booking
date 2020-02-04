@@ -6,6 +6,10 @@
     </h1>
 </section>
 
+{if ezmodule( 'mypay' )}
+    {include uri='design:mypay/orderview_mypay_istructions.tpl'}
+{/if}
+
 {shop_account_view_gui view=html order=$order}
 
 {def $invoiceData = booking_request_invoice($order)}

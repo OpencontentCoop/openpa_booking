@@ -15,6 +15,7 @@ id=booking
 tags[]=template
 path=openpa_booking
 
-
+[Event]
+Listeners[]=ocmypay/paymentreceived@ObjectHandlerServiceControlBookingSalaPubblica::onOcMyPayPaymentReceived
 
 */ ?>

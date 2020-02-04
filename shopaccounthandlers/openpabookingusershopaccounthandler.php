@@ -40,7 +40,7 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
             'input_name' => 'Comment'
         ),
         'state' => array(
-            'is_required' => false,
+            'is_required' => true,
             'input_name' => 'State'
         ),
         'vat_code' => array(
@@ -158,9 +158,11 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
         $doc->appendChild($root);
 
         foreach ($accountInformation as $key => $value) {
-            $tagName = str_replace('_', '-', $key);
-            $node = $doc->createElement($tagName, $value);
-            $root->appendChild($node);
+            if ($value !== 'null'){
+                $tagName = str_replace('_', '-', $key);
+                $node = $doc->createElement($tagName, $value);
+                $root->appendChild($node);
+            }
         }
 
         return $doc->saveXML();

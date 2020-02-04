@@ -1485,7 +1485,7 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
                 'input_name' => 'Comment'
             ),
             'state' => array(
-                'is_required' => false,
+                'is_required' => true,
                 'input_name' => 'State'
             ),
             'vat_code' => array(
@@ -1568,4 +1568,19 @@ class ObjectHandlerServiceControlBookingSalaPubblica extends ObjectHandlerServic
         eZPendingActions::removeByAction(self::PENDING_ACTION_REFETCH_INVOICE, ['param' => $order->attribute('id')]);
     }
 
+    public static function onOcMyPayPaymentReceived(eZOrder $order, $paymentTime)
+    {
+        $order->modifyStatus(eZOrderStatus::DELIVERED);
+        $products = $order->attribute('product_items');
+        foreach ($products as $product) {
+            if ($product['item_object'] instanceof eZProductCollectionItem) {
+                $prenotazione = $product['item_object']->attribute('contentobject');
+                /** @var ObjectHandlerServiceControlBookingSalaPubblica $service */
+                $service = OpenPAObjectHandler::instanceFromContentObject($prenotazione)->serviceByClassName('ObjectHandlerServiceControlBookingSalaPubblica');
+                if (!$service->isSubrequest()) {
+                    $service->changeState(self::STATUS_APPROVED);
+                }
+            }
+        }
+    }
 }
