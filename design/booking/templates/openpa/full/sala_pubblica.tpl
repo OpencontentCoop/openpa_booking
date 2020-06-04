@@ -5,20 +5,21 @@
     'leaflet/leaflet.0.7.2.js',
     'leaflet/leaflet.markercluster.js',
     'leaflet/Leaflet.MakiMarkers.js',
-    'leaflet/Control.Geocoder.js'
+    'leaflet/Control.Geocoder.js',
+    "plugins/blueimp/jquery.blueimp-gallery.min.js"
 ))}
 
 {ezcss_require( array(
     'leaflet/leaflet.0.7.2.css',
     'leaflet/map.css',
     'leaflet/MarkerCluster.css',
-    'leaflet/MarkerCluster.Default.css'
+    'leaflet/MarkerCluster.Default.css',
+    "plugins/blueimp/blueimp-gallery.css"
 ))}
 
 <section class="hgroup">
     <h1>
         {$node.name|wash()}
-        {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$node redirect_if_discarded='/openpa_booking/locations' redirect_after_publish=concat('/openpa_booking/locations/',$node.node_id)  }
     </h1>
 </section>
 
@@ -116,8 +117,24 @@
         </div>
         {if is_set( $openpa.content_main.parts.image )}
             <div class="text-center">
-                {include uri='design:atoms/image.tpl' item=$node alignment='center' image_class=imagefull css_classes="main_image" image_css_class="media-object tr_all_long_hover"}
+                {include uri='design:atoms/image.tpl' item=$node alignment='center' image_class=imagefull css_classes="main_image thumbnail" image_css_class="media-object tr_all_long_hover"}
             </div>
+            {if $node|has_attribute('galleria')}
+                {def $gallery_images = array()}
+                {foreach $node|attribute('galleria').content.relation_list as $item}
+                    {set $gallery_images = $gallery_images|append(fetch(content, object, hash(object_id, $item.contentobject_id)))}
+                {/foreach}
+                <div class="gallery row">
+                    {foreach $gallery_images as $item}
+                        <div class="col-xs-6 col-md-2">
+                            <a class="thumbnail" href={$item|attribute('image').content.imagefullwide.url|ezroot} title="{$item.name}" data-gallery>
+                                {attribute_view_gui attribute=$item|attribute('image') image_class=squarethumb fluid=false()}
+                            </a>
+                        </div>
+                    {/foreach}
+                </div>
+                {undef $gallery_images}
+            {/if}
         {/if}
 
         <section class="hgroup">

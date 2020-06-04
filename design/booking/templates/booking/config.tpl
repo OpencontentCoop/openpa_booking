@@ -17,7 +17,7 @@
     <div class="col-md-12">
         {if $root.can_edit}
         <ul class="list-unstyled">
-            <li>{'Modifica impostazioni generali'|i18n('booking/config')} {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$root redirect_if_discarded='/openpa_booking/config' redirect_after_publish='/openpa_booking/config'}</li>
+            <li><a href="{concat('/content/edit/', $root.contentobject_id, '/f')|ezurl(no)}">{'Modifica impostazioni generali'|i18n('booking/config')}</a></li>
         </ul>
         <hr/>
         {/if}
@@ -58,6 +58,7 @@
                             <button type="submit" class="btn btn-success"><i class="fa fa-search"></i></button>
                         </form>
                         {include name=users_table uri='design:booking/config/moderators_table.tpl' view_parameters=$view_parameters moderator_parent_node_id=$moderators_parent_node_id redirect='/openpa_booking/config/moderators'}
+                        {if fetch(content, node, hash(node_id, $moderators_parent_node_id)).can_create}
                         <div class="pull-right">
                             <a class="btn btn-danger" href="{concat('add/new/user/?parent=',$moderators_parent_node_id)|ezurl(no)}">
                                 <i class="fa fa-plus"></i> {'Aggiungi responsabile'|i18n('openpa_booking/config')}
@@ -69,6 +70,7 @@
                                 </button>
                             </form>
                         </div>
+                        {/if}
                     </div>
                 {/if}
 
@@ -183,7 +185,9 @@
                                                     {/foreach}
                                                 </td>
                                                 <td width="1">
-                                                    {include name=edit uri='design:parts/toolbar/node_edit.tpl' current_node=$child redirect_if_discarded=concat('/openpa_booking/config/data-',$item.contentobject_id) redirect_after_publish=concat('/openpa_booking/config/data-',$item.contentobject_id)}
+                                                    {if $child.object.can_edit}
+                                                        <a href="{concat('/content/edit/', $child.contentobject_id, '/f')|ezurl(no)}"><i class="fa fa-edit"></i></a>
+                                                    {/if}
                                                 </td>
                                             </tr>
                                         {/foreach}
