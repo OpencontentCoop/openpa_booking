@@ -204,7 +204,7 @@
                                     <div class="clearfix" style="margin-bottom: 10px">
                                         {if fetch( 'user', 'has_access_to', hash( 'module', 'exportas', 'function', 'csv' ) )}
                                         <div class="pull-left">
-                                            <a class="btn btn-info" href="{concat('exportas/csv/', $class_identifier, '/',$item.node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('booking/config')} {$class_name|wash()}</a>
+                                            <a class="btn btn-info" href="{concat('exportas/csv/', $class.identifier, '/',$item.node_id)|ezurl(no)}">{'Esporta in CSV'|i18n('booking/config')} {$class_name|wash()}</a>
                                         </div>
                                         {/if}
                                         {def $can_create = false()}
