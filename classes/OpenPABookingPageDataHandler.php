@@ -79,7 +79,13 @@ class OpenPABookingPageDataHandler implements OCPageDataHandlerInterface
 
     public function textCredits()
     {
-        return ezpI18n::tr( 'booking', 'OpenPA Booking - realizzato da OpenContent con OpenPA' );
+        $versionFile = eZSys::rootDir() . '/VERSION';
+        if (file_exists($versionFile)){
+            $version = file_get_contents($versionFile);
+            return 'SpaziComuni <a href="https://gitlab.com/opencontent/spazicomuni/">' . $version . '</a> made with <i class="fa fa-heart"></i> by <a href="https://www.opencontent.it">Opencontent</a>';
+        }
+
+        return ezpI18n::tr( 'booking', 'SpaziComuni - realizzato da OpenContent con OpenPA' );
     }
 
     public function googleAnalyticsId()

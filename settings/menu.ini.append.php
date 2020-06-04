@@ -1,0 +1,4 @@
+<?php /*
+[TopAdminMenu]
+Tabs[]=shop
+*/ ?>

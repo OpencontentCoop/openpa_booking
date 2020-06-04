@@ -60,7 +60,7 @@
                         {include name=users_table uri='design:booking/config/moderators_table.tpl' view_parameters=$view_parameters moderator_parent_node_id=$moderators_parent_node_id redirect='/openpa_booking/config/moderators'}
                         <div class="pull-right">
                             <a class="btn btn-danger" href="{concat('add/new/user/?parent=',$moderators_parent_node_id)|ezurl(no)}">
-                                <i class="fa fa-plus"></i> {'Aggiungi moderatore'|i18n('openpa_booking/config')}
+                                <i class="fa fa-plus"></i> {'Aggiungi responsabile'|i18n('openpa_booking/config')}
                             </a>
                             <form class="form-inline" style="display: inline"
                                   action="{'openpa_booking/config/moderators'|ezurl(no)}" method="post">
