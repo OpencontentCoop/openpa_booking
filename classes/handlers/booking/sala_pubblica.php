@@ -180,6 +180,13 @@ class BookingHandlerSalaPubblica extends BookingHandlerBase implements OpenPABoo
                 eZCache::clearByTag('template');
             }
         }
+        if ($trigger == 'pre_checkout') {
+            /** @var eZOrder $order */
+            $order = eZOrder::fetch($parameters['order_id']);
+            if ($order->totalIncVAT() == round(0, 2) && OpenPABooking::instance()->freeBookingNeedsCheckout()) {
+                $order->modifyStatus(eZOrderStatus::PROCESSING);
+            }
+        }
         if ($trigger == 'post_checkout') {
             /** @var eZOrder $order */
             $order = eZOrder::fetch($parameters['order_id']);

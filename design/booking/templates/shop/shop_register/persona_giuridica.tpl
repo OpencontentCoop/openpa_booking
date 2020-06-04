@@ -93,21 +93,31 @@ $(document).ready(function(){
 </div>
 
 <div class="row">
-    <div class="col-md-6 form-group">
+    <div class="col-md-4 form-group">
         <label>
             {"Place"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['place']['is_required']}*{/if}
         </label>
         <input class="form-control" type="text" name="{$settings['place']['input_name']}" size="20" value="{$settings['place']['value']|wash}"/>
     </div>
-    <div class="col-md-6 form-group">
+    <div class="col-md-4 form-group">
+        <label>
+            {"Provincia"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['state']['is_required']}*{/if}
+        </label>
+        <select class="form-control" name="State">
+            {foreach ezini( 'ProvinceSettings', 'List', 'province.ini' ) as $k => $v}
+                <option value="{$k}" {if $settings['state']['value']|eq($k)}selected="selected"{/if}>{$v}</option>
+            {/foreach}
+        </select>
+    </div>
+    <div class="col-md-4 form-group">
         <label>
             {"Country"|i18n("design/ocbootstrap/shop/userregister")} {if $settings['country']['is_required']}*{/if}
         </label>
         {def $countries = fetch( 'content', 'country_list' )}
         <select name="{$settings['country']['input_name']}" class="form-control">
             {foreach $countries as $_country}
-                <option {if eq( $_country['Name'], $settings['country']['value'] )} selected="selected" {/if}
-                        value="{$_country['Name']}">
+                <option {if or(eq( $_country['Alpha2'], $settings['country']['value'] ), eq( $_country['Name'], $settings['country']['value'] ))} selected="selected" {/if}
+                            value="{$_country['Alpha2']}">
                     {$_country['Name']}
                 </option>
             {/foreach}

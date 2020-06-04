@@ -29,7 +29,7 @@
             <p>                
                 {'Street'|i18n('design/standard/shop')}: {$order.account_information.street2|wash}<br />
                 {'Zip'|i18n('design/standard/shop')}: {$order.account_information.zip|wash}<br />
-                {'Place'|i18n('design/standard/shop')}: {$order.account_information.place|wash}<br />                
+                {'Place'|i18n('design/standard/shop')}: {$order.account_information.place|wash} {$order.account_information.state|wash}<br />                 
                 {'Country/region'|i18n('design/standard/shop')}: {$order.account_information.country|wash}<br />
             </p>
         </td>

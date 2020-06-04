@@ -18,4 +18,7 @@ path=openpa_booking
 [UserContextHash]
 IncludeCurrentUserId=enabled
 
+[Event]
+Listeners[]=ocmypay/paymentreceived@ObjectHandlerServiceControlBookingSalaPubblica::onOcMyPayPaymentReceived
+
 */ ?>
