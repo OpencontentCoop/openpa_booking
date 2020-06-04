@@ -260,6 +260,8 @@ class OpenPABookingUserShopAccountHandler extends eZUserShopAccountHandler
             $accountInformation['vat_code'] = $userMap['codice_fiscale']->content();
         }elseif (isset($userMap['vat_code'])){
             $accountInformation['vat_code'] = $userMap['vat_code']->content();
+        }elseif (isset($userMap['fiscal_code'])){
+            $accountInformation['vat_code'] = $userMap['fiscal_code']->content();
         }
                 
         $accountInformation['email'] = $user->attribute( 'email' );
