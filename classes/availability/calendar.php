@@ -28,8 +28,10 @@ class OpenPABookingSalaPubblicaCalendar
         eZContentObject $location = null,
         eZContentObject $stuff = null,
         $currentBookings = array(),
-        Closure $urlTransformerClosure,
-        $showAvailableSlots = true
+        Closure $urlTransformerClosure = null,
+        $showAvailableSlots = true,
+        array $states = null,
+        array $customQueryParts = []
     ) {
         $this->currentBookings = $currentBookings;
         $this->urlTransformerClosure = $urlTransformerClosure;
@@ -42,7 +44,7 @@ class OpenPABookingSalaPubblicaCalendar
         $this->end = $end;
         $queryParts[] = "calendar[] = [{$start},{$end}]";
 
-        $stateIdList = OpenPABookingSalaPubblicaAvailabilityFinder::getStateIdList();
+        $stateIdList = is_array($states) ? $states : OpenPABookingSalaPubblicaAvailabilityFinder::getStateIdList();
         $queryParts[] = "state in [" . implode(',', $stateIdList) . "]";
 
         $serviceClass = new ObjectHandlerServiceControlBookingSalaPubblica();
@@ -58,6 +60,7 @@ class OpenPABookingSalaPubblicaCalendar
             $queryParts[] = "$field = '{$stuff->attribute( 'id' )}'";
         }
 
+        $queryParts = array_merge($queryParts, $customQueryParts);
         $queryParts[] = "classes [prenotazione_sala] sort [from_time=>desc]";
 
         $this->query = implode(' and ', $queryParts);
@@ -219,7 +222,7 @@ class OpenPABookingSalaPubblicaCalendar
                     } else {
                         $item->color = $colors['none'];
                     }
-                } else {
+                } elseif ($this->location instanceof eZContentObject) {
                     $item->title = $state->attribute('current_translation')->attribute('name');
                     $item->status = $state->attribute('identifier');
                     if (in_array($object->attribute('id'), $this->currentBookings)) {
@@ -232,6 +235,13 @@ class OpenPABookingSalaPubblicaCalendar
                     } else {
                         $item->color = $colors['none'];
                     }
+                } else {
+                    $sala = $service->attribute('sala');
+                    $item->title = '#' . $object->attribute('id') . ' ';
+                    $item->title .= $sala instanceof eZContentObject ? $sala->attribute('name') : $state->attribute('current_translation')->attribute('name');
+                    $item->status = $state->attribute('identifier');
+                    $item->color = $colors[$service->attribute('current_state_code')];
+                    $item->url = $url;
                 }
 
                 $item->start = $service->attribute('start')->format('c');

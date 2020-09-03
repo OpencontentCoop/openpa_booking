@@ -94,9 +94,17 @@ $ViewList['trash'] = array(
     'functions' => array('edit')
 );
 
+$ViewList['calendar'] = array(
+    'script' => 'calendar.php',
+    'params' => array('HandlerIdentifier'),
+    'unordered_params' => array(),
+    'functions' => array('calendar')
+);
+
 
 $FunctionList['read'] = array();
 $FunctionList['book'] = array();
 $FunctionList['config'] = array();
 $FunctionList['export'] = array();
 $FunctionList['edit'] = array();
+$FunctionList['calendar'] = array();

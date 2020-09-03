@@ -18,6 +18,8 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
     {
         if (isset( $Params['UserParameters']['availability'] )) {
             $this->dataFunction = 'getAvailability';
+        } elseif (isset( $Params['UserParameters']['approved_calendar'] )) {
+            $this->dataFunction = 'getAllApprovedCalendarData';
         } else {
             $salaId = eZHTTPTool::instance()->getVariable('sala', false);
             if ($salaId) {
@@ -68,6 +70,34 @@ class DataHandlerBookingSalaPubblica implements OpenPADataHandlerInterface
 
                 return $url;
             }
+        );
+
+        return $calendarFinder->getData();
+    }
+
+    private function getAllApprovedCalendarData(){
+        $start = eZHTTPTool::instance()->getVariable('start', false);
+        $end = eZHTTPTool::instance()->getVariable('end', false);
+        $locations = eZHTTPTool::instance()->getVariable('locations', []);
+        $customQueryParts = [];
+        if (!empty($locations)){
+            $customQueryParts[] = 'subtree [' . implode(',', $locations) . ']';
+        }
+        $calendarFinder = new OpenPABookingSalaPubblicaCalendar(
+            $start,
+            $end,
+            null,
+            null,
+            [],
+            function(eZContentObject $object){
+                $url = 'openpa_booking/view/sala_pubblica/' . $object->attribute('id');
+                eZURI::transformURI($url);
+
+                return $url;
+            },
+            false,
+            [ObjectHandlerServiceControlBookingSalaPubblica::getStateObject(ObjectHandlerServiceControlBookingSalaPubblica::STATUS_APPROVED)->attribute('id')],
+            $customQueryParts
         );
 
         return $calendarFinder->getData();

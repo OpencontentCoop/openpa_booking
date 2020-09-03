@@ -206,6 +206,15 @@ class OpenPABookingPageDataHandler implements OCPageDataHandlerInterface
                 'has_children' => false
             );
         }
+        $hasAccess = eZUser::currentUser()->hasAccessTo( 'openpa_booking', 'calendar' );
+        if ( $hasAccess['accessWord'] == 'yes' ) {
+            $userMenu[] = array(
+                'name' => ezpI18n::tr('booking/menu', 'Calendario'),
+                'url' => 'openpa_booking/calendar',
+                'highlight' => false,
+                'has_children' => false
+            );
+        }
         $userMenu[] = array(
             'name' => ezpI18n::tr( 'booking/menu', 'Esci' ),
             'url' => 'user/logout',
