@@ -11,7 +11,7 @@
 {ezcss_require( array( 'fullcalendar.min.css', 'chosen.css' ) )}
 
 <section class="hgroup">
-    <h1>Calendario sinottico delle prenotazioni confermate</h1>
+    <h1>Riepilogo delle prenotazioni confermate</h1>
 </section>
 
 <div class="form-group">
