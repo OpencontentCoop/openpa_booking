@@ -327,6 +327,12 @@ $(document).ready(function () {
                         'value': request.circoscrizione
                     });
                 }
+                if (request.disponibilita_posti){
+                    requestVars.push({
+                        'key': 'disponibilita_posti',
+                        'value': request.disponibilita_posti
+                    });
+                }
                 $.each(requestVars, function(index, value){
                     requestString += this.key+'='+this.value+'&';
                 });

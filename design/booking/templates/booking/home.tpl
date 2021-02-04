@@ -89,8 +89,8 @@
                     {/if}
                     {if $filters|contains('capienza')}
                         <div class="form-group" style="display: none">
-                            <label for="destinazione_uso" class="hide">{"Capienza"|i18n('booking')}</label>
-                            <select id="destinazione_uso" name="capienza" class="form-control" style="max-width: 200px">
+                            <label for="disponibilita_posti" class="hide">{"Capienza"|i18n('booking')}</label>
+                            <select id="disponibilita_posti" name="disponibilita_posti" class="form-control" style="max-width: 200px">
                                 <option value="">{"Capienza"|i18n('booking')}</option>
                             </select>
                         </div>
